@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: KProject-BE
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/kp242?serverTimezone=Asia/Seoul
+    username: root
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show_sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
