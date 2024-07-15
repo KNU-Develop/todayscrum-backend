@@ -1,8 +1,8 @@
 package knu.kproject.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -10,6 +10,9 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "workspaces")
 public class Workspace {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +30,7 @@ public class Workspace {
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private Timestamp createdAt;
 
-    @OneToMany(mappedBy = "workspaces")
+    @OneToMany(mappedBy = "workspace")
+    @JsonManagedReference
     private List<Project> projects;
 }

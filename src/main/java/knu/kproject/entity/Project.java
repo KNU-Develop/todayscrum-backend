@@ -1,21 +1,25 @@
 package knu.kproject.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "projects")
 public class Project {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "worksapce_id", nullable = false)
+    @JoinColumn(name = "workspace_id", nullable = false)
+    @JsonBackReference
     private Workspace workspace;
 
     @Column(name = "title", nullable = false)
