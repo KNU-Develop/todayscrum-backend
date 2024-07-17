@@ -20,23 +20,23 @@ public class Project {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "workspace_id", nullable = false)
+    @JoinColumn(nullable = false)
     @JsonBackReference
     private Workspace workspace;
 
-    @Column(name = "title", nullable = false)
+    @Column(nullable = false)
     private String title;
 
-    @Column(name = "overview", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String overview;
 
-    @Column(name = "start_date")
+    @Column
     private Timestamp startDate;
 
-    @Column(name = "end_date")
+    @Column
     private Timestamp endDate;
 
-    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private Timestamp createdAt;
 
     @OneToMany(mappedBy = "projectId")

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ProjectUserRepository extends JpaRepository<ProjectUser, Long> {
-    List<ProjectUser> findByUserId(String userId);
-
     List<ProjectUser> findByProjectId(Long projectId);
+    ProjectUser findByUserId(String userId);
 }

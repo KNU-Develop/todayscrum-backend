@@ -18,16 +18,16 @@ public class Workspace {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "owner_id", nullable = false)
+    @Column(nullable = false)
     private String ownerId;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column
     private String description;
 
-    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private Timestamp createdAt;
 
     @OneToMany(mappedBy = "workspace")

@@ -67,11 +67,9 @@ public class ProjectService {
                 .orElseThrow(() -> new RuntimeException("project not found"));
         projectRepositroy.delete(project);
     }
-
     public List<ProjectUser> findByAllProjectUsers(Long projectId) {
         return projectUserRepository.findByProjectId(projectId);
     }
-
     @Transactional
     public ProjectUser addUser(Long project, String user) {
         if (!projectRepositroy.existsById(project)) {
@@ -85,5 +83,10 @@ public class ProjectService {
         projectUser.setUserId(user);
 
         return projectUserRepository.save(projectUser);
+    }
+
+    public void deleteProjectUser(String uid) {
+        ProjectUser projectUser = projectUserRepository.findByUserId(uid);
+        projectUserRepository.delete(projectUser);
     }
 }

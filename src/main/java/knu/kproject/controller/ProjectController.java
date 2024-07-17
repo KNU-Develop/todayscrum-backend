@@ -1,11 +1,13 @@
 package knu.kproject.controller;
 
+import knu.kproject.api.ApiResponse;
 import knu.kproject.dto.ProjectDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
 import knu.kproject.entity.User;
 import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.service.ProjectService;
+import knu.kproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/create")
     public ResponseEntity<String> createProject(@RequestBody ProjectDto projectDto) {
@@ -31,16 +35,20 @@ public class ProjectController {
     }
 
     @GetMapping("projects")
-    public ResponseEntity<List<Project>> getProjectsByWorkspaceId(@PathVariable Long workSpaceId) {
+    public ResponseEntity<ApiResponse<List<Project>>> getProjectsByWorkspaceId(@PathVariable Long workSpaceId) {
         List<Project> projects = projectService.getProjectByWorkspaceId(workSpaceId);
-        return ResponseEntity.ok(projects);
+        ApiResponse<List<Project>> response = new ApiResponse<>("SUCCESS", projects);
+        return ResponseEntity.ok(response);
+
     }
 
     @GetMapping("projects/{ProjectId}")
-    public ResponseEntity<Project> getProjectById(@PathVariable Long ProjectId) {
+    public ResponseEntity<ApiResponse<Optional<Project>>> getProjectById(@PathVariable Long ProjectId) {
         Optional<Project> project = projectService.getProjectById(ProjectId);
-        return project.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+//        return project.map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.notFound().build());
+        ApiResponse<Optional<Project>> response = new ApiResponse<>("SUCCESS", project);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("projects/{projectId}/update")
@@ -66,13 +74,28 @@ public class ProjectController {
     public ProjectUser addUser(@RequestBody User user, @PathVariable Long projectId) {
         return projectService.addUser(projectId, user.getId());
     }
-
     @GetMapping("projects/{projectId}/users")
-    public ResponseEntity<List<String>> getProjectToUser(@PathVariable Long projectId) {
+    public ResponseEntity<ApiResponse<List<User>>> getProjectToUser(@PathVariable Long projectId) {
         List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
         List<String> usersId = projectUsers.stream()
                 .map(ProjectUser::getUserId)
+                .sorted()
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(usersId);
+        List<User> users = usersId.stream()
+                .map(userService::getProjectUserData)
+                .collect(Collectors.toList());
+
+        ApiResponse<List<User>> response = new ApiResponse<>("SUCCESS", users);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("projects/{projectId}/users/{userid}")
+    public ResponseEntity<String> deleteProjectUser(@PathVariable String userid) {
+        try {
+            projectService.deleteProjectUser(userid);
+            return ResponseEntity.ok("project user delete success");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
