@@ -2,6 +2,9 @@ package knu.kproject.controller;
 
 import knu.kproject.dto.ProjectDto;
 import knu.kproject.entity.Project;
+import knu.kproject.entity.ProjectUser;
+import knu.kproject.entity.User;
+import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("workspace/{workSpaceId}/")
@@ -57,5 +61,18 @@ public class ProjectController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+    @PostMapping("projects/{projectId}/usersAdd")
+    public ProjectUser addUser(@RequestBody User user, @PathVariable Long projectId) {
+        return projectService.addUser(projectId, user.getId());
+    }
+
+    @GetMapping("projects/{projectId}/users")
+    public ResponseEntity<List<String>> getProjectToUser(@PathVariable Long projectId) {
+        List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
+        List<String> usersId = projectUsers.stream()
+                .map(ProjectUser::getUserId)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(usersId);
     }
 }

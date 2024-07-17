@@ -1,10 +1,12 @@
 package knu.kproject.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Getter
@@ -36,4 +38,7 @@ public class Project {
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private Timestamp createdAt;
+
+    @OneToMany(mappedBy = "projectId")
+    private List<ProjectUser> projectUsers;
 }
