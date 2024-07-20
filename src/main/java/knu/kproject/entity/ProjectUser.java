@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Entity @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 @Table(name = "project_users")
 public class ProjectUser {
@@ -14,5 +16,5 @@ public class ProjectUser {
     private Long projectId;
 
     @Column(nullable = false)
-    private String userId;
+    private UUID userId;
 }

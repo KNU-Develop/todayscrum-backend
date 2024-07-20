@@ -8,11 +8,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Entity
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Table(name = "workspaces")
 public class Workspace {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

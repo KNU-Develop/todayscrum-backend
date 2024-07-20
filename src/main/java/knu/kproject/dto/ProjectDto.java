@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 public class ProjectDto {
     private String title;
     private String overview;
-    private Timestamp starDate;
+    private Timestamp startDate;
     private Timestamp endDate;
     private Long workspaceId;
 }

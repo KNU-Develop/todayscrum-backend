@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -77,7 +78,7 @@ public class ProjectController {
     @GetMapping("projects/{projectId}/users")
     public ResponseEntity<ApiResponse<List<User>>> getProjectToUser(@PathVariable Long projectId) {
         List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
-        List<String> usersId = projectUsers.stream()
+        List<UUID> usersId = projectUsers.stream()
                 .map(ProjectUser::getUserId)
                 .sorted()
                 .collect(Collectors.toList());
@@ -90,7 +91,7 @@ public class ProjectController {
     }
 
     @DeleteMapping("projects/{projectId}/users/{userid}")
-    public ResponseEntity<String> deleteProjectUser(@PathVariable String userid) {
+    public ResponseEntity<String> deleteProjectUser(@PathVariable UUID userid) {
         try {
             projectService.deleteProjectUser(userid);
             return ResponseEntity.ok("project user delete success");

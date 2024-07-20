@@ -5,7 +5,7 @@ import knu.kproject.dto.ProjectDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
 import knu.kproject.entity.Workspace;
-import knu.kproject.repository.ProjectRepositroy;
+import knu.kproject.repository.ProjectRepository;
 import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.WorkspaceRepository;
@@ -15,13 +15,14 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ProjectService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private ProjectRepositroy projectRepositroy;
+    private ProjectRepository projectRepository;
     @Autowired
     private WorkspaceRepository workspaceRepository;
     @Autowired
@@ -38,44 +39,44 @@ public class ProjectService {
         Project project = Project.builder()
                 .title(projectDto.getTitle())
                 .overview(projectDto.getOverview())
-                .startDate(projectDto.getStarDate())
+                .startDate(projectDto.getStartDate())
                 .endDate(projectDto.getEndDate())
                 .workspace(workspace)
                 .createdAt(new Timestamp(System.currentTimeMillis()))
                 .build();
 
-        return projectRepositroy.save(project);
+        return projectRepository.save(project);
     }
     public Optional<Project> getProjectById(Long id){
-        return projectRepositroy.findById(id);
+        return projectRepository.findById(id);
     }
     public List<Project> getProjectByWorkspaceId(Long workspaceId){
-        return projectRepositroy.findByWorkspaceId(workspaceId);
+        return projectRepository.findByWorkspaceId(workspaceId);
     }
     public Project updateProject(Long projectId, Project updatedProjectData) {
-        Project project = projectRepositroy.findById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("project not found"));
         project.setTitle(updatedProjectData.getTitle());
         project.setOverview(updatedProjectData.getOverview());
         project.setStartDate(updatedProjectData.getStartDate());
         project.setEndDate(updatedProjectData.getEndDate());
 
-        return projectRepositroy.save(project);
+        return projectRepository.save(project);
     }
     public void deleteProject(Long projectId) {
-        Project project = projectRepositroy.findById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("project not found"));
-        projectRepositroy.delete(project);
+        projectRepository.delete(project);
     }
     public List<ProjectUser> findByAllProjectUsers(Long projectId) {
         return projectUserRepository.findByProjectId(projectId);
     }
     @Transactional
-    public ProjectUser addUser(Long project, String user) {
-        if (!projectRepositroy.existsById(project)) {
+    public ProjectUser addUser(Long project, UUID user) {
+        if (!projectRepository.existsById(project)) {
             throw new IllegalArgumentException("project is not defined");
         }
-        if (!userRepository.existsById(String.valueOf(user))) {
+        if (!userRepository.existsById(user)) {
             throw new IllegalArgumentException("user is not defined");
         }
         ProjectUser projectUser = new ProjectUser();
@@ -85,7 +86,7 @@ public class ProjectService {
         return projectUserRepository.save(projectUser);
     }
 
-    public void deleteProjectUser(String uid) {
+    public void deleteProjectUser(UUID uid) {
         ProjectUser projectUser = projectUserRepository.findByUserId(uid);
         projectUserRepository.delete(projectUser);
     }
