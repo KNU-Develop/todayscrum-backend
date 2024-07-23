@@ -1,42 +1,45 @@
 package knu.kproject.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Timestamp;
-import java.util.List;
+import java.util.UUID;
 
-@Data
 @Entity
-@Getter
-@Setter
-@Table(name = "users")
+@Getter @Setter
+@NoArgsConstructor
 public class User {
     @Id
-    @Column
-    private String id; // UUID
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @Column(nullable = false)
     private String name;
+//    @Column(nullable = false, unique = true, name="social_email")
+//    private String email;
+    @Column(nullable = false, unique = false, name = "social_id")
+    private String socialId;
+    @Column(nullable = false)
+    boolean requiredTermsAgree;
+    @Column(nullable = false)
+    boolean marketingEmailOptIn;
 
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column
-    private String contact;
-
-    @Column
-    private String location;
-
-    @Column
+    private String phone;
+    private String address;
     private String mbti;
 
-    @Column
-    private String profilePicture;
+    @Column(name="social_authentication")
+    private String status;
+    private String oauth2Id;
+    private String role;
 
-    @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    public User(String name, String socialId, boolean requiredTermsAgree, boolean marketingEmailOptIn, String status) {
+        this.name = name;
+        this.socialId = socialId;
+        this.requiredTermsAgree = requiredTermsAgree;
+        this.marketingEmailOptIn = marketingEmailOptIn;
+        this.status = status;
+    }
 }
