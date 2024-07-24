@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -34,6 +35,9 @@ public class User {
     private String status;
     private String oauth2Id;
     private String role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tool> tools;
 
     public User(String name, String socialId, boolean requiredTermsAgree, boolean marketingEmailOptIn, String status) {
         this.name = name;
