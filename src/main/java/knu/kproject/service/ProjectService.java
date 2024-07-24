@@ -2,6 +2,7 @@ package knu.kproject.service;
 
 import jakarta.transaction.Transactional;
 import knu.kproject.dto.ProjectDto;
+import knu.kproject.dto.ProjectUserDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
 import knu.kproject.entity.Workspace;
@@ -27,8 +28,8 @@ public class ProjectService {
     @Autowired
     private ProjectUserRepository projectUserRepository;
 
-    public Project createProject(ProjectDto projectDto) {
-        Optional<Workspace> optionalWorkspace = workspaceRepository.findById(projectDto.getWorkspaceId());
+    public Project createProject(ProjectDto projectDto, Long workSpaceId) {
+        Optional<Workspace> optionalWorkspace = workspaceRepository.findById(workSpaceId);
         if (optionalWorkspace.isEmpty()) {
             throw new RuntimeException("Workspace not found");
         }
@@ -70,23 +71,23 @@ public class ProjectService {
     public List<ProjectUser> findByAllProjectUsers(Long projectId) {
         return projectUserRepository.findByProjectId(projectId);
     }
-    @Transactional
-    public ProjectUser addUser(Long project, String user) {
-        if (!projectRepositroy.existsById(project)) {
-            throw new IllegalArgumentException("project is not defined");
-        }
-        if (!userRepository.existsById(Long.valueOf(user))) {
-            throw new IllegalArgumentException("user is not defined");
-        }
-        ProjectUser projectUser = new ProjectUser();
-        projectUser.setProjectId(project);
-        projectUser.setUserId(user);
+    public String addUser(Long projectId, Long userId) {
+        if (projectRepositroy.existsById(projectId) && userRepository.existsById(userId)) {
+            if (projectUserRepository.existsByUserId(userId)) {
+                return "exist user";
+            }
+            ProjectUser projectUser = new ProjectUser();
+            projectUser.setProjectId(projectId);
+            projectUser.setUserId(userId);
 
-        return projectUserRepository.save(projectUser);
+            projectUserRepository.save(projectUser);
+            return "success";
+        }
+        return "fail";
     }
 
-    public void deleteProjectUser(String uid) {
-        ProjectUser projectUser = projectUserRepository.findByUserId(uid);
+    public void deleteProjectUser(Long userId) {
+        ProjectUser projectUser = projectUserRepository.findByUserId(userId);
         projectUserRepository.delete(projectUser);
     }
 }
