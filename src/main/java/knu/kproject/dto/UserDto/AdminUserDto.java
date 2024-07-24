@@ -19,4 +19,5 @@ public class AdminUserDto {
     private String oauth2Id;
     private String role;
     private List<ToolDto> tools;
+    private String profileImage;
 }

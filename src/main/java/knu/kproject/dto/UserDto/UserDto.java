@@ -14,5 +14,6 @@ public class UserDto {
     private String address;
     private String mbti;
     private List<ToolDto> tools;
+    private String profileImage;
 
 }

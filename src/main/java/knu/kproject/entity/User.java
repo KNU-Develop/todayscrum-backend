@@ -1,13 +1,11 @@
 package knu.kproject.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Getter @Setter
@@ -30,6 +28,7 @@ public class User {
     private String phone;
     private String address;
     private String mbti;
+    private String profileImage;
 
     @Column(name="social_authentication")
     private String status;
