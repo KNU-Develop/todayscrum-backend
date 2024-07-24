@@ -75,7 +75,7 @@ public class ProjectService {
         if (!projectRepositroy.existsById(project)) {
             throw new IllegalArgumentException("project is not defined");
         }
-        if (!userRepository.existsById(String.valueOf(user))) {
+        if (!userRepository.existsById(Long.valueOf(user))) {
             throw new IllegalArgumentException("user is not defined");
         }
         ProjectUser projectUser = new ProjectUser();

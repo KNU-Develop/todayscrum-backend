@@ -1,6 +1,6 @@
 package knu.kproject.controller;
 
-import knu.kproject.api.ApiResponse;
+import knu.kproject.global.code.ApiResponse;
 import knu.kproject.dto.ProjectDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
@@ -37,7 +37,7 @@ public class ProjectController {
     @GetMapping("projects")
     public ResponseEntity<ApiResponse<List<Project>>> getProjectsByWorkspaceId(@PathVariable Long workSpaceId) {
         List<Project> projects = projectService.getProjectByWorkspaceId(workSpaceId);
-        ApiResponse<List<Project>> response = new ApiResponse<>("SUCCESS", projects);
+        ApiResponse<List<Project>> response = new ApiResponse<>(projects, 200, "SUCCESS");
         return ResponseEntity.ok(response);
 
     }
@@ -47,7 +47,7 @@ public class ProjectController {
         Optional<Project> project = projectService.getProjectById(ProjectId);
 //        return project.map(ResponseEntity::ok)
 //                .orElseGet(() -> ResponseEntity.notFound().build());
-        ApiResponse<Optional<Project>> response = new ApiResponse<>("SUCCESS", project);
+        ApiResponse<Optional<Project>> response = new ApiResponse<>(project, 200, "SUCCESS");
         return ResponseEntity.ok(response);
     }
 
@@ -72,20 +72,21 @@ public class ProjectController {
     }
     @PostMapping("projects/{projectId}/usersAdd")
     public ProjectUser addUser(@RequestBody User user, @PathVariable Long projectId) {
-        return projectService.addUser(projectId, user.getId());
+        return projectService.addUser(projectId, String.valueOf(user.getId()));
     }
     @GetMapping("projects/{projectId}/users")
     public ResponseEntity<ApiResponse<List<User>>> getProjectToUser(@PathVariable Long projectId) {
         List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
-        List<String> usersId = projectUsers.stream()
+        List<Long> usersId = projectUsers.stream()
                 .map(ProjectUser::getUserId)
+                .map(Long::parseLong)
                 .sorted()
                 .collect(Collectors.toList());
         List<User> users = usersId.stream()
-                .map(userService::getProjectUserData)
+                .map(userService::findById)
                 .collect(Collectors.toList());
 
-        ApiResponse<List<User>> response = new ApiResponse<>("SUCCESS", users);
+        ApiResponse<List<User>> response = new ApiResponse<>(users, 200, "SUCCESS");
         return ResponseEntity.ok(response);
     }
 
