@@ -1,30 +1,27 @@
 package knu.kproject.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
 @Entity
 @Getter @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "USER")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
     private String name;
-//    @Column(nullable = false, unique = true, name="social_email")
-//    private String email;
     @Column(nullable = false, unique = false, name = "social_id")
     private String socialId;
-    @Column(nullable = false)
-    boolean requiredTermsAgree;
-    @Column(nullable = false)
-    boolean marketingEmailOptIn;
+    @Column(nullable = true)
+    private boolean requiredTermsAgree;
+    @Column(nullable = true)
+    private boolean marketingEmailOptIn;
 
     private String phone;
     private String address;
