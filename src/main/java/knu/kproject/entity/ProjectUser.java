@@ -14,5 +14,5 @@ public class ProjectUser {
     private Long projectId;
 
     @Column(nullable = false)
-    private String userId;
+    private Long userId;
 }
