@@ -1,8 +1,8 @@
 package knu.kproject.controller;
 
 import knu.kproject.dto.ProjectUserDto;
+import knu.kproject.dto.project.ProjectDto;
 import knu.kproject.global.code.ApiResponse;
-import knu.kproject.dto.ProjectDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
 import knu.kproject.entity.User;

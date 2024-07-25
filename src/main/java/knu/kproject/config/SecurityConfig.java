@@ -31,12 +31,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request ->
                         request
                                 .requestMatchers("/oauth/authorization").permitAll()
-                                .requestMatchers("/user/**").authenticated()
-                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/UserInfo/**").authenticated()
+//                                .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2Login -> oauth2Login
-                        .loginPage("/loginPage")
+                        .loginPage("http://localhost:8080/oauth2/authorization/github") // for test
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
