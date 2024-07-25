@@ -1,6 +1,8 @@
 package knu.kproject.entity;
 
 import jakarta.persistence.*;
+import knu.kproject.dto.UserDto.UserDto;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,7 +30,7 @@ public class User {
     private String phone;
     private String address;
     private String mbti;
-    private String profileImage;
+    private String imagePath;
 
     @Column(name="social_authentication")
     private String status;
@@ -45,4 +47,12 @@ public class User {
         this.marketingEmailOptIn = marketingEmailOptIn;
         this.status = status;
     }
+    public void updateUserInfo(UserDto userDto) {
+        this.setName(userDto.getName());
+        this.setPhone(userDto.getPhone());
+        this.setAddress(userDto.getAddress());
+        this.setMbti(userDto.getMbti());
+        this.setImagePath(userDto.getImagePath());
+    }
+
 }

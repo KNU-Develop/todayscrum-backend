@@ -8,7 +8,7 @@ import lombok.Data;
 public class Tool {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private String name;
 
@@ -18,4 +18,11 @@ public class Tool {
     @ManyToOne
     @JoinColumn(name="user_id")
     private User user;
+
+    public Tool(Long id, String name, String nameId, User user) {
+        this.id = id;
+        this.name = name;
+        this.nameId = nameId;
+        this.user = user;
+    }
 }
