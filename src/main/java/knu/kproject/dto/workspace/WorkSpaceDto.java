@@ -1,8 +1,6 @@
 package knu.kproject.dto.workspace;
 
-import knu.kproject.dto.ProjectDto;
-import knu.kproject.entity.Project;
-import knu.kproject.entity.ProjectUser;
+import knu.kproject.dto.project.ProjectDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

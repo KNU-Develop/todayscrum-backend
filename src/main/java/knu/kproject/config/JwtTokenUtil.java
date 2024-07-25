@@ -1,15 +1,15 @@
 package knu.kproject.config;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import knu.kproject.util.DateUtil;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Component
 public class JwtTokenUtil {
@@ -31,36 +31,28 @@ public class JwtTokenUtil {
         this.key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
     }
 
-
-    public String createAccessToken(String socialId) {
-        return createToken(socialId, ACCESS_TOKEN_EXPIRY_TIME);
+    public String createAccessToken(String userId) {
+        return createToken(userId, ACCESS_TOKEN_EXPIRY_TIME);
     }
 
-    public String createRefreshToken(String socialId) {
-        return createToken(socialId, REFRESH_TOKEN_EXPIRY_TIME);
+    public String createRefreshToken(String userId) {
+        return createToken(userId, REFRESH_TOKEN_EXPIRY_TIME);
     }
 
-    private String createToken(String socialId, long expiryTime) {
+    private String createToken(String userId, long expiryTime) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiration = now.plusMinutes(expiryTime);
         return Jwts.builder()
-                .setSubject(socialId)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiryTime))
+                .setSubject(userId)
+                .setIssuedAt(DateUtil.toDate(now))
+                .setExpiration(DateUtil.toDate(expiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractSocialId(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-    }
-
-    public boolean validateToken(String token, String socialId) {
-        final String extractedSocialId = extractSocialId(token);
-        return (extractedSocialId.equals(socialId) && !isTokenExpired(token));
+    public boolean validateToken(String token, String userId) {
+        final String extractedUserId = extractUserId(token);
+        return (extractedUserId.equals(userId) && !isTokenExpired(token));
     }
 
     public boolean isTokenExpired(String token) {
@@ -70,6 +62,15 @@ public class JwtTokenUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getExpiration()
-                .before(new Date());
+                .before(DateUtil.toDate(LocalDateTime.now()));
+    }
+
+    public String extractUserId(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
 }
