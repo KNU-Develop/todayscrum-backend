@@ -1,9 +1,11 @@
 package knu.kproject.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.UUID;
+import java.util.List;
 
 @Entity
 @Getter @Setter
@@ -26,11 +28,15 @@ public class User {
     private String phone;
     private String address;
     private String mbti;
+    private String profileImage;
 
     @Column(name="social_authentication")
     private String status;
     private String oauth2Id;
     private String role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tool> tools;
 
     public User(String name, String socialId, boolean requiredTermsAgree, boolean marketingEmailOptIn, String status) {
         this.name = name;
