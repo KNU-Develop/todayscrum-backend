@@ -38,8 +38,8 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+    @GetMapping("")
+    public ResponseEntity<?> getUserById(@RequestParam Long id) {
         User user = userService.findById(id);
         ApiResponse<User> response = ApiResponse.<User>builder()
                 .code(SuccessCode.SELECT_SUCCESS.getStatus())
@@ -49,8 +49,8 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+    @DeleteMapping("/")
+    public ResponseEntity<?> deleteUser(@RequestParam Long id) {
         userService.deleteUser(id);
         ApiResponse<Void> response = ApiResponse.<Void>builder()
                 .code(SuccessCode.DELETE_SUCCESS.getStatus())
