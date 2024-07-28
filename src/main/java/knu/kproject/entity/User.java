@@ -27,10 +27,10 @@ public class User {
     @Column(nullable = true)
     private boolean marketingEmailOptIn;
 
-    private String phone;
-    private String address;
+    private String contact;
+    private String location;
     private String mbti;
-    private String imagePath;
+    private String imageUrl;
 
     @Column(name="social_authentication")
     private String status;
@@ -49,10 +49,12 @@ public class User {
     }
     public void updateUserInfo(UserDto userDto) {
         this.setName(userDto.getName());
-        this.setPhone(userDto.getPhone());
-        this.setAddress(userDto.getAddress());
+        this.setContact(userDto.getContact());
+        this.setLocation(userDto.getLocation());
         this.setMbti(userDto.getMbti());
-        this.setImagePath(userDto.getImagePath());
+        this.setImageUrl(userDto.getImageUrl());
     }
-
+    public void updateTools(List<Tool> tools) {
+        this.tools = tools;
+    }
 }

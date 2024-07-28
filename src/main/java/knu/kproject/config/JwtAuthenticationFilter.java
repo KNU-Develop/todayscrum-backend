@@ -7,12 +7,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import knu.kproject.entity.User;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.service.UserService;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -36,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             accessToken = authorizationHeader.substring(7);
             try {
-                userId = jwtTokenUtil.extractUserId(accessToken);
+                userId = (jwtTokenUtil.extractUserId(accessToken));
             } catch (Exception e) {
                 response.sendError(ErrorCode.TOKEN_MISSING_ERROR.getStatus(), "Invalid token");
                 return;
@@ -44,20 +40,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userService.findBySocialId(userId).orElse(null);
-            if (user != null && jwtTokenUtil.validateToken(accessToken, userId)) {
-                CustomUserDetails userDetails = new CustomUserDetails(user);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, new ArrayList<>());
+            if (jwtTokenUtil.validateToken(accessToken, userId)) {
+                User user = userService.findBySocialId(userId).orElse(null);
+                if (user != null) {
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user.getId(), null, new ArrayList<>());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            } else {
-                response.sendError(ErrorCode.TOKEN_MISSING_ERROR.getStatus(), "Invalid token");
-                return;
+                } else {
+                    response.sendError(ErrorCode.TOKEN_MISSING_ERROR.getStatus(), "Invalid token");
+                    return;
+                }
             }
         }
-
         chain.doFilter(request, response);
     }
 }

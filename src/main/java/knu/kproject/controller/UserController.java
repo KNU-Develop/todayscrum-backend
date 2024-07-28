@@ -1,6 +1,5 @@
 package knu.kproject.controller;
 
-import knu.kproject.dto.UserDto.TeamUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.global.code.ApiResponse;
 import knu.kproject.entity.User;
@@ -18,24 +17,25 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<?> getUserInfo() {
-        User user = userService.getMyInfo();
+    public ResponseEntity<?> getUserInfo(@AuthenticationPrincipal Long id) {
+        User user = userService.findById(id);
         ApiResponse<User> response = ApiResponse.<User>builder()
                 .code(SuccessCode.SELECT_SUCCESS.getStatus())
                 .msg(SuccessCode.SELECT_SUCCESS.getMessage())
                 .result(user)
                 .build();
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok(response);
     }
+
     @PutMapping
-    public ResponseEntity<?> updateUserInfo(@RequestBody UserDto userDto) {
-        User user = userService.updateMyInfo(userDto);
+    public ResponseEntity<?> updateUserInfo(@AuthenticationPrincipal Long id, @RequestBody UserDto userDto) {
+        User user = userService.updateMyInfo(id, userDto);
         ApiResponse<User> response = ApiResponse.<User>builder()
                 .code(SuccessCode.UPDATE_SUCCESS.getStatus())
                 .msg(SuccessCode.UPDATE_SUCCESS.getMessage())
                 .result(user)
                 .build();
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -46,7 +46,7 @@ public class UserController {
                 .msg(SuccessCode.SELECT_SUCCESS.getMessage())
                 .result(user)
                 .build();
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -56,6 +56,6 @@ public class UserController {
                 .code(SuccessCode.DELETE_SUCCESS.getStatus())
                 .msg(SuccessCode.DELETE_SUCCESS.getMessage())
                 .build();
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok(response);
     }
 }
