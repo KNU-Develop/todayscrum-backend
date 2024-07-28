@@ -13,16 +13,20 @@ public class Tool {
     private String name;
 
     @Column(name="name_id")
-    private String nameId;
+    private String email;
 
     @ManyToOne
     @JoinColumn(name="user_id")
     private User user;
 
-    public Tool(Long id, String name, String nameId, User user) {
+    public Tool(String name, String email, User user) {
         this.id = id;
         this.name = name;
-        this.nameId = nameId;
+        this.email = email;
         this.user = user;
+    }
+    public void update(String name, String email) {
+        this.name = name;
+        this.email = email;
     }
 }

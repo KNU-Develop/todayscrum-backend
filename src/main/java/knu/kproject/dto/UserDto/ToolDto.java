@@ -6,5 +6,5 @@ import lombok.Data;
 public class ToolDto {
     private Long id;
     private String name;
-    private String nameId;
+    private String email;
 }
