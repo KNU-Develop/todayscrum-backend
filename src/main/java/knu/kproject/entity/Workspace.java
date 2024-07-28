@@ -23,7 +23,7 @@ public class Workspace {
     private Long ownerId;
 
     @Column(nullable = false)
-    private String name;
+    private String title;
 
     @Column
     private String description;
