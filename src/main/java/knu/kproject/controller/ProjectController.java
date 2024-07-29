@@ -1,5 +1,6 @@
 package knu.kproject.controller;
 
+import knu.kproject.dto.project.InviteDto;
 import knu.kproject.dto.project.ProjectDto;
 import knu.kproject.global.code.ApiResponse;
 import knu.kproject.entity.Project;
@@ -71,8 +72,8 @@ public class ProjectController {
         }
     }
     @PostMapping("/project")
-    public ResponseEntity<ApiResponse<?>> addUser(@RequestParam Long userId, @RequestParam Long projectId) {
-        String response = projectService.addUser(projectId, userId);
+    public ResponseEntity<ApiResponse<?>> addUser(@RequestBody InviteDto inviteDto) {
+        String response = projectService.addUser(inviteDto);
         if ( response.equals("success") ){
             return ResponseEntity.ok().body(new ApiResponse<>(response, 200, "SUCCESS"));
         } else if (response.equals("exist user")) {
@@ -96,9 +97,9 @@ public class ProjectController {
 //    }
 
     @DeleteMapping("/project/user")
-    public ResponseEntity<ApiResponse<Boolean>> deleteProjectUser(@RequestParam Long userId) {
+    public ResponseEntity<ApiResponse<Boolean>> deleteProjectUser(@RequestParam Long projectId, @RequestParam String userName) {
         try {
-            projectService.deleteProjectUser(userId);
+            projectService.deleteProjectUser(projectId, userName);
             ApiResponse<Boolean> response = new ApiResponse<>(true, 200, "SUCCESS");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

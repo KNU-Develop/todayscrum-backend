@@ -1,5 +1,6 @@
 package knu.kproject.service;
 
+import knu.kproject.dto.project.InviteDto;
 import knu.kproject.dto.project.ProjectDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
@@ -80,23 +81,30 @@ public class ProjectService {
     public List<ProjectUser> findByAllProjectUsers(Long projectId) {
         return projectUserRepository.findByProjectId(projectId);
     }
-    public String addUser(Long projectId, Long userId) {
-        if (projectRepositroy.existsById(projectId) && userRepository.existsById(userId)) {
-            if (projectUserRepository.existsByUserId(userId)) {
-                return "exist user";
-            }
-            ProjectUser projectUser = new ProjectUser();
-            projectUser.setProjectId(projectId);
-            projectUser.setUserId(userId);
+    public String addUser(InviteDto inviteDto) {
+        if (projectRepositroy.existsById(inviteDto.getProjectId())) {
+            List<String> userNames = inviteDto.getUserName();
+            for(int i=0; i<userNames.size(); i++){
+                if (userRepository.existsByName(userNames.get(i))) {
+                    ProjectUser projectUser = new ProjectUser();
+                    projectUser.setProjectId(inviteDto.getProjectId());
+                    projectUser.setUserId(userRepository.findByName(userNames.get(i)).getId());
 
-            projectUserRepository.save(projectUser);
+                    projectUserRepository.save(projectUser);
+                }
+            }
             return "success";
         }
         return "fail";
     }
 
-    public void deleteProjectUser(Long userId) {
-        ProjectUser projectUser = projectUserRepository.findByUserId(userId);
-        projectUserRepository.delete(projectUser);
+    public void deleteProjectUser(Long projectId, String userName) {
+        User user = userRepository.findByName(userName);
+        List<ProjectUser> projects = projectUserRepository.findByProjectId(projectId);
+        for (int i = 0; i < projects.size(); i++) {
+            if (projects.get(i).getUserId() == user.getId()) {
+                projectUserRepository.delete(projects.get(i));
+            }
+        }
     }
 }
