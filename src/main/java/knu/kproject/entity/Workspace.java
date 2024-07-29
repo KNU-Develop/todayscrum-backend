@@ -15,20 +15,19 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "workspaces")
 public class Workspace {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private Long ownerId;
+    private String ownerId;
 
     @Column(nullable = false)
-    private String title;
+    private String name;
 
     @Column
     private String description;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private Timestamp createdAt;
 
     @OneToMany(mappedBy = "workspace")

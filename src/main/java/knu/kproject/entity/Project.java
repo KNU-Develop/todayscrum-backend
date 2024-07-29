@@ -16,8 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "projects")
 public class Project {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -37,7 +36,7 @@ public class Project {
     @Column
     private Timestamp endDate;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private Timestamp createdAt;
 
     @OneToMany(mappedBy = "projectId")
