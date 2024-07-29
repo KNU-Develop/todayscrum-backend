@@ -80,7 +80,7 @@ public class ProjectController {
             return ResponseEntity.ok().body(new ApiResponse<>(null, 500, "Fail"));
         }
     }
-    // User 정보 조회가 완료되면 수정하면 됨
+//     User 정보 조회가 완료되면 수정하면 됨
 //    @GetMapping("projects/{projectId}/users")
 //    public ResponseEntity<ApiResponse<List<User>>> getProjectToUser(@PathVariable Long projectId) {
 //        List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
