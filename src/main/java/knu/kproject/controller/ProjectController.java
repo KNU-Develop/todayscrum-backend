@@ -17,34 +17,34 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("workspace/{workSpaceId}")
+@RequestMapping("workspace")
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
     @Autowired
     private UserService userService;
 
-    @PostMapping("/create")
-    public ResponseEntity<ApiResponse<?>> createProject(@RequestBody ProjectDto projectDto, @PathVariable Long workSpaceId) {
+    @PostMapping("")
+    public ResponseEntity<ApiResponse<?>> createProject(@RequestBody ProjectDto projectDto, @RequestParam Long workspaceId) {
         try {
-            Project project = projectService.createProject(projectDto, workSpaceId);
+            Project project = projectService.createProject(projectDto, workspaceId);
             return ResponseEntity.ok().body(new ApiResponse<>(project, 200, "SUCCESS"));
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(new ApiResponse<>("error", 500, "Fail"));
         }
     }
-    @GetMapping("projects")
-    public ResponseEntity<ApiResponse<?>> getProjectsByWorkspaceId(@PathVariable Long workSpaceId) {
-        List<Project> projects = projectService.getProjectByWorkspaceId(workSpaceId);
+    @GetMapping("")
+    public ResponseEntity<ApiResponse<?>> getProjectsByWorkspaceId(@RequestParam Long workspaceId) {
+        List<Project> projects = projectService.getProjectByWorkspaceId(workspaceId);
 
         if (projects.isEmpty()) {
             return ResponseEntity.ok().body(new ApiResponse<>("empty", 201, "SUCCESS"));
         }
         return ResponseEntity.ok().body(new ApiResponse<>(projects, 200, "SUCCESS"));
     }
-    @GetMapping("projects/{ProjectId}")
-    public ResponseEntity<ApiResponse<?>> getProjectById(@PathVariable Long ProjectId) {
-        Optional<Project> project = projectService.getProjectById(ProjectId);
+    @GetMapping("project")
+    public ResponseEntity<ApiResponse<?>> getProjectById(@RequestParam Long projectId) {
+        Optional<Project> project = projectService.getProjectById(projectId);
 
         if (project.isEmpty()) {
             return ResponseEntity.ok().body(new ApiResponse<>("empty", 201, "SUCCESS"));
@@ -52,8 +52,8 @@ public class ProjectController {
         return ResponseEntity.ok().body(new ApiResponse<>(project, 200, "SUCCESS"));
     }
 
-    @PutMapping("projects/{projectId}/update")
-    public ResponseEntity<ApiResponse<?>> updateProject(@PathVariable Long projectId, @RequestBody Project updateProjectData) {
+    @PutMapping("project")
+    public ResponseEntity<ApiResponse<?>> updateProject(@RequestParam Long projectId, @RequestBody Project updateProjectData) {
         try {
             Project updatedProject = projectService.updateProject(projectId, updateProjectData);
             ApiResponse<Project> response = new ApiResponse<>(updatedProject, 200, "SUCCESS");
@@ -63,8 +63,8 @@ public class ProjectController {
         }
     }
 
-    @DeleteMapping("projects/{projectId}/delete")
-    public ResponseEntity<ApiResponse<?>> deleteProject(@PathVariable Long projectId) {
+    @DeleteMapping("project")
+    public ResponseEntity<ApiResponse<?>> deleteProject(@RequestParam Long projectId) {
         try {
             projectService.deleteProject(projectId);
             return ResponseEntity.ok().body(new ApiResponse<>(true, 200, "SUCCESS"));
@@ -97,8 +97,8 @@ public class ProjectController {
 //        return ResponseEntity.ok(response);
 //    }
 
-    @DeleteMapping("projects/{projectId}/users/{userId}")
-    public ResponseEntity<ApiResponse<Boolean>> deleteProjectUser(@PathVariable Long userId) {
+    @DeleteMapping("project/user")
+    public ResponseEntity<ApiResponse<Boolean>> deleteProjectUser(@RequestParam Long userId) {
         try {
             projectService.deleteProjectUser(userId);
             ApiResponse<Boolean> response = new ApiResponse<>(true, 200, "SUCCESS");

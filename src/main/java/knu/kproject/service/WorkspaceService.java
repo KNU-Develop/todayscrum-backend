@@ -31,7 +31,7 @@ public class WorkspaceService {
 
         Workspace workspace = Workspace.builder()
                 .ownerId(userId)
-                .name(workSpaceDto.getName())
+                .name(workSpaceDto.getTitle())
                 .description(workSpaceDto.getDescription())
                 .createdAt(new Timestamp(System.currentTimeMillis()))
                 .build();

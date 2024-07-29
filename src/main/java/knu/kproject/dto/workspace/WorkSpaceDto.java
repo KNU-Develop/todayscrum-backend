@@ -16,7 +16,7 @@ import java.util.List;
 public class WorkSpaceDto {
     private Long id;
     private Long ownerId;
-    private String name;
+    private String title;
     private String description;
     private Timestamp createdAt;
     private List<ProjectDto> projects;

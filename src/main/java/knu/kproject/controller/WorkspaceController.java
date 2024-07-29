@@ -27,7 +27,7 @@ public class WorkspaceController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("create")
+    @PostMapping("")
     public ResponseEntity<ApiResponse<?>> createWorkSpace(@RequestBody WorkSpaceDto workSpaceDto, @AuthenticationPrincipal Long id) {
         try {
             Workspace workspace =  workspaceService.createWorkSpace(workSpaceDto, id);
