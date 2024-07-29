@@ -1,4 +1,4 @@
-package knu.kproject.dto;
+package knu.kproject.dto.project;
 
 import lombok.Data;
 

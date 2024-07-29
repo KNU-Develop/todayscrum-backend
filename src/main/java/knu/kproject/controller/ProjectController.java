@@ -1,11 +1,9 @@
 package knu.kproject.controller;
 
-import knu.kproject.api.ApiResponse;
-import knu.kproject.dto.ProjectDto;
+import knu.kproject.dto.project.ProjectDto;
+import knu.kproject.global.code.ApiResponse;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
-import knu.kproject.entity.User;
-import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.service.ProjectService;
 import knu.kproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,88 +12,97 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("workspace/{workSpaceId}/")
+@RequestMapping("workspace")
 public class ProjectController {
     @Autowired
     private ProjectService projectService;
     @Autowired
     private UserService userService;
 
-    @PostMapping("/create")
-    public ResponseEntity<String> createProject(@RequestBody ProjectDto projectDto) {
+    @PostMapping("")
+    public ResponseEntity<ApiResponse<?>> createProject(@RequestBody ProjectDto projectDto, @RequestParam Long workspaceId) {
         try {
-            Project project = projectService.createProject(projectDto);
-            return ResponseEntity.ok("success");
+            Project project = projectService.createProject(projectDto, workspaceId);
+            return ResponseEntity.ok().body(new ApiResponse<>(project, 200, "SUCCESS"));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok().body(new ApiResponse<>("error", 500, "Fail"));
         }
     }
+    @GetMapping("")
+    public ResponseEntity<ApiResponse<?>> getProjectsByWorkspaceId(@RequestParam Long workspaceId) {
+        List<ProjectDto> projects = projectService.getProjectByWorkspaceId(workspaceId);
 
-    @GetMapping("projects")
-    public ResponseEntity<ApiResponse<List<Project>>> getProjectsByWorkspaceId(@PathVariable Long workSpaceId) {
-        List<Project> projects = projectService.getProjectByWorkspaceId(workSpaceId);
-        ApiResponse<List<Project>> response = new ApiResponse<>("SUCCESS", projects);
-        return ResponseEntity.ok(response);
+        if (projects.isEmpty()) {
+            return ResponseEntity.ok().body(new ApiResponse<>("empty", 201, "SUCCESS"));
+        }
+        return ResponseEntity.ok().body(new ApiResponse<>(projects, 200, "SUCCESS"));
+    }
+    @GetMapping("project")
+    public ResponseEntity<ApiResponse<?>> getProjectById(@RequestParam Long projectId) {
+        Optional<Project> project = projectService.getProjectById(projectId);
 
+        if (project.isEmpty()) {
+            return ResponseEntity.ok().body(new ApiResponse<>("empty", 201, "SUCCESS"));
+        }
+        return ResponseEntity.ok().body(new ApiResponse<>(project, 200, "SUCCESS"));
     }
 
-    @GetMapping("projects/{ProjectId}")
-    public ResponseEntity<ApiResponse<Optional<Project>>> getProjectById(@PathVariable Long ProjectId) {
-        Optional<Project> project = projectService.getProjectById(ProjectId);
-//        return project.map(ResponseEntity::ok)
-//                .orElseGet(() -> ResponseEntity.notFound().build());
-        ApiResponse<Optional<Project>> response = new ApiResponse<>("SUCCESS", project);
-        return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("projects/{projectId}/update")
-    public ResponseEntity<Project> updateProject(@PathVariable Long projectId, @RequestBody Project updateProjectData) {
+    @PutMapping("project")
+    public ResponseEntity<ApiResponse<?>> updateProject(@RequestParam Long projectId, @RequestBody Project updateProjectData) {
         try {
             Project updatedProject = projectService.updateProject(projectId, updateProjectData);
-            return ResponseEntity.ok(updatedProject);
+            ApiResponse<Project> response = new ApiResponse<>(updatedProject, 200, "SUCCESS");
+            return ResponseEntity.ok().body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.ok().body(new ApiResponse<>("error", 500, "Fail"));
         }
     }
 
-    @DeleteMapping("projects/{projectId}/delete")
-    public ResponseEntity<String> deleteProject(@PathVariable Long projectId) {
+    @DeleteMapping("project")
+    public ResponseEntity<ApiResponse<?>> deleteProject(@RequestParam Long projectId) {
         try {
             projectService.deleteProject(projectId);
-            return ResponseEntity.ok("Project delete success");
+            return ResponseEntity.ok().body(new ApiResponse<>(true, 200, "SUCCESS"));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok().body(new ApiResponse<>(false, 500, "Fail"));
         }
     }
-    @PostMapping("projects/{projectId}/usersAdd")
-    public ProjectUser addUser(@RequestBody User user, @PathVariable Long projectId) {
-        return projectService.addUser(projectId, user.getId());
+    @PostMapping("project")
+    public ResponseEntity<ApiResponse<?>> addUser(@RequestParam ProjectUser user, @RequestParam Long projectId) {
+        String response = projectService.addUser(projectId, user.getUserId());
+        if ( response.equals("success") ){
+            return ResponseEntity.ok().body(new ApiResponse<>(response, 200, "SUCCESS"));
+        } else if (response.equals("exist user")) {
+            return ResponseEntity.ok().body(new ApiResponse<>(response, 201, "Can't"));
+        } else {
+            return ResponseEntity.ok().body(new ApiResponse<>(null, 500, "Fail"));
+        }
     }
-    @GetMapping("projects/{projectId}/users")
-    public ResponseEntity<ApiResponse<List<User>>> getProjectToUser(@PathVariable Long projectId) {
-        List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
-        List<String> usersId = projectUsers.stream()
-                .map(ProjectUser::getUserId)
-                .sorted()
-                .collect(Collectors.toList());
-        List<User> users = usersId.stream()
-                .map(userService::getProjectUserData)
-                .collect(Collectors.toList());
+    // User 정보 조회가 완료되면 수정하면 됨
+//    @GetMapping("projects/{projectId}/users")
+//    public ResponseEntity<ApiResponse<List<User>>> getProjectToUser(@PathVariable Long projectId) {
+//        List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
+//        List<Long> usersId = projectUsers.stream()
+//                .map(ProjectUser::getUserId)
+//                .sorted()
+//                .toList();
+//        List<User> users = usersId.stream()
+//                .map(userId -> userService.findById(userId).orElse(null))
+//        ApiResponse<List<User>> response = new ApiResponse<>(users, 200, "SUCCESS");
+//        return ResponseEntity.ok(response);
+//    }
 
-        ApiResponse<List<User>> response = new ApiResponse<>("SUCCESS", users);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("projects/{projectId}/users/{userid}")
-    public ResponseEntity<String> deleteProjectUser(@PathVariable String userid) {
+    @DeleteMapping("project/user")
+    public ResponseEntity<ApiResponse<Boolean>> deleteProjectUser(@RequestParam Long userId) {
         try {
-            projectService.deleteProjectUser(userid);
-            return ResponseEntity.ok("project user delete success");
+            projectService.deleteProjectUser(userId);
+            ApiResponse<Boolean> response = new ApiResponse<>(true, 200, "SUCCESS");
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            ApiResponse<Boolean> response = new ApiResponse<>(false, 500, "Fail");
+            return ResponseEntity.ok(response);
         }
     }
 }

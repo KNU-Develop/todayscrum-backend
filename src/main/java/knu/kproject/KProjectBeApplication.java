@@ -10,5 +10,4 @@ public class KProjectBeApplication {
     public static void main(String[] args) {
         SpringApplication.run(KProjectBeApplication.class, args);
     }
-
 }
