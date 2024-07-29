@@ -3,6 +3,7 @@ package knu.kproject.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+
 @Entity
 @Data
 public class Tool {

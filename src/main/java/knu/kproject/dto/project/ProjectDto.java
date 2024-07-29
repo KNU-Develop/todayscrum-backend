@@ -1,6 +1,5 @@
 package knu.kproject.dto.project;
 
-import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.User;
 import lombok.AllArgsConstructor;

@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
-
     /**
      * ******************************* Global Error CodeList ***************************************
      * HTTP Status Code

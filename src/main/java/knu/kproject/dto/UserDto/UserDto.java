@@ -1,7 +1,6 @@
 package knu.kproject.dto.UserDto;
 
 import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
 

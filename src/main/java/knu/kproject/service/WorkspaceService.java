@@ -6,13 +6,8 @@ import knu.kproject.entity.Workspace;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.WorkspaceRepository;
 import lombok.Data;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-
-import javax.swing.text.html.Option;
 import java.sql.Timestamp;
 import java.util.Optional;
 

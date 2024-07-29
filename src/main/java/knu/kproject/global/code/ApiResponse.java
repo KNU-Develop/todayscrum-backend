@@ -3,6 +3,7 @@ package knu.kproject.global.code;
 import lombok.Builder;
 import lombok.Getter;
 
+
 @Getter
 public class ApiResponse<T> {
 
