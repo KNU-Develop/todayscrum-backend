@@ -1,12 +1,10 @@
 package knu.kproject.controller;
 
-import knu.kproject.dto.ProjectUserDto;
 import knu.kproject.dto.project.ProjectDto;
 import knu.kproject.global.code.ApiResponse;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
-import knu.kproject.entity.User;
-import knu.kproject.repository.ProjectUserRepository;
+
 import knu.kproject.service.ProjectService;
 import knu.kproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +33,7 @@ public class ProjectController {
     }
     @GetMapping("")
     public ResponseEntity<ApiResponse<?>> getProjectsByWorkspaceId(@RequestParam Long workspaceId) {
-        List<Project> projects = projectService.getProjectByWorkspaceId(workspaceId);
+        List<ProjectDto> projects = projectService.getProjectByWorkspaceId(workspaceId);
 
         if (projects.isEmpty()) {
             return ResponseEntity.ok().body(new ApiResponse<>("empty", 201, "SUCCESS"));
@@ -73,7 +71,7 @@ public class ProjectController {
         }
     }
     @PostMapping("projects/{projectId}/usersAdd")
-    public ResponseEntity<ApiResponse<?>> addUser(@RequestBody ProjectUser user, @PathVariable Long projectId) {
+    public ResponseEntity<ApiResponse<?>> addUser(@RequestParam ProjectUser user, @PathVariable Long projectId) {
         String response = projectService.addUser(projectId, user.getUserId());
         if ( response.equals("success") ){
             return ResponseEntity.ok().body(new ApiResponse<>(response, 200, "SUCCESS"));

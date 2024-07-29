@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping
+    @GetMapping("")
     public ResponseEntity<?> getUserInfo(@AuthenticationPrincipal Long id) {
         User user = userService.findById(id);
         ApiResponse<User> response = ApiResponse.<User>builder()
@@ -27,7 +27,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping
+    @PutMapping("")
     public ResponseEntity<?> updateUserInfo(@AuthenticationPrincipal Long id, @RequestBody UserDto userDto) {
         User user = userService.updateMyInfo(id, userDto);
         ApiResponse<User> response = ApiResponse.<User>builder()
