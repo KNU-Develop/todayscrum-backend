@@ -40,7 +40,7 @@ public class ProjectController {
         }
         return ResponseEntity.ok().body(new ApiResponse<>(projects, 200, "SUCCESS"));
     }
-    @GetMapping("project")
+    @GetMapping("/project")
     public ResponseEntity<ApiResponse<?>> getProjectById(@RequestParam Long projectId) {
         Optional<Project> project = projectService.getProjectById(projectId);
 
@@ -50,7 +50,7 @@ public class ProjectController {
         return ResponseEntity.ok().body(new ApiResponse<>(project, 200, "SUCCESS"));
     }
 
-    @PutMapping("project")
+    @PutMapping("/project")
     public ResponseEntity<ApiResponse<?>> updateProject(@RequestParam Long projectId, @RequestBody Project updateProjectData) {
         try {
             Project updatedProject = projectService.updateProject(projectId, updateProjectData);
@@ -61,7 +61,7 @@ public class ProjectController {
         }
     }
 
-    @DeleteMapping("project")
+    @DeleteMapping("/project")
     public ResponseEntity<ApiResponse<?>> deleteProject(@RequestParam Long projectId) {
         try {
             projectService.deleteProject(projectId);
@@ -70,9 +70,9 @@ public class ProjectController {
             return ResponseEntity.ok().body(new ApiResponse<>(false, 500, "Fail"));
         }
     }
-    @PostMapping("projects/{projectId}/usersAdd")
-    public ResponseEntity<ApiResponse<?>> addUser(@RequestParam ProjectUser user, @PathVariable Long projectId) {
-        String response = projectService.addUser(projectId, user.getUserId());
+    @PostMapping("/project")
+    public ResponseEntity<ApiResponse<?>> addUser(@RequestParam Long userId, @RequestParam Long projectId) {
+        String response = projectService.addUser(projectId, userId);
         if ( response.equals("success") ){
             return ResponseEntity.ok().body(new ApiResponse<>(response, 200, "SUCCESS"));
         } else if (response.equals("exist user")) {
@@ -95,7 +95,7 @@ public class ProjectController {
 //        return ResponseEntity.ok(response);
 //    }
 
-    @DeleteMapping("project/user")
+    @DeleteMapping("/project/user")
     public ResponseEntity<ApiResponse<Boolean>> deleteProjectUser(@RequestParam Long userId) {
         try {
             projectService.deleteProjectUser(userId);

@@ -38,7 +38,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("")
+    @GetMapping("/user")
     public ResponseEntity<?> getUserById(@RequestParam Long id) {
         User user = userService.findById(id);
         ApiResponse<User> response = ApiResponse.<User>builder()
