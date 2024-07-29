@@ -32,7 +32,7 @@ public class ProjectController {
     }
     @GetMapping("")
     public ResponseEntity<ApiResponse<?>> getProjectsByWorkspaceId(@RequestParam Long workspaceId) {
-        List<Project> projects = projectService.getProjectByWorkspaceId(workspaceId);
+        List<ProjectDto> projects = projectService.getProjectByWorkspaceId(workspaceId);
 
         if (projects.isEmpty()) {
             return ResponseEntity.ok().body(new ApiResponse<>("empty", 201, "SUCCESS"));
@@ -70,7 +70,7 @@ public class ProjectController {
         }
     }
     @PostMapping("project")
-    public ResponseEntity<ApiResponse<?>> addUser(@RequestBody ProjectUser user, @RequestParam Long projectId) {
+    public ResponseEntity<ApiResponse<?>> addUser(@RequestParam ProjectUser user, @RequestParam Long projectId) {
         String response = projectService.addUser(projectId, user.getUserId());
         if ( response.equals("success") ){
             return ResponseEntity.ok().body(new ApiResponse<>(response, 200, "SUCCESS"));
