@@ -7,5 +7,5 @@ import java.util.List;
 @Data
 public class InviteDto {
     private Long projectId;
-    private List<String> userName;
+    private List<String> userNames;
 }

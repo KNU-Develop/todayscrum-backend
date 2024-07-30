@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProjectDto {
+    private Long id;
     private String title;
     private String overview;
     private Timestamp startDate;
@@ -21,6 +22,7 @@ public class ProjectDto {
     private List<User> users;
 
     public ProjectDto(Project project, List<User> users) {
+        this.id = project.getId();
         this.title = project.getTitle();
         this.overview = project.getOverview();
         this.startDate = project.getStartDate();

@@ -52,7 +52,6 @@ public class ProjectService {
         return projectRepositroy.findById(id);
     }
     public List<ProjectDto> getProjectByWorkspaceId(Long workspaceId){
-//        return projectRepositroy.findByWorkspaceId(workspaceId);
         List<Project> projects = projectRepositroy.findByWorkspaceId(workspaceId);
         return projects.stream().map(this::convertToDto).collect(Collectors.toList());
     }
@@ -83,14 +82,18 @@ public class ProjectService {
     }
     public String addUser(InviteDto inviteDto) {
         if (projectRepositroy.existsById(inviteDto.getProjectId())) {
-            List<String> userNames = inviteDto.getUserName();
-            for(int i=0; i<userNames.size(); i++){
-                if (userRepository.existsByName(userNames.get(i))) {
-                    ProjectUser projectUser = new ProjectUser();
-                    projectUser.setProjectId(inviteDto.getProjectId());
-                    projectUser.setUserId(userRepository.findByName(userNames.get(i)).getId());
+            List<String> userNames = inviteDto.getUserNames();
+            for (String name : userNames) {
+                if (userRepository.existsByName(name)) {
+                    Long userId = userRepository.findByName(name).getId();
+                    Long projectId = inviteDto.getProjectId();
+                    if (!projectUserRepository.existsByProjectIdAndUserId(projectId, userId)) {
+                        ProjectUser projectUser = new ProjectUser();
+                        projectUser.setProjectId(projectId);
+                        projectUser.setUserId(userId);
 
-                    projectUserRepository.save(projectUser);
+                        projectUserRepository.save(projectUser);
+                    }
                 }
             }
             return "success";

@@ -2,6 +2,7 @@ package knu.kproject.controller;
 
 import knu.kproject.dto.project.InviteDto;
 import knu.kproject.dto.project.ProjectDto;
+import knu.kproject.entity.User;
 import knu.kproject.global.code.ApiResponse;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("workspace")
@@ -82,19 +84,19 @@ public class ProjectController {
             return ResponseEntity.ok().body(new ApiResponse<>(null, 500, "Fail"));
         }
     }
-    // User 정보 조회가 완료되면 수정하면 됨
-//    @GetMapping("projects/{projectId}/users")
-//    public ResponseEntity<ApiResponse<List<User>>> getProjectToUser(@PathVariable Long projectId) {
-//        List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
-//        List<Long> usersId = projectUsers.stream()
-//                .map(ProjectUser::getUserId)
-//                .sorted()
-//                .toList();
-//        List<User> users = usersId.stream()
-//                .map(userId -> userService.findById(userId).orElse(null))
-//        ApiResponse<List<User>> response = new ApiResponse<>(users, 200, "SUCCESS");
-//        return ResponseEntity.ok(response);
-//    }
+    @GetMapping("project/users")
+    public ResponseEntity<ApiResponse<?>> getProjectToUser(@RequestParam Long projectId) {
+        List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
+        List<Long> usersId = projectUsers.stream()
+                .map(ProjectUser::getUserId)
+                .sorted()
+                .toList();
+        List<User> users = usersId.stream()
+                .map(userId -> userService.findById(userId))
+                .collect(Collectors.toList());
+        ApiResponse<?> response = new ApiResponse<>(users, 200, "SUCCESS");
+        return ResponseEntity.ok(response);
+    }
 
     @DeleteMapping("/project/user")
     public ResponseEntity<ApiResponse<Boolean>> deleteProjectUser(@RequestParam Long projectId, @RequestParam String userName) {
