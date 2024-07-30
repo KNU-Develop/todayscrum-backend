@@ -1,6 +1,8 @@
 HELP.md
 .gradle
+# Ignore all build directories except build.gradle file
 build/
+!build.gradle
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
