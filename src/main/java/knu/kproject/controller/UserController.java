@@ -65,7 +65,6 @@ public class UserController {
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
         }
-
     }
 //    @GetMapping("/user")
 //    public ResponseEntity<?> getUserById(@RequestParam Long id) {
@@ -96,6 +95,5 @@ public class UserController {
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
         }
-
     }
 }
