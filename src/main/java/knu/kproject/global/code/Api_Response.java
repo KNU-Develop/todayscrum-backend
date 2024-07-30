@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class ApiResponse<T> {
+public class Api_Response<T> {
 
     // API 응답 결과 Response
     private T result;
@@ -13,12 +13,12 @@ public class ApiResponse<T> {
     private int code;
 
     // API 응답 코드 Message
-    private String msg;
+    private String Description;
 
     @Builder
-    public ApiResponse(final T result, final int code, final String msg) {
+    public Api_Response(final T result, final int code, final String Description) {
         this.result = result;
         this.code = code;
-        this.msg = msg;
+        this.Description = Description;
     }
 }

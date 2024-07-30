@@ -2,6 +2,7 @@ package knu.kproject.service;
 
 import knu.kproject.dto.project.InviteDto;
 import knu.kproject.dto.project.ProjectDto;
+import knu.kproject.dto.project.PutProjectDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
 import knu.kproject.entity.User;
@@ -11,6 +12,7 @@ import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.WorkspaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -29,7 +31,7 @@ public class ProjectService {
     @Autowired
     private ProjectUserRepository projectUserRepository;
 
-    public Project createProject(ProjectDto projectDto, Long workSpaceId) {
+    public Project createProject(PutProjectDto projectDto, Long workSpaceId) {
         Optional<Workspace> optionalWorkspace = workspaceRepository.findById(workSpaceId);
         if (optionalWorkspace.isEmpty()) {
             throw new RuntimeException("Workspace not found");
@@ -48,11 +50,12 @@ public class ProjectService {
 
         return projectRepositroy.save(project);
     }
-    public Optional<Project> getProjectById(Long id){
-        return projectRepositroy.findById(id);
+    public ProjectDto getProjectById(Long id){
+        Project project = projectRepositroy.findById(id).orElseThrow(() -> new RuntimeException("project not found"));
+
+        return convertToDto(project);
     }
     public List<ProjectDto> getProjectByWorkspaceId(Long workspaceId){
-//        return projectRepositroy.findByWorkspaceId(workspaceId);
         List<Project> projects = projectRepositroy.findByWorkspaceId(workspaceId);
         return projects.stream().map(this::convertToDto).collect(Collectors.toList());
     }
@@ -63,7 +66,7 @@ public class ProjectService {
                 .collect(Collectors.toList());
         return new ProjectDto(project, users);
     }
-    public Project updateProject(Long projectId, Project updatedProjectData) {
+    public ProjectDto updateProject(Long projectId, PutProjectDto updatedProjectData) {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("project not found"));
         project.setTitle(updatedProjectData.getTitle());
@@ -71,7 +74,7 @@ public class ProjectService {
         project.setStartDate(updatedProjectData.getStartDate());
         project.setEndDate(updatedProjectData.getEndDate());
 
-        return projectRepositroy.save(project);
+        return convertToDto(project);
     }
     public void deleteProject(Long projectId) {
         Project project = projectRepositroy.findById(projectId)
@@ -83,14 +86,18 @@ public class ProjectService {
     }
     public String addUser(InviteDto inviteDto) {
         if (projectRepositroy.existsById(inviteDto.getProjectId())) {
-            List<String> userNames = inviteDto.getUserName();
-            for(int i=0; i<userNames.size(); i++){
-                if (userRepository.existsByName(userNames.get(i))) {
-                    ProjectUser projectUser = new ProjectUser();
-                    projectUser.setProjectId(inviteDto.getProjectId());
-                    projectUser.setUserId(userRepository.findByName(userNames.get(i)).getId());
+            List<String> userNames = inviteDto.getUserNames();
+            for (String name : userNames) {
+                if (userRepository.existsByName(name)) {
+                    Long userId = userRepository.findByName(name).getId();
+                    Long projectId = inviteDto.getProjectId();
+                    if (!projectUserRepository.existsByProjectIdAndUserId(projectId, userId)) {
+                        ProjectUser projectUser = new ProjectUser();
+                        projectUser.setProjectId(projectId);
+                        projectUser.setUserId(userId);
 
-                    projectUserRepository.save(projectUser);
+                        projectUserRepository.save(projectUser);
+                    }
                 }
             }
             return "success";
