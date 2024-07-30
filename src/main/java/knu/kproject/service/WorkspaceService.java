@@ -1,6 +1,6 @@
 package knu.kproject.service;
 
-import knu.kproject.dto.workspace.WorkSpaceDto;
+import knu.kproject.dto.workspace.PutworkspaceDto;
 import knu.kproject.entity.User;
 import knu.kproject.entity.Workspace;
 import knu.kproject.repository.UserRepository;
@@ -18,7 +18,7 @@ public class WorkspaceService {
     private WorkspaceRepository workspaceRepository;
     @Autowired
     private UserRepository userRepository;
-    public Workspace createWorkSpace(WorkSpaceDto workSpaceDto, Long userId) {
+    public Workspace createWorkSpace(PutworkspaceDto workSpaceDto, Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("User not found");

@@ -2,7 +2,7 @@ package knu.kproject.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import knu.kproject.dto.workspace.WorkSpaceDto;
+import knu.kproject.dto.workspace.PutworkspaceDto;
 import knu.kproject.entity.User;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.service.UserService;
@@ -36,7 +36,7 @@ public class CustomOAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSucc
 
         User user = userRepository.findBySocialId(socialId).orElseThrow(() -> new RuntimeException("user not found"));
 
-        WorkSpaceDto workSpaceDto = new WorkSpaceDto();
+        PutworkspaceDto workSpaceDto = new PutworkspaceDto();
         workSpaceDto.setTitle("My Workspace");
         workSpaceDto.setDescription("기본 워크스페이스 입니다.");
 
