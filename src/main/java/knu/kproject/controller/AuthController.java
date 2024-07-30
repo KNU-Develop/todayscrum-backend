@@ -1,15 +1,13 @@
 package knu.kproject.controller;
 
 import knu.kproject.config.JwtTokenUtil;
-import knu.kproject.dto.token.TokenRefreshRequest;
 import knu.kproject.dto.token.TokenRefreshResponse;
-import knu.kproject.global.code.ApiResponse;
+import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.global.code.SuccessCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,9 +25,9 @@ public class AuthController {
         if (!jwtTokenUtil.isTokenExpired(refreshToken)) {
             String userId = jwtTokenUtil.extractUserId(refreshToken);
             String newAccessToken = jwtTokenUtil.createAccessToken(userId);
-            ApiResponse<TokenRefreshResponse> response = ApiResponse.<TokenRefreshResponse>builder()
+            Api_Response<TokenRefreshResponse> response = Api_Response.<TokenRefreshResponse>builder()
                     .code(SuccessCode.SELECT_SUCCESS.getStatus())
-                    .msg(SuccessCode.SELECT_SUCCESS.getMessage())
+                    .Description(SuccessCode.SELECT_SUCCESS.getMessage())
                     .result(new TokenRefreshResponse(newAccessToken))
                     .build();
             return ResponseEntity.ok().body(response);

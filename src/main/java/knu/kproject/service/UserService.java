@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository userRepository;
 
-
     public UserDto Convert2UserDto(User user) {
         UserDto dto = new UserDto();
         dto.setId(user.getId());
