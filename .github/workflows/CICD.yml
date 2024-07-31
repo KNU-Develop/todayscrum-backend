@@ -24,9 +24,9 @@ jobs:
 
     - name: Build with Gradle
       run: |
-          echo ${{secrets.DATABASE}} | base64 —d > ./src/main/resources/applciation-secret.yml
-          echo ${{secrets.JWT}} | base64 —d > ./src/main/resources/applciation-jwt.yml
-          echo ${{secrets.OAUTH}} | base64 —d > ./src/main/resources/applciation-oauth.yml
+          echo ${{secrets.DATABASE}} | base64 -d > ./src/main/resources/applciation-secret.yml
+          echo ${{secrets.JWT}} | base64 -d > ./src/main/resources/applciation-jwt.yml
+          echo ${{secrets.OAUTH}} | base64 -d > ./src/main/resources/applciation-oauth.yml
           
           chmod 777 ./gradlew
           ./gradlew clean assemble -x test
