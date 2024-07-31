@@ -1,0 +1,23 @@
+spring:
+  profiles:
+    include: oauth
+    active: jwt, secret
+  application:
+    name: KProject-BE
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show_sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+springdoc:
+  override-with-generic-response: false
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  swagger-ui:
+    operations-sorter: method
+    tags-sorter: alpha
+    path: ""
