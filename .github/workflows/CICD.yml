@@ -24,27 +24,16 @@ jobs:
     - name: Decode and verify
       run: |
         echo "Decoding DATABASE secret"
-        echo "${{ secrets.DATABASE }}" | base64 -d > ./src/main/resources/applciation-db.yml
+        echo "${{ secrets.DATABASE }}" | base64 -d > ./src/main/resources/application-db.yml
         echo "Decoding JWT secret"
-        echo "${{ secrets.JWT }}" | base64 -d > ./src/main/resources/applciation-jwt.yml
+        echo "${{ secrets.JWT }}" | base64 -d > ./src/main/resources/application-jwt.yml
         echo "Decoding OAUTH secret"
-        echo "${{ secrets.OAUTH }}" | base64 -d > ./src/main/resources/applciation-oauth.yml
-
+        echo "${{ secrets.OAUTH }}" | base64 -d > ./src/main/resources/application-oauth.yml
 
     - name: Build with Gradle
       run: |
           chmod 777 ./gradlew
           ./gradlew clean assemble -x test
-          
-    - name: Display decoded file contents
-      run: |
-        ls -al ./src/main/resources/
-        echo "\napplciation-db.yml contents:"
-        cat ./src/main/resources/applciation-db.yml
-        echo "\napplciation-jwt.yml contents:"
-        cat ./src/main/resources/applciation-jwt.yml
-        echo "\napplciation-oauth.yml contents:"
-        cat ./src/main/resources/applciation-oauth.yml
 
     - name: Login to DockerHub
       uses: docker/login-action@v1
