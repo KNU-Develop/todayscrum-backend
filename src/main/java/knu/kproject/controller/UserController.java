@@ -17,7 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "User API", description = "User API 명세서 입니다.")
+@Tag(name = "User API", description = "User API 명세서 입니다. user의 경우 accessToken을 @AuthenticationPrincipal로 넘겨줘야 하지만" +
+        "이 부분이 인자로 swagger에 표현되지 않아 오류가 발생할 수 있습니다.")
 @RestController
 @RequestMapping("/UserInfo")
 @RequiredArgsConstructor
@@ -66,16 +67,23 @@ public class UserController {
             return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
         }
     }
-//    @GetMapping("/user")
-//    public ResponseEntity<?> getUserById(@RequestParam Long id) {
-//        User user = userService.findById(id);
-//        Api_Response<User> response = Api_Response.<User>builder()
-//                .code(SuccessCode.SELECT_SUCCESS.getStatus())
-//                .Description(SuccessCode.SELECT_SUCCESS.getMessage())
-//                .result(user)
-//                .build();
-//        return ResponseEntity.ok(response);
-//    }
+    @Operation(summary = "id로 유저 정보 수정", description = "User 수정 API 입니다.")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(responseCode = "200", description = "success", content = @Content(mediaType = "application/json", schema = @Schema(type = "true"))),
+                    @ApiResponse(responseCode = "500", description = "false", content = @Content(mediaType = "applicaion/json", schema = @Schema(type = "false")))
+            }
+    )
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        User user = userService.findById(id);
+        Api_Response<User> response = Api_Response.<User>builder()
+                .code(SuccessCode.SELECT_SUCCESS.getStatus())
+                .Description(SuccessCode.SELECT_SUCCESS.getMessage())
+                .result(user)
+                .build();
+        return ResponseEntity.ok(response);
+    }
     @Operation(summary = "유저 정보 수정", description = "User 수정 API 입니다.")
     @ApiResponses(
             value = {
