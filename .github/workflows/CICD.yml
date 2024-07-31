@@ -20,17 +20,30 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-    
+    - name: Decode and verify
+      run: |
+        echo "Decoding DATABASE secret"
+        echo "${{ secrets.DATABASE }}" | base64 -d > ./src/main/resources/applciation-secret.yml
+        echo "Decoding JWT secret"
+        echo "${{ secrets.JWT }}" | base64 -d > ./src/main/resources/applciation-jwt.yml
+        echo "Decoding OAUTH secret"
+        echo "${{ secrets.OAUTH }}" | base64 -d > ./src/main/resources/applciation-oauth.yml
+
 
     - name: Build with Gradle
       run: |
-          echo ${{secrets.DATABASE}} | base64 -d > ./src/main/resources/applciation-secret.yml
-          echo ${{secrets.JWT}} | base64 -d > ./src/main/resources/applciation-jwt.yml
-          echo ${{secrets.OAUTH}} | base64 -d > ./src/main/resources/applciation-oauth.yml
-          
           chmod 777 ./gradlew
           ./gradlew clean assemble -x test
           
+    - name: Display decoded file contents
+      run: |
+        echo "applciation-secret.yml contents:"
+        cat ./src/main/resources/applciation-secret.yml
+        echo "applciation-jwt.yml contents:"
+        cat ./src/main/resources/applciation-jwt.yml
+        echo "applciation-oauth.yml contents:"
+        cat ./src/main/resources/applciation-oauth.yml
+
     - name: Login to DockerHub
       uses: docker/login-action@v1
       with:
