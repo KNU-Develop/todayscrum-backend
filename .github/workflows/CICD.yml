@@ -20,6 +20,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+        
     - name: Decode and verify
       run: |
         echo "Decoding DATABASE secret"
@@ -37,11 +38,12 @@ jobs:
           
     - name: Display decoded file contents
       run: |
-        echo "applciation-secret.yml contents:"
-        cat ./src/main/resources/applciation-secret.yml
-        echo "applciation-jwt.yml contents:"
+        ls -al ./src/main/resources/
+        echo "\napplciation-db.yml contents:"
+        cat ./src/main/resources/applciation-db.yml
+        echo "\napplciation-jwt.yml contents:"
         cat ./src/main/resources/applciation-jwt.yml
-        echo "applciation-oauth.yml contents:"
+        echo "\napplciation-oauth.yml contents:"
         cat ./src/main/resources/applciation-oauth.yml
 
     - name: Login to DockerHub
