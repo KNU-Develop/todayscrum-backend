@@ -84,21 +84,17 @@ public class UserController {
                 .build();
         return ResponseEntity.ok(response);
     }
-    @Operation(summary = "유저 정보 수정", description = "User 수정 API 입니다.")
+    @Operation(summary = "유저 삭제", description = "User 삭제 API 입니다.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "200", description = "success", content = @Content(mediaType = "application/json", schema = @Schema(type = "true"))),
                     @ApiResponse(responseCode = "500", description = "false", content = @Content(mediaType = "applicaion/json", schema = @Schema(type = "false")))
             }
     )
-    @DeleteMapping("/")
+    @DeleteMapping("")
     public ResponseEntity<?> deleteUser(@RequestParam Long id) {
         try {
             userService.deleteUser(id);
-//            Api_Response<Void> response = Api_Response.<Void>builder()
-//                    .code(SuccessCode.DELETE_SUCCESS.getStatus())
-//                    .Description(SuccessCode.DELETE_SUCCESS.getMessage())
-//                    .build();
             return ResponseEntity.ok().body(new Api_Response<>(true, 200, "SUCCESS"));
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
