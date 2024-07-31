@@ -69,10 +69,13 @@ public class ProjectService {
     public ProjectDto updateProject(Long projectId, PutProjectDto updatedProjectData) {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("project not found"));
+
         project.setTitle(updatedProjectData.getTitle());
         project.setOverview(updatedProjectData.getOverview());
         project.setStartDate(updatedProjectData.getStartDate());
         project.setEndDate(updatedProjectData.getEndDate());
+
+        projectRepositroy.save(project);
 
         return convertToDto(project);
     }
