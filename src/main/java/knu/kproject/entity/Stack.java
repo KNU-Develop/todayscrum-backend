@@ -1,26 +1,29 @@
 package knu.kproject.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
+
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@Table(name = "TOOL")
-public class Tool {
+@Table(name = "STACK")
+public class Stack {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
-    @OneToMany(mappedBy = "tool", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserTool> userTools;
+    @OneToMany(mappedBy = "stack", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserStack> userStacks;
 
-    public Tool(String name) {
+    public Stack(String name) {
         this.name = name;
     }
 }
