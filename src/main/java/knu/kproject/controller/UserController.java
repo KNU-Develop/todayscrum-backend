@@ -40,13 +40,13 @@ public class UserController {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
                     .code(200)
                     .result(true)
-                    .Description("SUCCESS")
+                    .message("SUCCESS")
                     .build());
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
                     .code(500)
                     .result(false)
-                    .Description("FAIL")
+                    .message("FAIL")
                     .build());
         }
     }
@@ -71,14 +71,14 @@ public class UserController {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
                     .code(200)
                     .result(true)
-                    .Description("SUCCESS")
+                    .message("SUCCESS")
                     .build());
         } catch (RuntimeException e) {
             logger.error("Error adding user info: ", e);
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
                     .code(500)
                     .result(false)
-                    .Description("FAIL")
+                    .message("FAIL")
                     .build());
         }
     }
@@ -101,13 +101,13 @@ public class UserController {
             return ResponseEntity.ok().body(Api_Response.<UserDto>builder()
                     .code(200)
                     .result(userDto)
-                    .Description("SUCCESS")
+                    .message("SUCCESS")
                     .build());
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
                     .code(500)
                     .result(false)
-                    .Description("FAIL")
+                    .message("FAIL")
                     .build());
         }
     }
@@ -124,13 +124,13 @@ public class UserController {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
                     .code(200)
                     .result(true)
-                    .Description("SUCCESS")
+                    .message("SUCCESS")
                     .build());
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
                     .code(500)
                     .result(false)
-                    .Description("FAIL")
+                    .message("FAIL")
                     .build());
         }
     }
@@ -155,13 +155,13 @@ public class UserController {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
                     .code(200)
                     .result(true)
-                    .Description("SUCCESS")
+                    .message("SUCCESS")
                     .build());
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
                     .code(500)
                     .result(false)
-                    .Description("FAIL")
+                    .message("FAIL")
                     .build());
         }
     }
