@@ -5,20 +5,14 @@ import lombok.Getter;
 
 @Getter
 public class Api_Response<T> {
-
-    // API 응답 결과 Response
+    private int code;
+    private String message;
     private T result;
 
-    // API 응답 코드 Response
-    private int code;
-
-    // API 응답 코드 Message
-    private String Description;
-
     @Builder
-    public Api_Response(final T result, final int code, final String Description) {
+    public Api_Response(final int code, final String message, final T result) {
         this.result = result;
         this.code = code;
-        this.Description = Description;
+        this.message = message;
     }
 }
