@@ -34,7 +34,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Optional<User> user = userRepository.findBySocialId(socialId);
         if (user.isEmpty()) {
             User newUser = new User(userName, socialId, false, false, "LOGIN");
-            //user.setNeedsAdditionalInfo(true); // 추가 정보 필요
             userRepository.save(newUser);
         }
 

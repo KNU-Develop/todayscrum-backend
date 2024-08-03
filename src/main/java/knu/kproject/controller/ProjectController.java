@@ -16,8 +16,11 @@ import knu.kproject.entity.Workspace;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.ProjectUser;
+import knu.kproject.global.code.ErrorCode;
+import knu.kproject.global.code.SuccessCode;
 import knu.kproject.service.ProjectService;
 import knu.kproject.service.UserService;
+import knu.kproject.util.ApiResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,12 +46,14 @@ public class ProjectController {
             }
     )
     @PostMapping("")
-    public ResponseEntity<Api_Response<?>> createProject(@RequestBody PutProjectDto projectDto, @RequestParam Long workspaceId) {
+    public ResponseEntity<Api_Response<Object>> createProject(@RequestBody PutProjectDto projectDto, @RequestParam Long workspaceId) {
         try {
             Project project = projectService.createProject(projectDto, workspaceId);
-            return ResponseEntity.ok().body(new Api_Response<>(true, 200, "SUCCESS"));
+            return ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
+//            return ResponseEntity.ok().body(new Api_Response<>(true, 200, "SUCCESS"));
         } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
+            return ApiResponseUtil.createSuccessResponse(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+//            return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
         }
     }
     @Operation(summary = "모든 프로젝트 조회", description = "특정 workspace 아래 존재하는 모든 project 조회 API 입니다.")
@@ -60,13 +65,15 @@ public class ProjectController {
             }
     )
     @GetMapping("")
-    public ResponseEntity<Api_Response<?>> getProjectsByWorkspaceId(@RequestParam Long workspaceId) {
+    public ResponseEntity<Api_Response<Object>> getProjectsByWorkspaceId(@RequestParam Long workspaceId) {
         List<ProjectDto> projects = projectService.getProjectByWorkspaceId(workspaceId);
 
         if (projects.isEmpty()) {
-            return ResponseEntity.ok().body(new Api_Response<>("empty", 201, "SUCCESS"));
+            return ApiResponseUtil.createNotFoundResponse(ErrorCode.NOT_VALID_ERROR.getMessage());
+//            return ResponseEntity.ok().body(new Api_Response<>("empty", 201, "SUCCESS"));
         }
-        return ResponseEntity.ok().body(new Api_Response<>(projects, 200, "SUCCESS"));
+        return ApiResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS.getMessage());
+//        return ResponseEntity.ok().body(new Api_Response<>(projects, 200, "SUCCESS"));
     }
     @Operation(summary = "특정 프로젝트 조회", description = "특정 project 조회 API 입니다.")
     @ApiResponses(
@@ -76,14 +83,17 @@ public class ProjectController {
             }
     )
     @GetMapping("/project")
-    public ResponseEntity<Api_Response<?>> getProjectById(@RequestParam Long projectId) {
+    public ResponseEntity<Api_Response<Object>> getProjectById(@RequestParam Long projectId) {
         try {
             ProjectDto project = projectService.getProjectById(projectId);
-            return ResponseEntity.ok().body(new Api_Response<>(project, 200, "SUCCESS"));
+//            return ResponseEntity.ok().body(new Api_Response<>(project, 200, "SUCCESS"));
+            return ApiResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS.getMessage());
         } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(new Api_Response<>("error", 500, "SUCCESS"));
+//            return ResponseEntity.ok().body(new Api_Response<>("error", 500, "SUCCESS"));
+            return ApiResponseUtil.createNotFoundResponse(ErrorCode.SELECT_ERROR.getMessage());
         }
     }
+
     @Operation(summary = "특정 프로젝트 수정", description = "특정 project 수정 API 입니다.")
     @ApiResponses(
             value = {
@@ -92,13 +102,18 @@ public class ProjectController {
             }
     )
     @PutMapping("/project")
-    public ResponseEntity<Api_Response<?>> updateProject(@RequestParam Long projectId, @RequestBody PutProjectDto updateProjectData) {
+    public ResponseEntity<Api_Response<Object>> updateProject(@RequestParam Long projectId, @RequestBody PutProjectDto updateProjectData) {
         try {
             ProjectDto updatedProject = projectService.updateProject(projectId, updateProjectData);
-            Api_Response<?> response = new Api_Response<>(true, 200, "SUCCESS");
-            return ResponseEntity.ok().body(response);
+            return ApiResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS.getMessage());
+//            Api_Response<?> response = new Api_Response<>(true, 200, "SUCCESS");
+//            return ResponseEntity.ok().body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
+//            return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.UPDATE_ERROR.getMessage(),
+                    ErrorCode.UPDATE_ERROR.getStatus()
+            );
         }
     }
     @Operation(summary = "특정 프로젝트 삭제", description = "특정 project 삭제 API 입니다.")
@@ -109,12 +124,17 @@ public class ProjectController {
             }
     )
     @DeleteMapping("/project")
-    public ResponseEntity<Api_Response<?>> deleteProject(@RequestParam Long projectId) {
+    public ResponseEntity<Api_Response<Object>> deleteProject(@RequestParam Long projectId) {
         try {
             projectService.deleteProject(projectId);
-            return ResponseEntity.ok().body(new Api_Response<>(true, 200, "SUCCESS"));
+//            return ResponseEntity.ok().body(new Api_Response<>(true, 200, "SUCCESS"));
+            return ApiResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS.getMessage());
         } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.DELETE_ERROR.getMessage(),
+                    ErrorCode.DELETE_ERROR.getStatus()
+            );
+//            return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
         }
     }
     @Operation(summary = "특정 프로젝트의 팀원 추가", description = "특정 project의 팀원 추가 API 입니다.")
@@ -126,14 +146,20 @@ public class ProjectController {
             }
     )
     @PostMapping("/project")
-    public ResponseEntity<Api_Response<?>> addUser(@RequestBody InviteDto inviteDto) {
+    public ResponseEntity<Api_Response<Object>> addUser(@RequestBody InviteDto inviteDto) {
         String response = projectService.addUser(inviteDto);
         if ( response.equals("success") ){
-            return ResponseEntity.ok().body(new Api_Response<>(response, 200, "SUCCESS"));
+            return ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
+//            return ResponseEntity.ok().body(new Api_Response<>(response, 200, "SUCCESS"));
         } else if (response.equals("exist user")) {
-            return ResponseEntity.ok().body(new Api_Response<>(response, 201, "Can't"));
+            return ApiResponseUtil.createBadRequestResponse(ErrorCode.INSERT_ERROR.getMessage());
+//            return ResponseEntity.ok().body(new Api_Response<>(response, 201, "Can't"));
         } else {
-            return ResponseEntity.ok().body(new Api_Response<>(null, 500, "Fail"));
+//            return ResponseEntity.ok().body(new Api_Response<>(null, 500, "Fail"));
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
     }
     @Operation(summary = "특정 프로젝트의 팀원 조회", description = "특정 project의 팀원 조회 API 입니다.")
@@ -144,7 +170,7 @@ public class ProjectController {
             }
     )
     @GetMapping("project/users")
-    public ResponseEntity<Api_Response<?>> getProjectToUser(@RequestParam Long projectId) {
+    public ResponseEntity<Api_Response<Object>> getProjectToUser(@RequestParam Long projectId) {
         List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(projectId);
         List<Long> usersId = projectUsers.stream()
                 .map(ProjectUser::getUserId)
@@ -153,8 +179,9 @@ public class ProjectController {
         List<User> users = usersId.stream()
                 .map(userId -> userService.findById(userId))
                 .collect(Collectors.toList());
-        Api_Response<?> response = new Api_Response<>(users, 200, "SUCCESS");
-        return ResponseEntity.ok(response);
+//        Api_Response<?> response = new Api_Response<>(users, 200, "SUCCESS");
+//        return ResponseEntity.ok(response);
+        return ApiResponseUtil.createSuccessResponse(SuccessCode.SELECT_SUCCESS.getMessage());
     }
     @Operation(summary = "특정 프로젝트의 팀원 삭제", description = "특정 project의 팀원 삭제 API 입니다.")
     @ApiResponses(
@@ -164,14 +191,16 @@ public class ProjectController {
             }
     )
     @DeleteMapping("/project/user")
-    public ResponseEntity<Api_Response<Boolean>> deleteProjectUser(@RequestParam Long projectId, @RequestParam String userName) {
+    public ResponseEntity<Api_Response<Object>> deleteProjectUser(@RequestParam Long projectId, @RequestParam String userName) {
         try {
             projectService.deleteProjectUser(projectId, userName);
-            Api_Response<Boolean> response = new Api_Response<>(true, 200, "SUCCESS");
-            return ResponseEntity.ok(response);
+//            Api_Response<Boolean> response = new Api_Response<>(true, 200, "SUCCESS");
+//            return ResponseEntity.ok(response);
+            return ApiResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS.getMessage());
         } catch (RuntimeException e) {
-            Api_Response<Boolean> response = new Api_Response<>(false, 500, "Fail");
-            return ResponseEntity.ok(response);
+//            Api_Response<Boolean> response = new Api_Response<>(false, 500, "Fail");
+//            return ResponseEntity.ok(response);
+            return ApiResponseUtil.createNotFoundResponse(ErrorCode.DELETE_ERROR.getMessage());
         }
     }
 }
