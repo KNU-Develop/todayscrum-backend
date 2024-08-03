@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.global.code.Api_Response;
+import knu.kproject.global.code.ErrorCode;
+import knu.kproject.global.code.SuccessCode;
 import knu.kproject.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -38,15 +40,15 @@ public class UserController {
         try {
             userService.joinUser(userId, additionalInfo);
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(200)
+                    .code(SuccessCode.INSERT_SUCCESS.getStatus())
                     .result(true)
-                    .message("SUCCESS")
+                    .message(SuccessCode.INSERT_SUCCESS.getMessage())
                     .build());
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(500)
+                    .code(ErrorCode.INSERT_ERROR.getStatus())
                     .result(false)
-                    .message("FAIL")
+                    .message(ErrorCode.INSERT_ERROR.getMessage())
                     .build());
         }
     }
@@ -69,16 +71,16 @@ public class UserController {
         try {
             userService.addUserInfo(userId, additionalInfo);
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(200)
+                    .code(SuccessCode.INSERT_SUCCESS.getStatus())
                     .result(true)
-                    .message("SUCCESS")
+                    .message(SuccessCode.INSERT_SUCCESS.getMessage())
                     .build());
         } catch (RuntimeException e) {
             logger.error("Error adding user info: ", e);
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(500)
+                    .code(ErrorCode.INSERT_ERROR.getStatus())
                     .result(false)
-                    .message("FAIL")
+                    .message(ErrorCode.INSERT_ERROR.getMessage())
                     .build());
         }
     }
@@ -99,15 +101,15 @@ public class UserController {
         try {
             UserDto userDto = userService.getUserInfo(userId);
             return ResponseEntity.ok().body(Api_Response.<UserDto>builder()
-                    .code(200)
+                    .code(SuccessCode.SELECT_SUCCESS.getStatus())
                     .result(userDto)
-                    .message("SUCCESS")
+                    .message(SuccessCode.SELECT_SUCCESS.getMessage())
                     .build());
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(500)
+                    .code(ErrorCode.SELECT_ERROR.getStatus())
                     .result(false)
-                    .message("FAIL")
+                    .message(ErrorCode.SELECT_ERROR.getMessage())
                     .build());
         }
     }
@@ -122,15 +124,15 @@ public class UserController {
         try {
             userService.updateUserInfo(userId, additionalInfo);
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(200)
+                    .code(SuccessCode.UPDATE_SUCCESS.getStatus())
                     .result(true)
-                    .message("SUCCESS")
+                    .message(SuccessCode.UPDATE_SUCCESS.getMessage())
                     .build());
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(500)
+                    .code(ErrorCode.UPDATE_ERROR.getStatus())
                     .result(false)
-                    .message("FAIL")
+                    .message(ErrorCode.UPDATE_ERROR.getMessage())
                     .build());
         }
     }
@@ -153,15 +155,15 @@ public class UserController {
         try {
             userService.withdraw(userId, userDto);
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(200)
+                    .code(SuccessCode.UPDATE_SUCCESS.getStatus())
                     .result(true)
-                    .message("SUCCESS")
+                    .message(SuccessCode.UPDATE_SUCCESS.getMessage())
                     .build());
         } catch (RuntimeException e) {
             return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(500)
+                    .code(ErrorCode.UPDATE_ERROR.getStatus())
                     .result(false)
-                    .message("FAIL")
+                    .message(ErrorCode.UPDATE_ERROR.getMessage())
                     .build());
         }
     }
