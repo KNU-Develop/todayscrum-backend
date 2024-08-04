@@ -52,7 +52,10 @@ public class ProjectController {
             projectService.createProject(projectDto, workspaceId);
             return ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
         } catch (RuntimeException e) {
-            return ApiResponseUtil.createSuccessResponse(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.SELECT_ERROR.getMessage(),
+                    ErrorCode.SELECT_ERROR.getStatus()
+            );
         }
     }
     @Operation(summary = "모든 프로젝트 조회", description = "특정 workspace 아래 존재하는 모든 project 조회 API 입니다.")
@@ -97,7 +100,10 @@ public class ProjectController {
             return ResponseEntity.ok().body(Api_Response.builder()
                     .code(200).message("SUCCESS").result(project).build());
         } catch (RuntimeException e) {
-            return ApiResponseUtil.createNotFoundResponse(ErrorCode.SELECT_ERROR.getMessage());
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.SELECT_ERROR.getMessage(),
+                    ErrorCode.SELECT_ERROR.getStatus()
+            );
         }
     }
 

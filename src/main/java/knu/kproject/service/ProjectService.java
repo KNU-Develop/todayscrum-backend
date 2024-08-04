@@ -13,6 +13,7 @@ import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.WorkspaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.jdbc.Work;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
@@ -32,12 +33,7 @@ public class ProjectService {
     private final ProjectUserRepository projectUserRepository;
 
     public void createProject(PutProjectDto projectDto, Long workSpaceId) {
-        Optional<Workspace> optionalWorkspace = workspaceRepository.findById(workSpaceId);
-        if (optionalWorkspace.isEmpty()) {
-            throw new RuntimeException("Workspace not found");
-        }
-
-        Workspace workspace = optionalWorkspace.get();
+        Workspace workspace = workspaceRepository.findById(workSpaceId).orElseThrow(() -> new RuntimeException("not found workspace"));
 
         Project project = Project.builder()
                 .title(projectDto.getTitle())
@@ -91,26 +87,29 @@ public class ProjectService {
         return projectUserRepository.findByProjectId(projectId);
     }
     public void addUser(InviteDto inviteDto) {
-        if (projectRepositroy.existsById(inviteDto.getProjectId())) {
-            List<String> userNames = inviteDto.getUserNames();
-            for (String name : userNames) {
-                if (userRepository.existsByName(name)) {
-                    Long userId = userRepository.findByName(name).getId();
-                    Long projectId = inviteDto.getProjectId();
-                    if (!projectUserRepository.existsByProjectIdAndUserId(projectId, userId)) {
-                        ProjectUser projectUser = new ProjectUser();
-                        projectUser.setProjectId(projectId);
-                        projectUser.setUserId(userId);
-
+        Project project = projectRepositroy.findById(inviteDto.getProjectId()).orElseThrow(() -> new RuntimeException("not found project"));
+        List<String> userNames = inviteDto.getUserNames();
+        for (String name : userNames) {
+            if (userRepository.existsByName(name)) {
+                Long userId = userRepository.findByName(name).getId();
+                Long projectId = inviteDto.getProjectId();
+                if (!projectUserRepository.existsByProjectIdAndUserId(projectId, userId)) {
+                    ProjectUser projectUser = new ProjectUser();
+                    projectUser.setProjectId(projectId);
+                    projectUser.setUserId(userId);
                         projectUserRepository.save(projectUser);
-                    }
                 }
             }
         }
     }
-
+정
     public void deleteProjectUser(Long projectId, String userName) {
         User user = userRepository.findByName(userName);
+
+        if (user == null) {
+            throw new RuntimeException("not found user");
+        }
+
         List<ProjectUser> projects = projectUserRepository.findByProjectId(projectId);
         for (int i = 0; i < projects.size(); i++) {
             if (projects.get(i).getUserId() == user.getId()) {
