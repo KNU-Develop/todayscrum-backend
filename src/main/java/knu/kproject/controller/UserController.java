@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "User API", description = "회원 관련 API")
 @RestController
-@RequestMapping("/UserInfo")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -62,7 +62,7 @@ public class UserController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Api_Response.class)))
     })
-    @PostMapping("/Optional")
+    @PostMapping("/info")
     public ResponseEntity<?> addUserInfo(
             @Parameter(description = "추가 정보 입력", required = true)
             @RequestBody AdditionalUserInfo additionalInfo,
@@ -94,7 +94,7 @@ public class UserController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Api_Response.class)))
     })
-    @GetMapping("")
+    @GetMapping("/info")
     public ResponseEntity<?> getUserInfo(
             @Parameter(description = "회원정보 조회", required = true)
             @AuthenticationPrincipal Long userId) {
@@ -115,7 +115,7 @@ public class UserController {
     }
 
     @Operation(summary = "내 정보 수정", description = "User 수정 API 입니다.")
-    @PutMapping("/Optional")
+    @PutMapping("/info/optional")
     public ResponseEntity<?> updateUserInfo(
             @Parameter(description = "회원 정보 수정", required = true)
             @RequestBody AdditionalUserInfo additionalInfo,
@@ -146,7 +146,7 @@ public class UserController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Api_Response.class)))
     })
-    @PutMapping("/Withdraw")
+    @PutMapping("/withdraw")
     public ResponseEntity<?> withdrawUser(
             @Parameter(description = "회원 탈퇴", required = true)
             @RequestBody UserDto userDto,
