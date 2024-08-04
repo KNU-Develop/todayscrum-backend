@@ -1,5 +1,6 @@
 package knu.kproject.service;
 
+import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.project.InviteDto;
 import knu.kproject.dto.project.ProjectDto;
 import knu.kproject.dto.project.PutProjectDto;
@@ -11,6 +12,7 @@ import knu.kproject.repository.ProjectRepositroy;
 import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.WorkspaceRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
@@ -21,17 +23,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private ProjectRepositroy projectRepositroy;
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-    @Autowired
-    private ProjectUserRepository projectUserRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final WorkspaceRepository workspaceRepository;
+    private final ProjectRepositroy projectRepositroy;
+    private final ProjectUserRepository projectUserRepository;
 
-    public Project createProject(PutProjectDto projectDto, Long workSpaceId) {
+    public void createProject(PutProjectDto projectDto, Long workSpaceId) {
         Optional<Workspace> optionalWorkspace = workspaceRepository.findById(workSpaceId);
         if (optionalWorkspace.isEmpty()) {
             throw new RuntimeException("Workspace not found");
@@ -48,25 +48,30 @@ public class ProjectService {
                 .createdAt(new Timestamp(System.currentTimeMillis()))
                 .build();
 
-        return projectRepositroy.save(project);
+        projectRepositroy.save(project);
+    }
+    public List<ProjectDto> getProjectByWorkspaceId(Long workspaceId){
+        List<Project> projects = projectRepositroy.findByWorkspaceId(workspaceId);
+        return projects.stream().map(this::convertToDto).toList();
     }
     public ProjectDto getProjectById(Long id){
         Project project = projectRepositroy.findById(id).orElseThrow(() -> new RuntimeException("project not found"));
 
         return convertToDto(project);
     }
-    public List<ProjectDto> getProjectByWorkspaceId(Long workspaceId){
-        List<Project> projects = projectRepositroy.findByWorkspaceId(workspaceId);
-        return projects.stream().map(this::convertToDto).collect(Collectors.toList());
-    }
     private ProjectDto convertToDto(Project project) {
         List<User> users = project.getProjectUsers().stream()
                 .map(projectUser -> userRepository.findById(projectUser.getUserId())
                         .orElseThrow(() -> new RuntimeException("User not found")))
-                .collect(Collectors.toList());
-        return new ProjectDto(project, users);
+                .toList();
+        List<UserDto> userDtos = users.stream()
+                .map(UserDto::fromEntity)
+                .toList();
+
+        return ProjectDto.fromEntity(project, userDtos);
+
     }
-    public ProjectDto updateProject(Long projectId, PutProjectDto updatedProjectData) {
+    public void updateProject(Long projectId, PutProjectDto updatedProjectData) {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("project not found"));
 
@@ -76,8 +81,6 @@ public class ProjectService {
         project.setEndDate(updatedProjectData.getEndDate());
 
         projectRepositroy.save(project);
-
-        return convertToDto(project);
     }
     public void deleteProject(Long projectId) {
         Project project = projectRepositroy.findById(projectId)
@@ -87,7 +90,7 @@ public class ProjectService {
     public List<ProjectUser> findByAllProjectUsers(Long projectId) {
         return projectUserRepository.findByProjectId(projectId);
     }
-    public String addUser(InviteDto inviteDto) {
+    public void addUser(InviteDto inviteDto) {
         if (projectRepositroy.existsById(inviteDto.getProjectId())) {
             List<String> userNames = inviteDto.getUserNames();
             for (String name : userNames) {
@@ -103,9 +106,7 @@ public class ProjectService {
                     }
                 }
             }
-            return "success";
         }
-        return "fail";
     }
 
     public void deleteProjectUser(Long projectId, String userName) {
