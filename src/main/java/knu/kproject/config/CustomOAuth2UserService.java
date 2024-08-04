@@ -33,7 +33,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String socialId = attributes.get("socialId").toString();
         Optional<User> user = userRepository.findBySocialId(socialId);
         if (user.isEmpty()) {
-            User newUser = new User(userName, socialId, false, false, "LOGIN");
+            User newUser = new User(userName, socialId, "LOGIN");
             userRepository.save(newUser);
         }
 
