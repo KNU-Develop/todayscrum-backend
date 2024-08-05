@@ -17,13 +17,13 @@ public class UserTool {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "tool_id")
-    private Tool tool;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tool_name")
+    private ToolName tool;
 
     private String email;
 
-    public UserTool(User user, Tool tool, String email) {
+    public UserTool(User user, ToolName tool, String email) {
         this.user = user;
         this.tool = tool;
         this.email = email;

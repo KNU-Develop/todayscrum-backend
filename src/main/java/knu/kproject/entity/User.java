@@ -2,6 +2,7 @@ package knu.kproject.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
 import lombok.AllArgsConstructor;
@@ -20,11 +21,11 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+
     private String name;
     @Column(nullable = false, unique = false, name = "social_id")
     private String socialId;
-    @Column(unique = true)
+    @Email
     private String email;
     @Column(nullable = true)
     private boolean requiredTermsAgree;
@@ -38,8 +39,9 @@ public class User {
     private MBTI mbti;
     private String imageUrl;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="social_authentication")
-    private String status;
+    private UserStatus status;
     private String oauth2Id;
     private String role;
 
@@ -51,7 +53,7 @@ public class User {
     @JsonManagedReference
     private List<UserTool> userTools;
 
-    public User(String name, String socialId, String status) {
+    public User(String name, String socialId, UserStatus status) {
         this.name = name;
         this.socialId = socialId;
         this.status = status;
@@ -74,12 +76,12 @@ public class User {
         }
         this.setContact(userInfo.getContact());
         this.setEmail(userInfo.getEmail());
-        this.setStatus("JOIN");
+        this.setStatus(UserStatus.JOIN);
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
         this.setRequiredTermsAgree(userInfo.isRequiredTermsAgree());
     }
 
     public void withDraw(UserDto userDto){
-        this.setStatus("WITHDRAW");
+        this.setStatus(UserStatus.WITHDRAW);
     }
 }

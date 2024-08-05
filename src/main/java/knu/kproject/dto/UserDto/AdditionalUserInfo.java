@@ -1,6 +1,9 @@
 package knu.kproject.dto.UserDto;
 
+import jakarta.validation.constraints.Email;
 import knu.kproject.entity.MBTI;
+import knu.kproject.entity.ToolName;
+import knu.kproject.entity.UserStatus;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -12,8 +15,9 @@ import java.util.Map;
 public class AdditionalUserInfo {
     private Long id;
     private String name;
-    private String status;
+    private UserStatus status;
     private String contact;
+    @Email
     private String email;
     private boolean requiredTermsAgree;
     private boolean marketingEmailOptIn;
@@ -21,6 +25,6 @@ public class AdditionalUserInfo {
     private String location;
     private MBTI mbti;
     private String imageUrl;
-    private Map<String, String> tools = new HashMap<>();
+    private Map<ToolName, String> tools = new HashMap<>();
     private List<String> stacks = new ArrayList<>();
 }
