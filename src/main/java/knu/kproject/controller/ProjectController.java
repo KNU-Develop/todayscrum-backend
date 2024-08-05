@@ -53,8 +53,8 @@ public class ProjectController {
             return ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
         } catch (RuntimeException e) {
             return ApiResponseUtil.createErrorResponse(
-                    ErrorCode.SELECT_ERROR.getMessage(),
-                    ErrorCode.SELECT_ERROR.getStatus()
+                    ErrorCode.INSERT_ERROR.getMessage(),
+                    ErrorCode.INSERT_ERROR.getStatus()
             );
         }
     }
@@ -71,13 +71,10 @@ public class ProjectController {
         try {
             List<ProjectDto> projects = projectService.getProjectByWorkspaceId(workspaceId);
 
-            if (projects.isEmpty()) {
-                return ApiResponseUtil.createNotFoundResponse(ErrorCode.NOT_VALID_ERROR.getMessage());
-            }
             return ResponseEntity.ok().body(Api_Response.builder()
-                    .code(SuccessCode.INSERT_SUCCESS.getStatus())
+                    .code(SuccessCode.SELECT_SUCCESS.getStatus())
                     .result(projects)
-                    .message(SuccessCode.INSERT_SUCCESS.getMessage())
+                    .message(SuccessCode.SELECT_SUCCESS.getMessage())
                     .build());
         } catch (RuntimeException e) {
             return ApiResponseUtil.createErrorResponse(
@@ -159,7 +156,7 @@ public class ProjectController {
             projectService.addUser(inviteDto);
             return ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
         } catch (RuntimeException e) {
-            return ApiResponseUtil.createNotFoundResponse(ErrorCode.NOT_FOUND_ERROR.getMessage());
+            return ApiResponseUtil.createErrorResponse(ErrorCode.INSERT_ERROR.getMessage(), ErrorCode.INSERT_ERROR.getStatus());
         }
     }
     @Operation(summary = "특정 프로젝트의 팀원 조회", description = "특정 project의 팀원 조회 API 입니다.")
@@ -178,8 +175,8 @@ public class ProjectController {
                     .sorted()
                     .toList();
             if (usersId.isEmpty()) {
-                return ApiResponseUtil.createNotFoundResponse(
-                        ErrorCode.NOT_FOUND_ERROR.getMessage()
+                return ApiResponseUtil.createSuccessResponse(
+                        SuccessCode.SELECT_SUCCESS.getMessage()
                 );
             }
             List<UserDto> users = usersId.stream()
@@ -189,8 +186,8 @@ public class ProjectController {
                     .code(200).message("SUCCESS").result(users).build());
         } catch (RuntimeException e) {
             return ApiResponseUtil.createErrorResponse(
-                    ErrorCode.NOT_FOUND_ERROR.getMessage(),
-                    ErrorCode.NOT_FOUND_ERROR.getStatus()
+                    ErrorCode.SELECT_ERROR.getMessage(),
+                    ErrorCode.SELECT_ERROR.getStatus()
             );
         }
 

@@ -102,7 +102,6 @@ public class ProjectService {
             }
         }
     }
-정
     public void deleteProjectUser(Long projectId, String userName) {
         User user = userRepository.findByName(userName);
 
