@@ -51,11 +51,9 @@ public class User {
     @JsonManagedReference
     private List<UserTool> userTools;
 
-    public User(String name, String socialId, boolean requiredTermsAgree, boolean marketingEmailOptIn, String status) {
+    public User(String name, String socialId, String status) {
         this.name = name;
         this.socialId = socialId;
-        this.requiredTermsAgree = requiredTermsAgree;
-        this.marketingEmailOptIn = marketingEmailOptIn;
         this.status = status;
     }
     public void updateUserInfo(AdditionalUserInfo userDto) {

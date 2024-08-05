@@ -1,7 +1,6 @@
 package knu.kproject.service;
 
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
-import knu.kproject.dto.UserDto.ToolDto;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.entity.*;
 import knu.kproject.exception.UserExceptionHandler;
