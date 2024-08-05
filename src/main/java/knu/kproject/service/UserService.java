@@ -7,8 +7,6 @@ import knu.kproject.exception.UserExceptionHandler;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +19,8 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final UserToolRepository userToolRepository;
-    private final ToolRepository toolRepository;
     private final StackRepository stackRepository;
     private final UserStackRepository userStackRepository;
-
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     public User findById(Long userId) {
         return userRepository.findById(userId)
@@ -34,18 +29,26 @@ public class UserService {
 
     @Transactional
     public void updateUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
-        User user = findById(userId);
-        user.updateUserInfo(additionalUserInfo);
-        saveUserTools(user, additionalUserInfo.getTools());
-        saveUserStacks(user, additionalUserInfo.getStacks());
+        try{
+            User user = findById(userId);
+            user.updateUserInfo(additionalUserInfo);
+            saveUserTools(user, additionalUserInfo.getTools());
+            saveUserStacks(user, additionalUserInfo.getStacks());
+        }catch(Exception e){
+            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
     }
 
     @Transactional
     public void addUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
-        User user = findById(userId);
-        user.joinInfo(additionalUserInfo);
-        saveUserTools(user, additionalUserInfo.getTools());
-        saveUserStacks(user, additionalUserInfo.getStacks());
+        try{
+            User user = findById(userId);
+            user.joinInfo(additionalUserInfo);
+            saveUserTools(user, additionalUserInfo.getTools());
+            saveUserStacks(user, additionalUserInfo.getStacks());
+        }catch (Exception e) {
+            throw new UserExceptionHandler(ErrorCode.INSERT_ERROR);
+        }
     }
 
     @Transactional
@@ -56,14 +59,17 @@ public class UserService {
             user.joinInfo(additionalUserInfo);
             userRepository.save(user);
         } catch (Exception e) {
-            logger.error("Error joining user with userId {}: {}", userId, e.getMessage());
-            throw e;
+            throw new UserExceptionHandler(ErrorCode.INSERT_ERROR);
         }
     }
 
     public UserDto getUserInfo(Long userId) {
-        User user = findById(userId);
-        return UserDto.fromEntity(user);
+        try{
+            User user = findById(userId);
+            return UserDto.fromEntity(user);
+        }catch (Exception e) {
+            throw new UserExceptionHandler(ErrorCode.SELECT_ERROR);
+        }
     }
 
     public Optional<User> findBySocialId(String email) {
@@ -72,36 +78,45 @@ public class UserService {
 
     @Transactional
     public void withdraw(Long userId, UserDto userDto) {
-        User user = findById(userId);
-        user.withDraw(userDto);
-        userRepository.save(user);
+        try{
+            User user = findById(userId);
+            user.withDraw(userDto);
+            userRepository.save(user);
+        }catch (Exception e) {
+            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
     }
 
-    private void saveUserTools(User user, Map<String, String> tools) {
-        for (Map.Entry<String, String> entry : tools.entrySet()) {
-            String toolName = entry.getKey();
-            String toolEmail = entry.getValue();
+    private void saveUserTools(User user, Map<ToolName, String> tools) {
+        try{
+            for (Map.Entry<ToolName, String> entry : tools.entrySet()) {
+                ToolName toolName = entry.getKey();
+                String toolEmail = entry.getValue();
 
-            Tool tool = toolRepository.findByName(toolName)
-                    .orElseGet(() -> toolRepository.save(new Tool(toolName)));
-
-            UserTool userTool = userToolRepository.findByUserAndTool(user, tool)
-                    .orElse(new UserTool(user, tool, toolEmail));
-            userTool.setEmail(toolEmail);
-            userToolRepository.save(userTool);
+                UserTool userTool = userToolRepository.findByUserAndTool(user, toolName)
+                        .orElse(new UserTool(user, toolName, toolEmail));
+                userTool.setEmail(toolEmail);
+                userToolRepository.save(userTool);
+            }
+        }catch (Exception e){
+            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
         }
     }
 
     private void saveUserStacks(User user, List<String> stacks) {
-        userStackRepository.deleteByUser(user);
-        for (String stackName : stacks) {
-            Stack stack = stackRepository.findByName(stackName)
-                    .orElseGet(() -> stackRepository.save(new Stack(stackName)));
+        try{
+                userStackRepository.deleteByUser(user);
+            for (String stackName : stacks) {
+                Stack stack = stackRepository.findByName(stackName)
+                        .orElseGet(() -> stackRepository.save(new Stack(stackName)));
 
-            if (userStackRepository.findByUserAndStack(user, stack).isEmpty()) {
-                UserStack userStack = new UserStack(user, stack);
-                userStackRepository.save(userStack);
+                if (userStackRepository.findByUserAndStack(user, stack).isEmpty()) {
+                    UserStack userStack = new UserStack(user, stack);
+                    userStackRepository.save(userStack);
+                }
             }
+        }catch (Exception e){
+            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
         }
     }
 }

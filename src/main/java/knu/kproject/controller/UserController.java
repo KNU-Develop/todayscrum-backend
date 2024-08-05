@@ -7,15 +7,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.global.code.SuccessCode;
 import knu.kproject.service.UserService;
+import knu.kproject.util.ApiResponseUtil;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -27,144 +28,149 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-
 
     @Operation(summary = "회원가입", description = "회원가입 시 필수 추가 정보를 등록 API 입니다.")
     @PostMapping("")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원가입 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "회원가입 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
     public ResponseEntity<?> join(
             @Parameter(description = "회원가입 시 필요한 추가 정보", required = true)
-            @RequestBody AdditionalUserInfo additionalInfo,
+            @Valid @RequestBody AdditionalUserInfo additionalInfo,
             @Parameter(description = "현재 인증된 사용자의 ID", required = true)
             @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<Boolean>> result;
         try {
             userService.joinUser(userId, additionalInfo);
-            return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(SuccessCode.INSERT_SUCCESS.getStatus())
-                    .result(true)
-                    .message(SuccessCode.INSERT_SUCCESS.getMessage())
-                    .build());
-        } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(ErrorCode.INSERT_ERROR.getStatus())
-                    .result(false)
-                    .message(ErrorCode.INSERT_ERROR.getMessage())
-                    .build());
+            result = ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
+        } catch (IllegalArgumentException e) {
+            result = ApiResponseUtil.createBadRequestResponse(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
+        return result;
     }
 
     @Operation(summary = "회원 선택정보", description = "추가 정보를 등록 API 입니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Api_Response.class))),
-            @ApiResponse(responseCode = "500", description = "FAIL",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Api_Response.class)))
+            @ApiResponse(responseCode = "200", description = "추가 정보 등록 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "추가 정보 등록 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
     })
     @PostMapping("/info")
     public ResponseEntity<?> addUserInfo(
             @Parameter(description = "추가 정보 입력", required = true)
-            @RequestBody AdditionalUserInfo additionalInfo,
+            @Valid @RequestBody AdditionalUserInfo additionalInfo,
             @Parameter(description = "현재 인증된 사용자의 ID", required = true)
             @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<Boolean>> result;
         try {
             userService.addUserInfo(userId, additionalInfo);
-            return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(SuccessCode.INSERT_SUCCESS.getStatus())
-                    .result(true)
-                    .message(SuccessCode.INSERT_SUCCESS.getMessage())
-                    .build());
-        } catch (RuntimeException e) {
-            logger.error("Error adding user info: ", e);
-            return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(ErrorCode.INSERT_ERROR.getStatus())
-                    .result(false)
-                    .message(ErrorCode.INSERT_ERROR.getMessage())
-                    .build());
+            result = ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
+        } catch (IllegalArgumentException e) {
+            result = ApiResponseUtil.createBadRequestResponse(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
+        return result;
     }
 
     @Operation(summary = "내 정보 조회", description = "User 조회 API 입니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Api_Response.class))),
-            @ApiResponse(responseCode = "500", description = "FAIL",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Api_Response.class)))
+            @ApiResponse(responseCode = "200", description = "회원정보 조회 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "회원정보 조회 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
     })
     @GetMapping("/info")
     public ResponseEntity<?> getUserInfo(
             @Parameter(description = "회원정보 조회", required = true)
             @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<UserDto>> result;
         try {
             UserDto userDto = userService.getUserInfo(userId);
-            return ResponseEntity.ok().body(Api_Response.<UserDto>builder()
-                    .code(SuccessCode.SELECT_SUCCESS.getStatus())
-                    .result(userDto)
-                    .message(SuccessCode.SELECT_SUCCESS.getMessage())
-                    .build());
-        } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(ErrorCode.SELECT_ERROR.getStatus())
-                    .result(false)
-                    .message(ErrorCode.SELECT_ERROR.getMessage())
-                    .build());
+            result = ApiResponseUtil.createResponse(SuccessCode.SELECT_SUCCESS.getStatus(), SuccessCode.SELECT_SUCCESS.getMessage(), userDto);
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
+        return result;
     }
 
     @Operation(summary = "내 정보 수정", description = "User 수정 API 입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원정보 수정 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "회원정보 수정 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
     @PutMapping("/info/optional")
     public ResponseEntity<?> updateUserInfo(
             @Parameter(description = "회원 정보 수정", required = true)
-            @RequestBody AdditionalUserInfo additionalInfo,
+            @Valid @RequestBody AdditionalUserInfo additionalInfo,
             @Parameter(description = "현재 인증된 사용자의 ID", required = true)
             @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<Boolean>> result;
         try {
             userService.updateUserInfo(userId, additionalInfo);
-            return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(SuccessCode.UPDATE_SUCCESS.getStatus())
-                    .result(true)
-                    .message(SuccessCode.UPDATE_SUCCESS.getMessage())
-                    .build());
-        } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(ErrorCode.UPDATE_ERROR.getStatus())
-                    .result(false)
-                    .message(ErrorCode.UPDATE_ERROR.getMessage())
-                    .build());
+            result = ApiResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS.getMessage());
+        } catch (IllegalArgumentException e) {
+            result = ApiResponseUtil.createBadRequestResponse(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
+        return result;
     }
 
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API 입니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SUCCESS",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Api_Response.class))),
-            @ApiResponse(responseCode = "500", description = "FAIL",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Api_Response.class)))
+            @ApiResponse(responseCode = "200", description = "회원 탈퇴 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "회원 탈퇴 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
     })
     @PutMapping("/withdraw")
     public ResponseEntity<?> withdrawUser(
             @Parameter(description = "회원 탈퇴", required = true)
-            @RequestBody UserDto userDto,
+            @Valid @RequestBody UserDto userDto,
             @Parameter(description = "현재 인증된 사용자의 ID", required = true)
             @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<Boolean>> result;
         try {
             userService.withdraw(userId, userDto);
-            return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(SuccessCode.UPDATE_SUCCESS.getStatus())
-                    .result(true)
-                    .message(SuccessCode.UPDATE_SUCCESS.getMessage())
-                    .build());
-        } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(Api_Response.<Boolean>builder()
-                    .code(ErrorCode.UPDATE_ERROR.getStatus())
-                    .result(false)
-                    .message(ErrorCode.UPDATE_ERROR.getMessage())
-                    .build());
+            result = ApiResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS.getMessage());
+        } catch (IllegalArgumentException e) {
+            result = ApiResponseUtil.createBadRequestResponse(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
+        return result;
     }
 }

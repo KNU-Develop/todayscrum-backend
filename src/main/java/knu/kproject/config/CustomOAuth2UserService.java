@@ -2,6 +2,7 @@ package knu.kproject.config;
 
 
 import knu.kproject.entity.User;
+import knu.kproject.entity.UserStatus;
 import knu.kproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -33,7 +34,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String socialId = attributes.get("socialId").toString();
         Optional<User> user = userRepository.findBySocialId(socialId);
         if (user.isEmpty()) {
-            User newUser = new User(userName, socialId, "LOGIN");
+            User newUser = new User(userName, socialId, UserStatus.LOGIN);
             userRepository.save(newUser);
         }
 

@@ -1,7 +1,9 @@
 package knu.kproject.dto.UserDto;
 
+import jakarta.validation.constraints.Email;
 import knu.kproject.entity.MBTI;
 import knu.kproject.entity.User;
+import knu.kproject.entity.UserStatus;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -13,15 +15,16 @@ import java.util.stream.Collectors;
 public class UserDto {
     private Long id;
     private String name;
+    @Email
     private String email;
-    private String status;
+    private UserStatus status;
     private String socialId;
     private boolean marketingEmailOptIn;
     private String contact;
     private String location;
     private MBTI mbti;
     private String imageUrl;
-    private List<ToolDto> tools = new ArrayList<>();
+    private List<ToolInfoDto> tools = new ArrayList<>();
     private List<String> stackNames;
 
 
@@ -39,7 +42,7 @@ public class UserDto {
         dto.setImageUrl(user.getImageUrl());
 
         dto.setTools(user.getUserTools().stream()
-                .map(ToolDto::fromEntity)
+                .map(ToolInfoDto::fromEntity)
                 .collect(Collectors.toList()));
 
         dto.setStackNames(user.getUserStacks().stream()
