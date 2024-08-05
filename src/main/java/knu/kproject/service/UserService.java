@@ -1,45 +1,26 @@
 package knu.kproject.service;
 
-import knu.kproject.dto.UserDto.ToolDto;
+import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
-import knu.kproject.entity.Tool;
-import knu.kproject.entity.User;
+import knu.kproject.entity.*;
 import knu.kproject.exception.UserExceptionHandler;
 import knu.kproject.global.code.ErrorCode;
-import knu.kproject.repository.UserRepository;
+import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-
-    public UserDto Convert2UserDto(User user) {
-        UserDto dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setName(user.getName());
-        dto.setSocialId(user.getSocialId());
-        dto.setMarketingEmailOptIn(user.isMarketingEmailOptIn());
-        dto.setContact(user.getContact());
-        dto.setLocation(user.getLocation());
-        dto.setMbti(user.getMbti());
-        dto.setImageUrl(user.getImageUrl());
-        dto.setTools(user.getTools().stream().map(this::Convert2ToolDto).collect(Collectors.toList()));
-        return dto;
-    }
-
-    private ToolDto Convert2ToolDto(Tool tool) {
-        ToolDto dto = new ToolDto();
-        dto.setId(tool.getId());
-        dto.setName(tool.getName());
-        dto.setEmail(tool.getEmail());
-        return dto;
-    }
+    private final UserToolRepository userToolRepository;
+    private final StackRepository stackRepository;
+    private final UserStackRepository userStackRepository;
 
     public User findById(Long userId) {
         return userRepository.findById(userId)
@@ -47,18 +28,48 @@ public class UserService {
     }
 
     @Transactional
-    public User updateMyInfo(Long userId, UserDto userDto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserExceptionHandler(ErrorCode.NOT_FOUND_ERROR));
+    public void updateUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
+        try{
+            User user = findById(userId);
+            user.updateUserInfo(additionalUserInfo);
+            saveUserTools(user, additionalUserInfo.getTools());
+            saveUserStacks(user, additionalUserInfo.getStacks());
+        }catch(Exception e){
+            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
+    }
 
-        user.updateUserInfo(userDto);
-        user.getTools().clear();
-        userDto.getTools().forEach(toolDto -> {
-            Tool tool = new Tool(toolDto.getName(), toolDto.getEmail(), user);
-            user.getTools().add(tool);
-        });
-        userRepository.save(user);
-        return user;
+    @Transactional
+    public void addUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
+        try{
+            User user = findById(userId);
+            user.joinInfo(additionalUserInfo);
+            saveUserTools(user, additionalUserInfo.getTools());
+            saveUserStacks(user, additionalUserInfo.getStacks());
+        }catch (Exception e) {
+            throw new UserExceptionHandler(ErrorCode.INSERT_ERROR);
+        }
+    }
+
+    @Transactional
+    public void joinUser(Long userId, AdditionalUserInfo additionalUserInfo) {
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserExceptionHandler(ErrorCode.NOT_FOUND_ERROR));
+            user.joinInfo(additionalUserInfo);
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new UserExceptionHandler(ErrorCode.INSERT_ERROR);
+        }
+    }
+
+    public UserDto getUserInfo(Long userId) {
+        try{
+            User user = findById(userId);
+            return UserDto.fromEntity(user);
+        }catch (Exception e) {
+            throw new UserExceptionHandler(ErrorCode.SELECT_ERROR);
+        }
     }
 
     public Optional<User> findBySocialId(String email) {
@@ -66,7 +77,46 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public void withdraw(Long userId, UserDto userDto) {
+        try{
+            User user = findById(userId);
+            user.withDraw(userDto);
+            userRepository.save(user);
+        }catch (Exception e) {
+            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
+    }
+
+    private void saveUserTools(User user, Map<ToolName, String> tools) {
+        try{
+            for (Map.Entry<ToolName, String> entry : tools.entrySet()) {
+                ToolName toolName = entry.getKey();
+                String toolEmail = entry.getValue();
+
+                UserTool userTool = userToolRepository.findByUserAndTool(user, toolName)
+                        .orElse(new UserTool(user, toolName, toolEmail));
+                userTool.setEmail(toolEmail);
+                userToolRepository.save(userTool);
+            }
+        }catch (Exception e){
+            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
+    }
+
+    private void saveUserStacks(User user, List<String> stacks) {
+        try{
+                userStackRepository.deleteByUser(user);
+            for (String stackName : stacks) {
+                Stack stack = stackRepository.findByName(stackName)
+                        .orElseGet(() -> stackRepository.save(new Stack(stackName)));
+
+                if (userStackRepository.findByUserAndStack(user, stack).isEmpty()) {
+                    UserStack userStack = new UserStack(user, stack);
+                    userStackRepository.save(userStack);
+                }
+            }
+        }catch (Exception e){
+            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
     }
 }

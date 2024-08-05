@@ -79,7 +79,10 @@ public enum ErrorCode {
     UPDATE_ERROR(500, "9999", "Update Transaction Error Exception"),
 
     // Transaction Delete Error
-    DELETE_ERROR(500, "9999", "Delete Transaction Error Exception");
+    DELETE_ERROR(500, "9999", "Delete Transaction Error Exception"),
+
+
+    SELECT_ERROR(500, "9999", "Select Transaction Error Exception");
 
 
     /**

@@ -7,97 +7,170 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.global.code.Api_Response;
-import knu.kproject.entity.User;
+import knu.kproject.global.code.ErrorCode;
 import knu.kproject.global.code.SuccessCode;
 import knu.kproject.service.UserService;
+import knu.kproject.util.ApiResponseUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "User API", description = "User API 명세서 입니다. user의 경우 accessToken을 @AuthenticationPrincipal로 넘겨줘야 하지만" +
-        "이 부분이 인자로 swagger에 표현되지 않아 오류가 발생할 수 있습니다.")
+@Tag(name = "User API", description = "회원 관련 API")
 @RestController
-@RequestMapping("/UserInfo")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
 
-    @Operation(summary = "유저 정보 확인", description = "User 조회 API 입니다.")
-    @ApiResponses(
-            value = {
-                    @ApiResponse(responseCode = "200", description = "success", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))),
-                    @ApiResponse(responseCode = "500", description = "false", content = @Content(mediaType = "applicaion/json", schema = @Schema(type = "false")))
-            }
-    )
-    @GetMapping("")
-    public ResponseEntity<?> getUserInfo(@Parameter(hidden = true) @AuthenticationPrincipal Long id) {
+
+    @Operation(summary = "회원가입", description = "회원가입 시 필수 추가 정보를 등록 API 입니다.")
+    @PostMapping("")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원가입 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "회원가입 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
+    public ResponseEntity<?> join(
+            @Parameter(description = "회원가입 시 필요한 추가 정보", required = true)
+            @Valid @RequestBody AdditionalUserInfo additionalInfo,
+            @Parameter(description = "현재 인증된 사용자의 ID", required = true)
+            @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<Boolean>> result;
         try {
-            User user = userService.findById(id);
-            Api_Response<User> response = Api_Response.<User>builder()
-                    .code(SuccessCode.SELECT_SUCCESS.getStatus())
-                    .Description(SuccessCode.SELECT_SUCCESS.getMessage())
-                    .result(user)
-                    .build();
-            return ResponseEntity.ok().body(new Api_Response<>(user, 200, "SUCCESS"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(new Api_Response<>(false, 500,"Fail"));
+            userService.joinUser(userId, additionalInfo);
+            result = ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
+        } catch (IllegalArgumentException e) {
+            result = ApiResponseUtil.createBadRequestResponse(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
+        return result;
     }
-    @Operation(summary = "유저 정보 수정", description = "User 수정 API 입니다.")
-    @ApiResponses(
-            value = {
-                    @ApiResponse(responseCode = "200", description = "success", content = @Content(mediaType = "application/json", schema = @Schema(type = "true"))),
-                    @ApiResponse(responseCode = "500", description = "false", content = @Content(mediaType = "applicaion/json", schema = @Schema(type = "false")))
-            }
-    )
-    @PutMapping("")
-    public ResponseEntity<?> updateUserInfo(@Parameter(hidden = true) @AuthenticationPrincipal Long id, @RequestBody UserDto userDto) {
+
+    @Operation(summary = "회원 선택정보", description = "추가 정보를 등록 API 입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추가 정보 등록 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "추가 정보 등록 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
+    @PostMapping("/info")
+    public ResponseEntity<?> addUserInfo(
+            @Parameter(description = "추가 정보 입력", required = true)
+            @Valid @RequestBody AdditionalUserInfo additionalInfo,
+            @Parameter(description = "현재 인증된 사용자의 ID", required = true)
+            @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<Boolean>> result;
         try {
-            User user = userService.updateMyInfo(id, userDto);
-            Api_Response<User> response = Api_Response.<User>builder()
-                    .code(SuccessCode.UPDATE_SUCCESS.getStatus())
-                    .Description(SuccessCode.UPDATE_SUCCESS.getMessage())
-                    .result(user)
-                    .build();
-            return ResponseEntity.ok().body(new Api_Response<>(true, 200, "SUCCESS"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
+            userService.addUserInfo(userId, additionalInfo);
+            result = ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
+        } catch (IllegalArgumentException e) {
+            result = ApiResponseUtil.createBadRequestResponse(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
+        return result;
     }
-    @Operation(summary = "id로 유저 정보 수정", description = "User 수정 API 입니다.")
-    @ApiResponses(
-            value = {
-                    @ApiResponse(responseCode = "200", description = "success", content = @Content(mediaType = "application/json", schema = @Schema(type = "true"))),
-                    @ApiResponse(responseCode = "500", description = "false", content = @Content(mediaType = "applicaion/json", schema = @Schema(type = "false")))
-            }
-    )
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        User user = userService.findById(id);
-        Api_Response<User> response = Api_Response.<User>builder()
-                .code(SuccessCode.SELECT_SUCCESS.getStatus())
-                .Description(SuccessCode.SELECT_SUCCESS.getMessage())
-                .result(user)
-                .build();
-        return ResponseEntity.ok(response);
-    }
-    @Operation(summary = "유저 삭제", description = "User 삭제 API 입니다.")
-    @ApiResponses(
-            value = {
-                    @ApiResponse(responseCode = "200", description = "success", content = @Content(mediaType = "application/json", schema = @Schema(type = "true"))),
-                    @ApiResponse(responseCode = "500", description = "false", content = @Content(mediaType = "applicaion/json", schema = @Schema(type = "false")))
-            }
-    )
-    @DeleteMapping("")
-    public ResponseEntity<?> deleteUser(@RequestParam Long id) {
+
+    @Operation(summary = "내 정보 조회", description = "User 조회 API 입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원정보 조회 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "회원정보 조회 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
+    @GetMapping("/info")
+    public ResponseEntity<?> getUserInfo(
+            @Parameter(description = "회원정보 조회", required = true)
+            @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<UserDto>> result;
         try {
-            userService.deleteUser(id);
-            return ResponseEntity.ok().body(new Api_Response<>(true, 200, "SUCCESS"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.ok().body(new Api_Response<>(false, 500, "Fail"));
+            UserDto userDto = userService.getUserInfo(userId);
+            result = ApiResponseUtil.createResponse(SuccessCode.SELECT_SUCCESS.getStatus(), SuccessCode.SELECT_SUCCESS.getMessage(), userDto);
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
+        return result;
+    }
+
+    @Operation(summary = "내 정보 수정", description = "User 수정 API 입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원정보 수정 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "회원정보 수정 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
+    @PutMapping("/info/optional")
+    public ResponseEntity<?> updateUserInfo(
+            @Parameter(description = "회원 정보 수정", required = true)
+            @Valid @RequestBody AdditionalUserInfo additionalInfo,
+            @Parameter(description = "현재 인증된 사용자의 ID", required = true)
+            @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<Boolean>> result;
+        try {
+            userService.updateUserInfo(userId, additionalInfo);
+            result = ApiResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS.getMessage());
+        } catch (IllegalArgumentException e) {
+            result = ApiResponseUtil.createBadRequestResponse(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
+        }
+        return result;
+    }
+
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API 입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원 탈퇴 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "회원 탈퇴 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
+    @PutMapping("/withdraw")
+    public ResponseEntity<?> withdrawUser(
+            @Parameter(description = "회원 탈퇴", required = true)
+            @Valid @RequestBody UserDto userDto,
+            @Parameter(description = "현재 인증된 사용자의 ID", required = true)
+            @AuthenticationPrincipal Long userId) {
+        ResponseEntity<Api_Response<Boolean>> result;
+        try {
+            userService.withdraw(userId, userDto);
+            result = ApiResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS.getMessage());
+        } catch (IllegalArgumentException e) {
+            result = ApiResponseUtil.createBadRequestResponse(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            result = ApiResponseUtil.createNotFoundResponse(e.getMessage());
+        } catch (Exception e) {
+            result = ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
+        }
+        return result;
     }
 }

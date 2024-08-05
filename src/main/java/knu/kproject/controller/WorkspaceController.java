@@ -12,9 +12,14 @@ import knu.kproject.dto.workspace.PutworkspaceDto;
 import knu.kproject.dto.workspace.WorkSpaceDto;
 import knu.kproject.entity.Workspace;
 import knu.kproject.global.code.Api_Response;
+import knu.kproject.global.code.ErrorCode;
+import knu.kproject.global.code.SuccessCode;
 import knu.kproject.service.UserService;
 import knu.kproject.service.WorkspaceService;
+import knu.kproject.util.ApiResponseUtil;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,12 +31,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name="WorkSapce API", description = "WorkSapce API 명세서 입니다.")
 @RestController
 @RequestMapping("/")
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class WorkspaceController {
-    @Autowired
-    private WorkspaceService workspaceService;
-    @Autowired
-    private UserService userService;
+    private final WorkspaceService workspaceService;
+    private final UserService userService;
 
     @Operation(summary = "workspace 생성", description = "워크스페이스 생성 API 입니다.")
     @ApiResponses(
@@ -41,12 +44,19 @@ public class WorkspaceController {
             }
     )
     @PostMapping("")
-    public ResponseEntity<Api_Response<?>> createWorkSpace(@RequestBody PutworkspaceDto workSpaceDto, @Parameter(hidden = true) @AuthenticationPrincipal Long id) {
+    public ResponseEntity<Api_Response<Workspace>> createWorkSpace(@RequestBody PutworkspaceDto workSpaceDto, @Parameter(hidden = true) @AuthenticationPrincipal Long id) {
         try {
             Workspace workspace = workspaceService.createWorkSpace(workSpaceDto, id);
-            return ResponseEntity.ok(new Api_Response<>(workspace, 200, "SUCCESS"));
+            return ApiResponseUtil.createResponse(
+                    SuccessCode.INSERT_SUCCESS.getStatus(),
+                    SuccessCode.INSERT_SUCCESS.getMessage(),
+                    workspace
+            );
         } catch (RuntimeException e) {
-            return ResponseEntity.ok(new Api_Response<>(false, 500, "Fail"));
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
+                    ErrorCode.INTERNAL_SERVER_ERROR.getStatus()
+            );
         }
     }
 }

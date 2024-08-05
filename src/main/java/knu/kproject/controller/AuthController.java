@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,7 +28,7 @@ public class AuthController {
             String newAccessToken = jwtTokenUtil.createAccessToken(userId);
             Api_Response<TokenRefreshResponse> response = Api_Response.<TokenRefreshResponse>builder()
                     .code(SuccessCode.SELECT_SUCCESS.getStatus())
-                    .Description(SuccessCode.SELECT_SUCCESS.getMessage())
+                    .message(SuccessCode.SELECT_SUCCESS.getMessage())
                     .result(new TokenRefreshResponse(newAccessToken))
                     .build();
             return ResponseEntity.ok().body(response);
@@ -36,4 +37,5 @@ public class AuthController {
                     .body("Invalid refresh token");
         }
     }
+
 }
