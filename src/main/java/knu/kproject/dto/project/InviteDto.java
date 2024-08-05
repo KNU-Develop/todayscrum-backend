@@ -3,9 +3,10 @@ package knu.kproject.dto.project;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class InviteDto {
-    private Long projectId;
-    private List<String> userNames;
+    private UUID projectId;
+    private List<String> userEmails;
 }

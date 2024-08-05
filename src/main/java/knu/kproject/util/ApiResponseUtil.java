@@ -21,6 +21,9 @@ public class ApiResponseUtil {
     public static <T> ResponseEntity<Api_Response<T>> createBadRequestResponse(String message) {
         return createResponse(HttpStatus.BAD_REQUEST.value(), message, null);
     }
+    public static <T> ResponseEntity<Api_Response<T>> createUnAuthorization() {
+        return createResponse(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase(), null);
+    }
 
     public static <T> ResponseEntity<Api_Response<T>> createNotFoundResponse(String message) {
         return createResponse(HttpStatus.NOT_FOUND.value(), message, null);
