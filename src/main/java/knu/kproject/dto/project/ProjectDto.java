@@ -11,13 +11,14 @@ import org.springframework.security.core.parameters.P;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ProjectDto {
-    private Long id;
+    private UUID id;
     private String title;
     private String overview;
     private Timestamp startDate;

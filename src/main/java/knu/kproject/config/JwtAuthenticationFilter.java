@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
             Integer socialIdInt = (Integer) oAuth2User.getAttributes().get("id");
-            String socialId = socialIdInt != null ? socialIdInt.toString() : null;
+            String socialId = socialIdInt != null ? socialIdInt.toString() : (String) oAuth2User.getAttributes().get("sub");
             if (socialId != null) {
                 User user = userService.findBySocialId(socialId).orElse(null);
                 if (user != null) {

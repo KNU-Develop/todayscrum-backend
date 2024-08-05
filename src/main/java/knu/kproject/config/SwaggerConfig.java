@@ -29,25 +29,4 @@ public class SwaggerConfig {
         return new OpenAPI().components(new Components().addSecuritySchemes("Bearer Token", apiKey))
                 .addSecurityItem(securityRequirement);
     }
-    @Bean
-    public GroupedOpenApi projectApi(){
-        return GroupedOpenApi.builder()
-                .group("project")
-                .pathsToMatch("/workspace/**")
-                .build();
-    }
-    @Bean
-    public GroupedOpenApi workspaceApi(){
-        return GroupedOpenApi.builder()
-                .group("workspace")
-                .pathsToMatch("/")
-                .build();
-    }
-    @Bean
-    public GroupedOpenApi userApi(){
-        return GroupedOpenApi.builder()
-                .group("user")
-                .pathsToMatch("/UserInfo/**")
-                .build();
-    }
 }
