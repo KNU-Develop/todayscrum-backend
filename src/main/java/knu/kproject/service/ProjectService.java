@@ -1,6 +1,7 @@
 package knu.kproject.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.Null;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.project.InviteDto;
 import knu.kproject.dto.project.ProjectDto;
@@ -14,9 +15,12 @@ import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.WorkspaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.jdbc.Work;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
+
+import javax.swing.text.html.Option;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +64,14 @@ public class ProjectService {
 
         workspaceRepository.findById(workspaceId).orElseThrow(() -> new EntityNotFoundException("workspace not found"));
         List<Project> projects = projectRepositroy.findByWorkspaceOwnerId(workspaceId);
+        List<ProjectUser> subProjects = projectUserRepository.findByUserId(workspaceId);
+        for (ProjectUser projectUser : subProjects) {
+            Project project = projectRepositroy.findById(projectUser.getProjectId()).orElseThrow();
+            if (!projects.contains(project)) {
+                projects.add(project);
+            }
+        }
+
         return projects.stream().map(this::convertToDto).toList();
     }
     public ProjectDto getProjectById(UUID projectId){
@@ -90,9 +102,15 @@ public class ProjectService {
 
         projectRepositroy.save(project);
     }
-    public void deleteProject(UUID projectId) {
+    public void deleteProject(Long token, UUID projectId) {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("project not found"));
+        Optional<Workspace> workspace = workspaceRepository.findById(project.getWorkspace().getId());
+
+        if (workspace.get().getOwnerId() != token) {
+            throw new NullPointerException();
+        }
+
         List<ProjectUser> projectUsers = projectUserRepository.findByProjectId(projectId);
         projectUserRepository.deleteAll(projectUsers);
         projectRepositroy.delete(project);
@@ -102,8 +120,14 @@ public class ProjectService {
 
         return projectUserRepository.findByProjectId(projectId);
     }
-    public void addUser(InviteDto inviteDto) {
-        projectRepositroy.findById(inviteDto.getProjectId()).orElseThrow(() -> new EntityNotFoundException("not found project"));
+    public void addUser(Long token, InviteDto inviteDto) {
+        Project project = projectRepositroy.findById(inviteDto.getProjectId()).orElseThrow(() -> new EntityNotFoundException("not found project"));
+        Optional<Workspace> workspace = workspaceRepository.findById(project.getWorkspace().getId());
+
+        if (workspace.get().getOwnerId() != token) {
+            throw new NullPointerException("error");
+        }
+
         List<String> userEmails = inviteDto.getUserEmails();
         for (String email : userEmails) {
             if (userRepository.existsByEmail(email)) {

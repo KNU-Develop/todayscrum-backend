@@ -9,7 +9,8 @@ import java.util.UUID;
 
 public interface ProjectUserRepository extends JpaRepository<ProjectUser, Long> {
     List<ProjectUser> findByProjectId(UUID projectId);
-    ProjectUser findByUserId(Long userId);
+
+    List<ProjectUser> findByUserId(Long userId);
     boolean existsByUserId(Long userId);
 
     boolean existsByProjectIdAndUserId(UUID projectId, Long userId);

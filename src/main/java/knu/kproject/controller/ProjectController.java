@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.Null;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.project.InviteDto;
 import knu.kproject.dto.project.ProjectDto;
@@ -172,13 +173,18 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> deleteProject(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
         try {
             if (token == null) throw new IllegalArgumentException("error");
-            projectService.deleteProject(key);
+            projectService.deleteProject(token, key);
             return ApiResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS.getMessage());
         } catch (IllegalArgumentException e) {
             return ApiResponseUtil.createUnAuthorization();
         } catch (EntityNotFoundException e) {
             return ApiResponseUtil.createNotFoundResponse(
                     ErrorCode.NOT_FOUND_ERROR.getMessage()
+            );
+        } catch (NullPointerException e) {
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.FORBIDDEN_ERROR.getMessage(),
+                    ErrorCode.FORBIDDEN_ERROR.getStatus()
             );
         } catch (RuntimeException e) {
             return ApiResponseUtil.createErrorResponse(
@@ -198,12 +204,17 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> addUser(@AuthenticationPrincipal Long token, @RequestBody InviteDto inviteDto) {
         try {
             if (token == null) throw new IllegalArgumentException("error");
-            projectService.addUser(inviteDto);
+            projectService.addUser(token, inviteDto);
             return ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
         } catch (IllegalArgumentException e) {
             return ApiResponseUtil.createUnAuthorization();
         } catch (EntityNotFoundException e) {
             return ApiResponseUtil.createNotFoundResponse(ErrorCode.NOT_FOUND_ERROR.getMessage());
+        } catch (NullPointerException e) {
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.FORBIDDEN_ERROR.getMessage(),
+                    ErrorCode.FORBIDDEN_ERROR.getStatus()
+            );
         } catch (RuntimeException e) {
             return ApiResponseUtil.createErrorResponse(
                     ErrorCode.INSERT_ERROR.getMessage(),
@@ -249,6 +260,7 @@ public class ProjectController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "프로젝트 팀원 삭제 성공"),
             @ApiResponse(responseCode = "401", description = "Authorizeation 오류"),
+            @ApiResponse(responseCode = "403", description = "권한 오류"),
             @ApiResponse(responseCode = "404", description = "프로젝트가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
@@ -262,6 +274,11 @@ public class ProjectController {
             return ApiResponseUtil.createUnAuthorization();
         } catch (EntityNotFoundException e) {
             return ApiResponseUtil.createNotFoundResponse(ErrorCode.NOT_FOUND_ERROR.getMessage());
+        } catch (NullPointerException e) {
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.FORBIDDEN_ERROR.getMessage(),
+                    ErrorCode.FORBIDDEN_ERROR.getStatus()
+            );
         } catch (RuntimeException e) {
             return ApiResponseUtil.createErrorResponse(ErrorCode.DELETE_ERROR.getMessage(), ErrorCode.DELETE_ERROR.getStatus());
         }
