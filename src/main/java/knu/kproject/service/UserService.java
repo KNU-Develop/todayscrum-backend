@@ -53,6 +53,7 @@ public class UserService {
 
     @Transactional
     public void joinUser(Long userId, AdditionalUserInfo additionalUserInfo) {
+        validateAdditionalUserInfo(additionalUserInfo);
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new UserExceptionHandler(ErrorCode.NOT_FOUND_ERROR));
@@ -117,6 +118,17 @@ public class UserService {
             }
         }catch (Exception e){
             throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
+    }
+    private void validateAdditionalUserInfo(AdditionalUserInfo additionalUserInfo) {
+        if (additionalUserInfo.getName() == null || additionalUserInfo.getName().trim().isEmpty()) {
+            throw new UserExceptionHandler(ErrorCode.BAD_REQUEST_ERROR);
+        }
+        if (additionalUserInfo.getEmail() == null || additionalUserInfo.getEmail().trim().isEmpty()) {
+            throw new UserExceptionHandler(ErrorCode.BAD_REQUEST_ERROR);
+        }
+        if (additionalUserInfo.getContact() == null || additionalUserInfo.getContact().trim().isEmpty()) {
+            throw new UserExceptionHandler(ErrorCode.BAD_REQUEST_ERROR);
         }
     }
 }

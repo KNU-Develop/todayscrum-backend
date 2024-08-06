@@ -53,29 +53,38 @@ public class User {
     @JsonManagedReference
     private List<UserTool> userTools;
 
-    public User(String name, String socialId, UserStatus status) {
+    public User(String name, String socialId, String email, UserStatus status) {
         this.name = name;
         this.socialId = socialId;
+        this.email = email;
         this.status = status;
     }
-    public void updateUserInfo(AdditionalUserInfo userDto) {
-        if (userDto.getName() != null && !userDto.getName().isEmpty()) {
-            this.setName(userDto.getName());
-        }
-        this.setContact(userDto.getContact());
-        this.setEmail(userDto.getEmail());
-        this.setMarketingEmailOptIn(userDto.isMarketingEmailOptIn());
-
-        this.setMbti(userDto.getMbti());
-        this.setLocation(userDto.getLocation());
-        this.setImageUrl(userDto.getImageUrl());
-    }
-    public void joinInfo(AdditionalUserInfo userInfo) {
-        if (userInfo.getName() != null && !userInfo.getName().isEmpty()) {
+    public void updateUserInfo(AdditionalUserInfo userInfo) {
+        if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
             this.setName(userInfo.getName());
         }
-        this.setContact(userInfo.getContact());
-        this.setEmail(userInfo.getEmail());
+        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
+            this.setEmail(userInfo.getEmail());
+        }
+        if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
+            this.setContact(userInfo.getContact());
+        }
+        this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
+
+        this.setMbti(userInfo.getMbti());
+        this.setLocation(userInfo.getLocation());
+        this.setImageUrl(userInfo.getImageUrl());
+    }
+    public void joinInfo(AdditionalUserInfo userInfo) {
+        if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
+            this.setName(userInfo.getName());
+        }
+        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
+            this.setEmail(userInfo.getEmail());
+        }
+        if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
+            this.setContact(userInfo.getContact());
+        }
         this.setStatus(UserStatus.JOIN);
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
         this.setRequiredTermsAgree(userInfo.isRequiredTermsAgree());
