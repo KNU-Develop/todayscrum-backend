@@ -55,7 +55,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else if (userId != null && SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof OAuth2User ) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-            Integer socialIdInt = (Integer) oAuth2User.getAttributes().get("id");
+            Long socialIdInt = null;
+
+            if (oAuth2User.getAttributes().get("id") instanceof Long) {
+                socialIdInt = (Long) oAuth2User.getAttributes().get("id");
+            } else if (oAuth2User.getAttributes().get("id") instanceof Integer) {
+                socialIdInt = (((Integer) oAuth2User.getAttributes().get("id")).longValue());
+            }
+
             String socialId = socialIdInt != null ? socialIdInt.toString() : (String) oAuth2User.getAttributes().get("sub");
             if (socialId != null) {
                 User user = userService.findBySocialId(socialId).orElse(null);
