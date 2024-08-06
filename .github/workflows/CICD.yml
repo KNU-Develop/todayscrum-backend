@@ -90,9 +90,9 @@ jobs:
           host: ${{ secrets.LIVE_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            image_id=$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:none)
-            if [ ! -z "$image_id" ]; then
-              sudo docker rmi $image_id
+            dangling_images=$(sudo docker images -f "dangling=true" -q)
+            if [ ! -z "$dangling_images" ]; then
+              sudo docker rmi $dangling_images
             else
-              echo "No image found with tag 'none'"
+              echo "No dangling images found"
             fi
