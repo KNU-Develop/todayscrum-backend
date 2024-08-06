@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 
 @Tag(name = "Project API", description = "project API 명세서 입니다.")
 @RestController
-@RequestMapping("workspace")
+@RequestMapping("/workspace")
 @RequiredArgsConstructor
 public class ProjectController {
     private final ProjectService projectService;
