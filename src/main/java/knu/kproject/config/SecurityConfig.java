@@ -33,7 +33,7 @@ public class SecurityConfig {
                                 .requestMatchers("/oauth/authorization").permitAll()
                                 .requestMatchers("/user/**").authenticated()
                                 .requestMatchers("/workspace/**").authenticated()
-//                                .requestMatchers("/admin/**").hasRole("ADMIN")
+//                               .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2Login -> oauth2Login
