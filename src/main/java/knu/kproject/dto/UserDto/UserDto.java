@@ -2,6 +2,7 @@ package knu.kproject.dto.UserDto;
 
 import jakarta.validation.constraints.Email;
 import knu.kproject.entity.MBTI;
+import knu.kproject.entity.ROLE;
 import knu.kproject.entity.User;
 import knu.kproject.entity.UserStatus;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class UserDto {
     private String location;
     private MBTI mbti;
     private String imageUrl;
+    private ROLE role;
     private List<ToolInfoDto> tools = new ArrayList<>();
     private List<String> stackNames;
 
@@ -40,6 +42,7 @@ public class UserDto {
         dto.setLocation(user.getLocation());
         dto.setMbti(user.getMbti());
         dto.setImageUrl(user.getImageUrl());
+        dto.setRole(user.getRole());
 
         dto.setTools(user.getUserTools().stream()
                 .map(ToolInfoDto::fromEntity)
