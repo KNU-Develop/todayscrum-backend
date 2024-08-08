@@ -18,7 +18,7 @@ public class Master {
 
     @ManyToOne
     @JoinColumn(name = "board",nullable = false)
-    private Board boardId;
+    private Board board;
 
     @Column(nullable = false)
     private Long userId;

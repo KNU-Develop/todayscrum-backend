@@ -8,5 +8,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MasterRepository extends JpaRepository<knu.kproject.entity.Master, UUID> {
-    List<Master> findByBoardId(Board boardId);
+    List<Master> findByBoard(Board boardId);
 }

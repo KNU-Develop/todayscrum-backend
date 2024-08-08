@@ -1,7 +1,9 @@
 package knu.kproject.dto.board;
 
+import knu.kproject.entity.Board;
 import knu.kproject.entity.CATEGORY;
 import knu.kproject.entity.PROGRESS;
+import knu.kproject.service.BoardService;
 import lombok.Builder;
 import lombok.Data;
 

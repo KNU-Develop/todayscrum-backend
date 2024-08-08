@@ -4,6 +4,7 @@ import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.User;
+import knu.kproject.service.BoardService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,18 +28,5 @@ public class ProjectDto {
     private Timestamp endDate;
     private Long workspaceId;
     private List<UserDto> users;
-    private List<BoardDto> boards = new ArrayList<>();
-
-    public static ProjectDto fromEntity(Project project, List<UserDto> users) {
-        ProjectDto dto = new ProjectDto();
-        dto.setId(project.getId());
-        dto.setTitle(project.getTitle());
-        dto.setOverview(project.getOverview());
-        dto.setStartDate(project.getStartDate());
-        dto.setEndDate(project.getEndDate());
-        dto.setWorkspaceId(project.getWorkspace().getId());
-        dto.setUsers(users);
-
-        return dto;
-    }
+    private List<BoardDto> boards;
 }

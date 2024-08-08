@@ -34,7 +34,7 @@ public class Board {
     @Column
     private String content;
 
-    @OneToMany(mappedBy = "boardId")
+    @OneToMany(mappedBy = "id")
     private List<Master> master;
 
     @Column
@@ -45,4 +45,5 @@ public class Board {
 
     @Column(nullable = false, updatable = false)
     private Timestamp createdAt;
+
 }

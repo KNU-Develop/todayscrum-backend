@@ -49,7 +49,7 @@ public class BoardService {
                 User user = userRepository.findByEmail(email);
                 if (user==null) continue;
                 Master master = Master.builder()
-                        .boardId(board)
+                        .board(board)
                         .userId(user.getId())
                         .build();
                 masters.add(master);
@@ -63,38 +63,36 @@ public class BoardService {
         return board.getId();
     }
 
-    public List<MasterDto> convertToMaster(List<Master> masters) {
-        List<MasterDto> masterDto = new ArrayList<>();
-        for (Master master : masters) {
-            User user = userRepository.findById(master.getUserId()).orElseThrow();
-            MasterDto dto = MasterDto.builder()
-                    .name(user.getName())
-                    .email(user.getEmail())
-                    .build();
-            masterDto.add(dto);
-        }
-        return masterDto;
+    public MasterDto fromEntity(Master master) {
+        User user = userRepository.findById(master.getUserId()).orElseThrow();
+        return MasterDto.builder()
+                .name(user.getName())
+                .email(user.getEmail())
+                .build();
     }
-    public BoardDto formDto(Board board) {
-        BoardDto boardDto = BoardDto.builder()
+    public BoardDto fromEntity(Board board) {
+        List<Master> masters = masterRepository.findByBoard(board);
+        board.setMaster(masters);
+
+        BoardDto dto = BoardDto.builder()
                 .id(board.getId())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .category(board.getCategory())
                 .progress(board.getProgress())
                 .createdAt(board.getCreatedAt())
-                .masters(convertToMaster(board.getMaster()))
+                .masters(board.getMaster().stream()
+                        .map(this::fromEntity)
+                        .toList())
                 .build();
-
-        return boardDto;
+        return dto;
     }
-
     public List<BoardDto> findByAllBoard(Long token, UUID projectId) {
         if (!projectRepositroy.existsById(projectId)) throw new IllegalArgumentException();
         if (!projectUserRepository.existsByProjectIdAndUserId(projectId, token)) throw new NullPointerException();
 
         List<Board> boards = boardRepository.findByProject(projectRepositroy.findById(projectId).orElseThrow());
-        return boards.stream().map(this::formDto).toList();
+        return boards.stream().map(this::fromEntity).toList();
     }
 
     public BoardDto findByBoard(Long token, UUID boardId) {
@@ -103,7 +101,7 @@ public class BoardService {
         if (myRole == null) {
             throw new NullPointerException();
         }
-        return formDto(board);
+        return fromEntity(board);
     }
 
     public void updateBoard(Long token, UUID boardId, InputBoardDto input) {
@@ -117,10 +115,10 @@ public class BoardService {
 
         board.setTitle(input.getTitle()==null ? board.getTitle() : input.getTitle());
         board.setContent(input.getContent() == null ? board.getContent() : input.getContent());
-        board.setCategory(input.getCategory());
-        board.setProgress(input.getProgress());
+        board.setCategory(input.getCategory() == null ? board.getCategory() : input.getCategory());
+        board.setProgress(input.getProgress() == null ? board.getProgress() : input.getProgress());
 
-        List<Master> masterList = masterRepository.findByBoardId(board);
+        List<Master> masterList = masterRepository.findByBoard(board);
         masterRepository.deleteAll(masterList);
 
         masterList = new ArrayList<>();
@@ -133,7 +131,7 @@ public class BoardService {
                 if (!projectUsers.contains(user)) continue;
                 if (user == null) continue;
                 Master master = Master.builder()
-                        .boardId(board)
+                        .board(board)
                         .userId(user.getId())
                         .build();
                 masterList.add(master);
@@ -151,7 +149,7 @@ public class BoardService {
             throw new NullPointerException();
         }
 
-        List<Master> masterList = masterRepository.findByBoardId(board);
+        List<Master> masterList = masterRepository.findByBoard(board);
         masterRepository.deleteAll(masterList);
 
         boardRepository.delete(board);

@@ -8,10 +8,7 @@ import knu.kproject.dto.project.ProjectDto;
 import knu.kproject.dto.project.PutProjectDto;
 import knu.kproject.dto.project.RoleDto;
 import knu.kproject.entity.*;
-import knu.kproject.repository.ProjectRepositroy;
-import knu.kproject.repository.ProjectUserRepository;
-import knu.kproject.repository.UserRepository;
-import knu.kproject.repository.WorkspaceRepository;
+import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.jdbc.Work;
 import org.springframework.security.core.parameters.P;
@@ -30,7 +27,27 @@ public class ProjectService {
     private final WorkspaceRepository workspaceRepository;
     private final ProjectRepositroy projectRepositroy;
     private final ProjectUserRepository projectUserRepository;
+    private final BoardService boardService;
+    private final BoardRepository boardRepository;
 
+    public ProjectDto fromEntity(Project project, List<UserDto> users) {
+        List<Board> boards = boardRepository.findByProject(project);
+        project.setBoards(boards);
+
+        ProjectDto dto = new ProjectDto();
+        dto.setId(project.getId());
+        dto.setTitle(project.getTitle());
+        dto.setOverview(project.getOverview());
+        dto.setStartDate(project.getStartDate());
+        dto.setEndDate(project.getEndDate());
+        dto.setWorkspaceId(project.getWorkspace().getId());
+        dto.setUsers(users);
+        dto.setBoards(project.getBoards().stream()
+                .map(boardService::fromEntity)
+                .toList());
+
+        return dto;
+    }
     public UUID createProject(PutProjectDto projectDto, Long userId) {
         List<Workspace> workspaces = workspaceRepository.findByOwnerId(userId);
 
@@ -90,7 +107,7 @@ public class ProjectService {
             dto.setRole(role);
             userDto.add(dto);
         }
-        return ProjectDto.fromEntity(project, userDto);
+        return fromEntity(project, userDto);
     }
     public void updateProject(Long userId, UUID projectId, PutProjectDto updatedProjectData) {
         Project project = projectRepositroy.findById(projectId)
