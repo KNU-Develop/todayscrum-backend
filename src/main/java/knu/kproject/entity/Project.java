@@ -44,4 +44,7 @@ public class Project {
 
     @OneToMany(mappedBy = "projectId")
     private List<ProjectUser> projectUsers;
+
+    @OneToMany(mappedBy = "id")
+    private List<Board> boards;
 }

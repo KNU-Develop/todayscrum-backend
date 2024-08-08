@@ -1,6 +1,7 @@
 package knu.kproject.dto.project;
 
 import knu.kproject.dto.UserDto.UserDto;
+import knu.kproject.dto.board.BoardDto;
 import knu.kproject.entity.Project;
 import knu.kproject.entity.User;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.parameters.P;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +27,7 @@ public class ProjectDto {
     private Timestamp endDate;
     private Long workspaceId;
     private List<UserDto> users;
+    private List<BoardDto> boards = new ArrayList<>();
 
     public static ProjectDto fromEntity(Project project, List<UserDto> users) {
         ProjectDto dto = new ProjectDto();

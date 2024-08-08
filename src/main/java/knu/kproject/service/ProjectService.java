@@ -72,7 +72,8 @@ public class ProjectService {
 
         return projects.stream().map(this::convertToDto).toList();
     }
-    public ProjectDto getProjectById(UUID projectId){
+    public ProjectDto getProjectById(Long userToken, UUID projectId){
+        if (!projectUserRepository.existsByProjectIdAndUserId(projectId, userToken)) throw new NullPointerException();
         Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new EntityNotFoundException("project not found"));
 
         return convertToDto(project);
@@ -90,7 +91,6 @@ public class ProjectService {
             userDto.add(dto);
         }
         return ProjectDto.fromEntity(project, userDto);
-
     }
     public void updateProject(Long userId, UUID projectId, PutProjectDto updatedProjectData) {
         Project project = projectRepositroy.findById(projectId)
@@ -195,7 +195,7 @@ public class ProjectService {
         Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new EntityNotFoundException("project not found"));
         ROLE role = projectUserRepository.findByUserIdAndProjectId(userId, projectId).getRole();
 
-        if (role.equals(ROLE.GUEST)) {
+        if (!role.equals(ROLE.OWNER)) {
             throw new NullPointerException();
         }
 
