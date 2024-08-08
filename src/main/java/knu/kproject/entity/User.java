@@ -43,7 +43,7 @@ public class User {
     @Column(name="social_authentication")
     private UserStatus status;
     private String oauth2Id;
-    private String role;
+    private ROLE role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

@@ -17,4 +17,7 @@ public class ProjectUser {
 
     @Column(nullable = false)
     private Long userId;
+
+    @Column(nullable = false)
+    private ROLE role;
 }
