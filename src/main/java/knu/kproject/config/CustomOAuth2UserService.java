@@ -66,7 +66,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
                 userName = properties.get("nickname").toString();
                 userId = attributes.get("id").toString();
-                userEmail = getAttributeAsString(attributes, "email");
+                userEmail = kakaoAccount.get("email").toString();
             }
         };
         attributes.put("userName", userName);
@@ -90,9 +90,5 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // OAuth2User name 출력
         System.out.println("Name: " + oAuth2User.getName());
-    }
-    private String getAttributeAsString(Map<String, Object> attributes, String key) {
-        Object value = attributes.get(key);
-        return value != null ? value.toString() : null;
     }
 }
