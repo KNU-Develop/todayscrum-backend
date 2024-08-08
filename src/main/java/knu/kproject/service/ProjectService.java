@@ -6,10 +6,8 @@ import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.project.InviteDto;
 import knu.kproject.dto.project.ProjectDto;
 import knu.kproject.dto.project.PutProjectDto;
-import knu.kproject.entity.Project;
-import knu.kproject.entity.ProjectUser;
-import knu.kproject.entity.User;
-import knu.kproject.entity.Workspace;
+import knu.kproject.dto.project.RoleDto;
+import knu.kproject.entity.*;
 import knu.kproject.repository.ProjectRepositroy;
 import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.repository.UserRepository;
@@ -20,11 +18,10 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
+import javax.management.relation.Role;
 import javax.swing.text.html.Option;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +51,7 @@ public class ProjectService {
         ProjectUser projectUser = new ProjectUser();
         projectUser.setProjectId(project.getId());
         projectUser.setUserId(userId);
+        projectUser.setRole(ROLE.OWNER);
 
         projectUserRepository.save(projectUser);
 
@@ -84,16 +82,24 @@ public class ProjectService {
                 .map(projectUser -> userRepository.findById(projectUser.getUserId())
                         .orElseThrow(() -> new EntityNotFoundException("User not found")))
                 .toList();
-        List<UserDto> userDtos = users.stream()
-                .map(UserDto::fromEntity)
-                .toList();
-
-        return ProjectDto.fromEntity(project, userDtos);
+        List<UserDto> userDto = new ArrayList<>();
+        for (User user : users) {
+            ROLE role = projectUserRepository.findByUserIdAndProjectId(user.getId(), project.getId()).getRole();
+            UserDto dto = UserDto.fromEntity(user);
+            dto.setRole(role);
+            userDto.add(dto);
+        }
+        return ProjectDto.fromEntity(project, userDto);
 
     }
-    public void updateProject(UUID projectId, PutProjectDto updatedProjectData) {
+    public void updateProject(Long userId, UUID projectId, PutProjectDto updatedProjectData) {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("project not found"));
+        ROLE role = projectUserRepository.findByUserIdAndProjectId(userId, projectId).getRole();
+
+        if (role.equals(ROLE.GUEST)) {
+            throw new NullPointerException();
+        }
 
         project.setTitle(updatedProjectData.getTitle());
         project.setOverview(updatedProjectData.getOverview());
@@ -105,9 +111,10 @@ public class ProjectService {
     public void deleteProject(Long token, UUID projectId) {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("project not found"));
-        Optional<Workspace> workspace = workspaceRepository.findById(project.getWorkspace().getId());
 
-        if (workspace.get().getOwnerId() != token) {
+        ROLE role = projectUserRepository.findByUserIdAndProjectId(token, projectId).getRole();
+
+        if (!role.equals(ROLE.OWNER)) {
             throw new NullPointerException();
         }
 
@@ -115,17 +122,34 @@ public class ProjectService {
         projectUserRepository.deleteAll(projectUsers);
         projectRepositroy.delete(project);
     }
-    public List<ProjectUser> findByAllProjectUsers(UUID projectId) {
-        projectRepositroy.findById(projectId).orElseThrow(() -> new EntityNotFoundException("project is not found"));
+    public List<UserDto> findByAllProjectUsers(Long token, UUID projectId) {
+        Project project = projectRepositroy.findById(projectId).orElseThrow();
 
-        return projectUserRepository.findByProjectId(projectId);
+        if (!projectUserRepository.existsByProjectIdAndUserId(projectId, token)) {
+            throw new NullPointerException();
+        }
+
+        List<User> users = project.getProjectUsers().stream()
+                .map(projectUser -> userRepository.findById(projectUser.getUserId())
+                        .orElseThrow(() -> new EntityNotFoundException("User not found")))
+                .toList();
+        List<UserDto> userDto = new ArrayList<>();
+        for (User user : users) {
+            ROLE role = projectUserRepository.findByUserIdAndProjectId(user.getId(), project.getId()).getRole();
+            UserDto dto = UserDto.fromEntity(user);
+            dto.setRole(role);
+            userDto.add(dto);
+        }
+        return userDto;
     }
     public void addUser(Long token, InviteDto inviteDto) {
         Project project = projectRepositroy.findById(inviteDto.getProjectId()).orElseThrow(() -> new EntityNotFoundException("not found project"));
-        Optional<Workspace> workspace = workspaceRepository.findById(project.getWorkspace().getId());
 
-        if (workspace.get().getOwnerId() != token) {
-            throw new NullPointerException("error");
+        ROLE role = projectUserRepository.findByUserIdAndProjectId(token, project.getId()).getRole();
+
+
+        if (role.equals(ROLE.GUEST)) {
+            throw new NullPointerException();
         }
 
         List<String> userEmails = inviteDto.getUserEmails();
@@ -137,18 +161,42 @@ public class ProjectService {
                     ProjectUser projectUser = new ProjectUser();
                     projectUser.setProjectId(projectId);
                     projectUser.setUserId(userId);
+                    projectUser.setRole(ROLE.GUEST);
 
                     projectUserRepository.save(projectUser);
                 }
             }
         }
     }
-    public void deleteProjectUser(Long userId,UUID projectId, List<String> userEmails) {
-        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new EntityNotFoundException("project not found"));
-        Optional<Workspace> workspace = workspaceRepository.findById(project.getWorkspace().getId());
 
-        if (workspace.get().getOwnerId() != userId) {
-            throw new NullPointerException("error");
+    public void changeRole(Long userId, RoleDto roleDto) {
+        ProjectUser self = projectUserRepository.findByUserIdAndProjectId(userId, roleDto.getProjectId());
+
+        if (self.getRole().equals(ROLE.GUEST)) {
+            throw new NullPointerException();
+        }
+
+        Map<String, ROLE> roles = roleDto.getRoles();
+        for (Map.Entry<String, ROLE> entry : roles.entrySet()) {
+            String email = entry.getKey();
+            ROLE role = entry.getValue();
+
+            Long uId = userRepository.findByEmail(email).getId();
+            ProjectUser projectUser = projectUserRepository.findByUserIdAndProjectId(uId, roleDto.getProjectId());
+            if (role.equals(ROLE.OWNER) && self.getRole().equals(ROLE.WRITER)) {
+                throw new NullPointerException();
+            }
+            projectUser.setRole(role);
+
+            projectUserRepository.save(projectUser);
+        }
+    }
+    public void deleteProjectUser(Long userId, UUID projectId, List<String> userEmails) {
+        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new EntityNotFoundException("project not found"));
+        ROLE role = projectUserRepository.findByUserIdAndProjectId(userId, projectId).getRole();
+
+        if (role.equals(ROLE.GUEST)) {
+            throw new NullPointerException();
         }
 
         List<ProjectUser> projectUsers = project.getProjectUsers();
