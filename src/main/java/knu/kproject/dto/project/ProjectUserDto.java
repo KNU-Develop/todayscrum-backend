@@ -1,6 +1,6 @@
 package knu.kproject.dto.project;
 
-import knu.kproject.entity.ROLE;
+import knu.kproject.global.ROLE;
 import lombok.Data;
 
 @Data

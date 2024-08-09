@@ -1,7 +1,6 @@
 package knu.kproject.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.constraints.Null;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.dto.project.InviteDto;
@@ -9,15 +8,11 @@ import knu.kproject.dto.project.ProjectDto;
 import knu.kproject.dto.project.PutProjectDto;
 import knu.kproject.dto.project.RoleDto;
 import knu.kproject.entity.*;
+import knu.kproject.global.ROLE;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.jdbc.Work;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
-import org.webjars.NotFoundException;
 
-import javax.management.relation.Role;
-import javax.swing.text.html.Option;
 import java.sql.Timestamp;
 import java.util.*;
 

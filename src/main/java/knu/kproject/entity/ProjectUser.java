@@ -1,10 +1,8 @@
 package knu.kproject.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import knu.kproject.global.ROLE;
 import lombok.*;
-
-import java.util.UUID;
 
 @Entity @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 @Table(name = "project_users")

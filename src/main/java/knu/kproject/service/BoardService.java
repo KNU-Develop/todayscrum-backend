@@ -3,14 +3,12 @@ package knu.kproject.service;
 import jakarta.persistence.EntityNotFoundException;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.dto.board.InputBoardDto;
-import knu.kproject.dto.board.MasterDto;
 import knu.kproject.entity.*;
+import knu.kproject.global.ROLE;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
 import java.sql.Timestamp;
 import java.util.*;
 

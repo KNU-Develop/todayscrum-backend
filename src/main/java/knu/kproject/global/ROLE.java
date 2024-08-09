@@ -1,4 +1,4 @@
-package knu.kproject.entity;
+package knu.kproject.global;
 
 public enum ROLE {
     OWNER,
