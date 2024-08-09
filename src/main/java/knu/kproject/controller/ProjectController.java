@@ -118,7 +118,7 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> getProjectById(@AuthenticationPrincipal Long userToken , @RequestParam UUID key) {
         try {
             if (userToken == null) throw new IllegalArgumentException("Authorization error");
-            ProjectDto project = projectService.getProjectById(key);
+            ProjectDto project = projectService.getProjectById(userToken, key);
             return ResponseEntity.ok().body(Api_Response.builder()
                     .code(SuccessCode.SELECT_SUCCESS.getStatus())
                     .message(SuccessCode.SELECT_SUCCESS.getMessage())
