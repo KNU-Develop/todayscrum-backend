@@ -67,6 +67,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         attributes.put("userName", userName);
         attributes.put("socialId", userId);
     }
+
     private void printOAuth2UserAttributes(OAuth2User oAuth2User) {
         System.out.println("OAuth2User attributes:");
 
