@@ -5,10 +5,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
+import knu.kproject.global.MBTI;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -16,7 +19,6 @@ import java.util.List;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "USER")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,6 +54,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<UserTool> userTools;
+
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private List<UserSchedule> userSchedules = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -100,5 +106,19 @@ public class User {
 
     public void withDraw(UserDto userDto){
         this.setStatus(UserStatus.WITHDRAW);
+    }
+
+
+    /*
+        User <-> Schedule 연관 관계 메서드
+     */
+    public void addUserSchedule(UserSchedule userSchedule) {
+        this.userSchedules.add(userSchedule);
+        userSchedule.setUser(this);
+    }
+
+    public void removeUserSchedule(UserSchedule userSchedule) {
+        this.userSchedules.remove(userSchedule);
+        userSchedule.setUser(null);
     }
 }

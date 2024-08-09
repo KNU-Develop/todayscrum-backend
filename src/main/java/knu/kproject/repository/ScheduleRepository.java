@@ -7,8 +7,21 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
-    @Query("SELECT s FROM Schedule s WHERE s.startDate BETWEEN :startDate AND :endDate")
-    List<Schedule> findSchedulesBetweenDates(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    @Query("SELECT s " +
+            "FROM Schedule s JOIN s.userSchedules us " +
+            "WHERE us.user.id = :userId AND s.startDate >= :startDate AND s.endDate <= :endDate")
+    Optional<List<Schedule>> findScheduleList(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    default List<Schedule> findScheduleListOrElseThrow(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
+        return findScheduleList(userId, startDate, endDate).orElseThrow(
+
+        );
+    }
 }

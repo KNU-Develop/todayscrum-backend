@@ -1,8 +1,8 @@
 package knu.kproject.dto.UserDto;
 
-import jakarta.validation.constraints.Email;
-import knu.kproject.entity.MBTI;
-import knu.kproject.entity.ROLE;
+import jakarta.validation.constraints.Email;=
+import knu.kproject.global.MBTI;
+import knu.kproject.global.ROLE;
 import knu.kproject.entity.User;
 import knu.kproject.entity.UserStatus;
 import lombok.Data;
