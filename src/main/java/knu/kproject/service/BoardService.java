@@ -24,10 +24,10 @@ public class BoardService {
     private final MasterRepository masterRepository;
 
     public UUID createBoard(Long token, UUID projectId ,InputBoardDto boardDto) {
-        if (!projectRepositroy.existsById(projectId)){
-            throw new EntityNotFoundException();
-        }
-        ProjectUser self = projectUserRepository.findByUserIdAndProjectId(token, projectId);
+        User my  = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
+        Project project = projectRepositroy.findById(projectId).orElseThrow(EntityNotFoundException::new);
+
+        ProjectUser self = projectUserRepository.findByUserAndProject(my, project);
         if (self == null || self.getRole().equals(ROLE.GUEST)) {
             throw new NullPointerException();
         }
@@ -35,7 +35,7 @@ public class BoardService {
         Board board = Board.builder()
                 .title(boardDto.getTitle())
                 .project(projectRepositroy.findById(projectId).orElseThrow())
-                .userId(self.getUserId())
+                .userId(self.getUser().getId())
                 .content(boardDto.getContent())
                 .category(boardDto.getCategory())
                 .progress(boardDto.getProgress())
@@ -45,14 +45,14 @@ public class BoardService {
 
         if (boardDto.getMasters() != null) {
             List<Master> masters = new ArrayList<>();
-            for (String email : boardDto.getMasters()) {
-                User user = userRepository.findByEmail(email);
-                if (user==null) continue;
-                Master master = Master.builder()
-                        .board(board)
-                        .userId(user.getId())
-                        .build();
-                masters.add(master);
+            for (Long id : boardDto.getMasters()) {
+                userRepository.findById(id).ifPresent(user -> {
+                    Master master = Master.builder()
+                            .board(board)
+                            .user(user)
+                            .build();
+                    masters.add(master);
+                });
             }
 
             masterRepository.saveAll(masters);
@@ -62,52 +62,32 @@ public class BoardService {
 
         return board.getId();
     }
-
-    public MasterDto fromEntity(Master master) {
-        User user = userRepository.findById(master.getUserId()).orElseThrow();
-        return MasterDto.builder()
-                .name(user.getName())
-                .email(user.getEmail())
-                .build();
-    }
-    public BoardDto fromEntity(Board board) {
-        List<Master> masters = masterRepository.findByBoard(board);
-        board.setMaster(masters);
-
-        BoardDto dto = BoardDto.builder()
-                .id(board.getId())
-                .title(board.getTitle())
-                .content(board.getContent())
-                .category(board.getCategory())
-                .progress(board.getProgress())
-                .createdAt(board.getCreatedAt())
-                .masters(board.getMaster().stream()
-                        .map(this::fromEntity)
-                        .toList())
-                .build();
-        return dto;
-    }
     public List<BoardDto> findByAllBoard(Long token, UUID projectId) {
-        if (!projectRepositroy.existsById(projectId)) throw new IllegalArgumentException();
-        if (!projectUserRepository.existsByProjectIdAndUserId(projectId, token)) throw new NullPointerException();
+        User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
+        Project project = projectRepositroy.findById(projectId).orElseThrow(EntityNotFoundException::new);
+        if (!projectUserRepository.existsByProjectAndUser(project, user)) throw new NullPointerException();
 
         List<Board> boards = boardRepository.findByProject(projectRepositroy.findById(projectId).orElseThrow());
-        return boards.stream().map(this::fromEntity).toList();
+        return boards.stream().map(BoardDto::fromEntity).toList();
     }
 
     public BoardDto findByBoard(Long token, UUID boardId) {
+        User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         Board board = boardRepository.findById(boardId).orElseThrow(EntityNotFoundException::new);
-        ROLE myRole = projectUserRepository.findByUserIdAndProjectId(token, board.getProject().getId()).getRole();
+        Project project = projectRepositroy.findById(board.getProject().getId()).orElseThrow(EntityNotFoundException::new);
+        ROLE myRole = projectUserRepository.findByUserAndProject(user, project).getRole();
         if (myRole == null) {
             throw new NullPointerException();
         }
-        return fromEntity(board);
+        return BoardDto.fromEntity(board);
     }
 
     public void updateBoard(Long token, UUID boardId, InputBoardDto input) {
         Board board = boardRepository.findById(boardId).orElseThrow();
+        User self = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
+        Project project = projectRepositroy.findById(board.getProject().getId()).orElseThrow(EntityNotFoundException::new);
 
-        ROLE myRole = projectUserRepository.findByUserIdAndProjectId(token, board.getProject().getId()).getRole();
+        ROLE myRole = projectUserRepository.findByUserAndProject(self, project).getRole();
         System.out.println(myRole);
         if (myRole == null || myRole.equals(ROLE.GUEST)) {
             throw new NullPointerException();
@@ -123,18 +103,19 @@ public class BoardService {
 
         masterList = new ArrayList<>();
         List<User> projectUsers = projectUserRepository.findByProjectId(board.getProject().getId())
-                .stream().map(projectUser -> userRepository.findById(projectUser.getUserId()).orElseThrow())
+                .stream().map(projectUser -> userRepository.findById(projectUser.getUser().getId()).orElseThrow())
                 .toList();
         if (input.getMasters() != null) {
-            for (String email : input.getMasters()) {
-                User user = userRepository.findByEmail(email);
+            for (Long id : input.getMasters()) {
+                Optional<User> user = userRepository.findById(id);
                 if (!projectUsers.contains(user)) continue;
-                if (user == null) continue;
-                Master master = Master.builder()
-                        .board(board)
-                        .userId(user.getId())
-                        .build();
-                masterList.add(master);
+                if (user.isPresent()) {
+                    Master master = Master.builder()
+                            .board(board)
+                            .user(user.get())
+                            .build();
+                    masterList.add(master);
+                }
             }
         }
         masterRepository.saveAll(masterList);
@@ -142,8 +123,10 @@ public class BoardService {
         boardRepository.save(board);
     }
     public void deleteBoard(Long token, UUID boardId) {
-        Board board = boardRepository.findById(boardId).orElseThrow();
-        ROLE myRole = projectUserRepository.findByUserIdAndProjectId(token, board.getProject().getId()).getRole();
+        Board board = boardRepository.findById(boardId).orElseThrow(EntityNotFoundException::new);
+        User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
+        Project project = board.getProject();
+        ROLE myRole = projectUserRepository.findByUserAndProject(user, project).getRole();
 
         if (myRole == null || myRole.equals(ROLE.GUEST)) {
             throw new NullPointerException();

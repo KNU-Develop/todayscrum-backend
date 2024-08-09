@@ -1,5 +1,6 @@
 package knu.kproject.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.dto.board.MasterDto;
@@ -34,7 +35,8 @@ public class Board {
     @Column
     private String content;
 
-    @OneToMany(mappedBy = "board")
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Master> master;
 
     @Column

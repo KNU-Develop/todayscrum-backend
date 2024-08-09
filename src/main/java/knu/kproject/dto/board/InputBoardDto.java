@@ -14,5 +14,5 @@ public class InputBoardDto {
     private String content;
     private CATEGORY category;
     private PROGRESS progress;
-    private List<String> masters;
+    private List<Long> masters;
 }

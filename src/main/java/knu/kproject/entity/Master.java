@@ -17,9 +17,10 @@ public class Master {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "board_id",nullable = false)
+    @JoinColumn(nullable = false)
     private Board board;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private User user;
 }
