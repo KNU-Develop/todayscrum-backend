@@ -8,15 +8,11 @@ public enum SuccessCode {
     /**
      * ******************************* Success CodeList ***************************************
      */
-    // 조회 성공 코드 (HTTP Response: 200 OK)
     SELECT_SUCCESS(200, "200", "SELECT SUCCESS"),
-    // 삭제 성공 코드 (HTTP Response: 200 OK)
     DELETE_SUCCESS(200, "200", "DELETE SUCCESS"),
-    // 삽입 성공 코드 (HTTP Response: 201 Created)
     INSERT_SUCCESS(201, "201", "INSERT SUCCESS"),
-    // 수정 성공 코드 (HTTP Response: 201 Created)
     UPDATE_SUCCESS(200, "200", "UPDATE SUCCESS"),
-
+    PARTIAL_SUCCESS(206, "206", "REQUEST PARTIAL_SUCCESS")
     ; // End
 
     /**

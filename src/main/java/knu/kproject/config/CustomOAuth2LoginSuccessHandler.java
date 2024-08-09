@@ -13,9 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +51,18 @@ public class CustomOAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSucc
 
             workspaceService.createWorkSpace(workSpaceDto, user.getId());
         }
-        String redirectUrl = String.format("http://localhost:3000/auth/token?accessToken=%s&refreshToken=%s",
+
+        String requestURL = request.getSession().getAttribute("requestURL").toString();
+        String origin;
+        if (requestURL == null || requestURL.isEmpty())
+            origin = "http://localhost:3000";
+        else {
+            origin = requestURL.split("/oauth2")[0];
+        }
+        request.getSession().removeAttribute("requestURL");
+
+        String redirectUrl = String.format("%s/auth/token?accessToken=%s&refreshToken=%s",
+                origin,
                 URLEncoder.encode(accessToken, StandardCharsets.UTF_8),
                 URLEncoder.encode(refreshToken, StandardCharsets.UTF_8));
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);

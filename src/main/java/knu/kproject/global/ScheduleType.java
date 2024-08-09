@@ -1,4 +1,4 @@
-package knu.kproject.global.code;
+package knu.kproject.global;
 
 import lombok.Getter;
 
