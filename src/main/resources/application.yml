@@ -1,7 +1,6 @@
 spring:
   profiles:
-    include: oauth
-    active: jwt, db
+    include: secret
   application:
     name: KProject-BE
   jpa:
