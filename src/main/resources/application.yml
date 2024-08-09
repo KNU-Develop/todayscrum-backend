@@ -1,12 +1,11 @@
 spring:
   profiles:
-    include: oauth
-    active: jwt, db
+    include: secret
   application:
     name: KProject-BE
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show_sql: true
     properties:
       hibernate:

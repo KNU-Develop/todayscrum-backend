@@ -42,6 +42,14 @@ public class Project {
     @Column(nullable = false, updatable = false)
     private Timestamp createdAt;
 
-    @OneToMany(mappedBy = "projectId")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ProjectUser> projectUsers;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Board> boards;
+
+    @Column
+    private String color;
 }

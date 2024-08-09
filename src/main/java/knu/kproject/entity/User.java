@@ -53,6 +53,14 @@ public class User {
     @JsonManagedReference
     private List<UserTool> userTools;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ProjectUser> projectUsers;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Master> masters;
+
     public User(String name, String socialId, String email, UserStatus status) {
         this.name = name;
         this.socialId = socialId;
