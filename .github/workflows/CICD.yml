@@ -23,12 +23,8 @@ jobs:
         
     - name: Decode and verify
       run: |
-        echo "Decoding DATABASE secret"
-        echo "${{ secrets.DATABASE }}" | base64 -d > ./src/main/resources/application-db.yml
-        echo "Decoding JWT secret"
-        echo "${{ secrets.JWT }}" | base64 -d > ./src/main/resources/application-jwt.yml
-        echo "Decoding OAUTH secret"
-        echo "${{ secrets.OAUTH }}" | base64 -d > ./src/main/resources/application-oauth.yml
+        echo "Decoding SECRET_YML secret"
+        echo "${{ secrets.SECRET_YML }}" | base64 -d > ./src/main/resources/application-secret.yml
 
     - name: Build with Gradle
       run: |
