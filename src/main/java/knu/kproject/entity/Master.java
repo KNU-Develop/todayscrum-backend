@@ -17,7 +17,7 @@ public class Master {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "board",nullable = false)
+    @JoinColumn(name = "board_id",nullable = false)
     private Board board;
 
     @Column(nullable = false)

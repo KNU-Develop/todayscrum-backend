@@ -6,7 +6,7 @@ spring:
     name: KProject-BE
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     show_sql: true
     properties:
       hibernate:

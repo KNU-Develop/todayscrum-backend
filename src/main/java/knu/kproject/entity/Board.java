@@ -34,7 +34,7 @@ public class Board {
     @Column
     private String content;
 
-    @OneToMany(mappedBy = "id")
+    @OneToMany(mappedBy = "board")
     private List<Master> master;
 
     @Column

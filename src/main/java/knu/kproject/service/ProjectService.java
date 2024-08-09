@@ -61,14 +61,17 @@ public class ProjectService {
                 .endDate(projectDto.getEndDate())
                 .workspace(workspaces.get(0))
                 .createdAt(new Timestamp(System.currentTimeMillis()))
+                .color(projectDto.getColor())
                 .build();
 
         projectRepositroy.save(project);
 
-        ProjectUser projectUser = new ProjectUser();
-        projectUser.setProjectId(project.getId());
-        projectUser.setUserId(userId);
-        projectUser.setRole(ROLE.OWNER);
+        ProjectUser projectUser = ProjectUser.builder()
+                .userId(userId)
+                .projectId(project.getId())
+                .role(ROLE.OWNER)
+                .color(projectDto.getColor())
+                .build();
 
         projectUserRepository.save(projectUser);
 
@@ -164,7 +167,6 @@ public class ProjectService {
 
         ROLE role = projectUserRepository.findByUserIdAndProjectId(token, project.getId()).getRole();
 
-
         if (role.equals(ROLE.GUEST)) {
             throw new NullPointerException();
         }
@@ -179,6 +181,7 @@ public class ProjectService {
                     projectUser.setProjectId(projectId);
                     projectUser.setUserId(userId);
                     projectUser.setRole(ROLE.GUEST);
+                    projectUser.setColor(project.getColor());
 
                     projectUserRepository.save(projectUser);
                 }

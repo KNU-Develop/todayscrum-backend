@@ -20,4 +20,7 @@ public class ProjectUser {
 
     @Column(nullable = false)
     private ROLE role;
+
+    @Column(nullable = false)
+    private String color;
 }

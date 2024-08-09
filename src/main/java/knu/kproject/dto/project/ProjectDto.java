@@ -29,4 +29,5 @@ public class ProjectDto {
     private Long workspaceId;
     private List<UserDto> users;
     private List<BoardDto> boards;
+    private String color;
 }

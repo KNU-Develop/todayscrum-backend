@@ -8,4 +8,5 @@ public class ProjectUserDto {
     private Long projectId;
     private String userId;
     private ROLE role;
+    private String color;
 }
