@@ -45,7 +45,7 @@ public class User {
     @Column(name="social_authentication")
     private UserStatus status;
     private String oauth2Id;
-    private String role;
+    private ROLE role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -59,29 +59,46 @@ public class User {
     @JsonManagedReference
     private List<UserSchedule> userSchedules = new ArrayList<>();
 
-    public User(String name, String socialId, UserStatus status) {
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ProjectUser> projectUsers;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Master> masters;
+
+    public User(String name, String socialId, String email, UserStatus status) {
         this.name = name;
         this.socialId = socialId;
+        this.email = email;
         this.status = status;
     }
-    public void updateUserInfo(AdditionalUserInfo userDto) {
-        if (userDto.getName() != null && !userDto.getName().isEmpty()) {
-            this.setName(userDto.getName());
-        }
-        this.setContact(userDto.getContact());
-        this.setEmail(userDto.getEmail());
-        this.setMarketingEmailOptIn(userDto.isMarketingEmailOptIn());
-
-        this.setMbti(userDto.getMbti());
-        this.setLocation(userDto.getLocation());
-        this.setImageUrl(userDto.getImageUrl());
-    }
-    public void joinInfo(AdditionalUserInfo userInfo) {
-        if (userInfo.getName() != null && !userInfo.getName().isEmpty()) {
+    public void updateUserInfo(AdditionalUserInfo userInfo) {
+        if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
             this.setName(userInfo.getName());
         }
-        this.setContact(userInfo.getContact());
-        this.setEmail(userInfo.getEmail());
+        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
+            this.setEmail(userInfo.getEmail());
+        }
+        if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
+            this.setContact(userInfo.getContact());
+        }
+        this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
+
+        this.setMbti(userInfo.getMbti());
+        this.setLocation(userInfo.getLocation());
+        this.setImageUrl(userInfo.getImageUrl());
+    }
+    public void joinInfo(AdditionalUserInfo userInfo) {
+        if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
+            this.setName(userInfo.getName());
+        }
+        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
+            this.setEmail(userInfo.getEmail());
+        }
+        if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
+            this.setContact(userInfo.getContact());
+        }
         this.setStatus(UserStatus.JOIN);
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
         this.setRequiredTermsAgree(userInfo.isRequiredTermsAgree());

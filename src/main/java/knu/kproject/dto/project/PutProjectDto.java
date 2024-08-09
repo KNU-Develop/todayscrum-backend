@@ -10,5 +10,5 @@ public class PutProjectDto {
     private String overview;
     private Timestamp startDate;
     private Timestamp endDate;
-
+    private String color;
 }

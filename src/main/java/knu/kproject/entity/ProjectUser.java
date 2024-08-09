@@ -12,9 +12,17 @@ public class ProjectUser {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private UUID projectId;
+    @ManyToOne
+    @JoinColumn
+    private Project project;
+
+    @ManyToOne
+    @JoinColumn
+    private User user;
 
     @Column(nullable = false)
-    private Long userId;
+    private ROLE role;
+
+    @Column(nullable = false)
+    private String color;
 }

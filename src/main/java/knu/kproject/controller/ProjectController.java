@@ -13,6 +13,7 @@ import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.project.InviteDto;
 import knu.kproject.dto.project.ProjectDto;
 import knu.kproject.dto.project.PutProjectDto;
+import knu.kproject.dto.project.RoleDto;
 import knu.kproject.dto.workspace.WorkSpaceDto;
 import knu.kproject.entity.User;
 import knu.kproject.global.code.Api_Response;
@@ -41,7 +42,7 @@ import java.util.stream.Collectors;
 
 @Tag(name = "Project API", description = "project API 명세서 입니다.")
 @RestController
-@RequestMapping("workspace")
+@RequestMapping("/workspace")
 @RequiredArgsConstructor
 public class ProjectController {
     private final ProjectService projectService;
@@ -117,7 +118,7 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> getProjectById(@AuthenticationPrincipal Long userToken , @RequestParam UUID key) {
         try {
             if (userToken == null) throw new IllegalArgumentException("Authorization error");
-            ProjectDto project = projectService.getProjectById(key);
+            ProjectDto project = projectService.getProjectById(userToken, key);
             return ResponseEntity.ok().body(Api_Response.builder()
                     .code(SuccessCode.SELECT_SUCCESS.getStatus())
                     .message(SuccessCode.SELECT_SUCCESS.getMessage())
@@ -140,6 +141,7 @@ public class ProjectController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "특정 프로젝트 수정 성공"),
             @ApiResponse(responseCode = "401", description = "Authorizeation 오류"),
+            @ApiResponse(responseCode = "403", description = "권한 오류"),
             @ApiResponse(responseCode = "404", description = "프로젝트가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
@@ -147,8 +149,13 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> updateProject(@AuthenticationPrincipal Long userToken, @RequestParam UUID key, @RequestBody PutProjectDto updateProjectData) {
         try {
             if (userToken == null) throw new IllegalArgumentException("Authorization error");
-            projectService.updateProject(key, updateProjectData);
+            projectService.updateProject(userToken, key, updateProjectData);
             return ApiResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS.getMessage());
+        } catch (NullPointerException e) {
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.FORBIDDEN_ERROR.getMessage(),
+                    ErrorCode.FORBIDDEN_ERROR.getStatus()
+            );
         } catch (IllegalArgumentException e) {
             return ApiResponseUtil.createUnAuthorization();
         } catch (EntityNotFoundException e) {
@@ -232,14 +239,9 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> getProjectToUser(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
         try {
             if (token == null) throw new IllegalArgumentException("error");
-            List<ProjectUser> projectUsers = projectService.findByAllProjectUsers(key);
-            List<Long> usersId = projectUsers.stream()
-                    .map(ProjectUser::getUserId)
-                    .sorted()
-                    .toList();
-            List<UserDto> users = usersId.stream()
-                    .map(userService::getUserInfo)
-                    .toList();
+
+            List<UserDto> users = projectService.findByAllProjectUsers(token, key);
+
             return ResponseEntity.ok().body(Api_Response.builder()
                     .code(200).message("SUCCESS").result(users).build());
         } catch (IllegalArgumentException e) {
@@ -247,6 +249,11 @@ public class ProjectController {
         } catch (EntityNotFoundException e) {
             return ApiResponseUtil.createNotFoundResponse(
                     ErrorCode.NOT_FOUND_ERROR.getMessage()
+            );
+        } catch (NullPointerException e) {
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.FORBIDDEN_ERROR.getMessage(),
+                    ErrorCode.FORBIDDEN_ERROR.getStatus()
             );
         } catch (RuntimeException e) {
             return ApiResponseUtil.createErrorResponse(
@@ -281,6 +288,36 @@ public class ProjectController {
             );
         } catch (RuntimeException e) {
             return ApiResponseUtil.createErrorResponse(ErrorCode.DELETE_ERROR.getMessage(), ErrorCode.DELETE_ERROR.getStatus());
+        }
+    }
+    @Operation(summary = "특정 프로젝트의 팀원의 권한 수정", description = "특정 project의 팀원 권한 수정 API 입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "프로젝트 팀원 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "Authorizeation 오류"),
+            @ApiResponse(responseCode = "403", description = "권한 오류"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PutMapping("/project/user")
+    public ResponseEntity<Api_Response<Object>> changeRole(@AuthenticationPrincipal Long token, @RequestBody RoleDto roleDto) {
+        try {
+            if (token == null) throw new IllegalArgumentException();
+            projectService.changeRole(token, roleDto);
+
+            return ApiResponseUtil.createSuccessResponse(
+                    SuccessCode.UPDATE_SUCCESS.getMessage()
+            );
+        } catch (NullPointerException e) {
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.FORBIDDEN_ERROR.getMessage(),
+                    ErrorCode.FORBIDDEN_ERROR.getStatus()
+            );
+        } catch (IllegalArgumentException e) {
+            return ApiResponseUtil.createUnAuthorization();
+        } catch (RuntimeException e) {
+            return ApiResponseUtil.createErrorResponse(
+                    ErrorCode.UPDATE_ERROR.getMessage(),
+                    ErrorCode.UPDATE_ERROR.getStatus()
+            );
         }
     }
 }

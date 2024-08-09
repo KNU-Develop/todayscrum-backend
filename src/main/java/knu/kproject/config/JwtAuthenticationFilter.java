@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 
 
 @RequiredArgsConstructor
@@ -55,8 +56,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else if (userId != null && SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof OAuth2User ) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-            Integer socialIdInt = (Integer) oAuth2User.getAttributes().get("id");
-            String socialId = socialIdInt != null ? socialIdInt.toString() : (String) oAuth2User.getAttributes().get("sub");
+            String socialId = null;
+
+            Map<String, Object> attributes = oAuth2User.getAttributes();
+
+            if (attributes.containsKey("sub")) {
+                socialId = (String) attributes.get("sub");
+            } else if (attributes.containsKey("id") && attributes.get("id") instanceof Integer) {
+                socialId = String.valueOf(attributes.get("id"));
+            } else if (attributes.containsKey("id") && attributes.get("id") instanceof Long socialIdLong) {
+                socialId = socialIdLong.toString();
+            }
+
             if (socialId != null) {
                 User user = userService.findBySocialId(socialId).orElse(null);
                 if (user != null) {
