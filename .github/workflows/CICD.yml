@@ -67,7 +67,7 @@ jobs:
       - name: Login Server
         uses: appleboy/ssh-action@master
         with:
-          username: root
+          username: ubuntu
           host: ${{ secrets.LIVE_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
