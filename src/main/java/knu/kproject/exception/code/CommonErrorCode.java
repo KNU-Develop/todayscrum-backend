@@ -13,6 +13,7 @@ public enum CommonErrorCode implements ErrorCode {
      * HTTP Status Code
      * 400 : Bad Request
      * 401 : Unauthorized
+     * 403 : FORBIDDEN
      * 404 : Not Found
      * 500 : Internal Server Error
      * *********************************************************************************************
@@ -28,6 +29,9 @@ public enum CommonErrorCode implements ErrorCode {
     MISSING_TOKEN(HttpStatus.UNAUTHORIZED, "Token is missing."),
     INVALID_JWT_ERROR(HttpStatus.UNAUTHORIZED, "The provided JWT token is invalid"),
     EXPIRED_JWT_ERROR(HttpStatus.UNAUTHORIZED,  "The provided JWT token is expired"),
+
+    // [403] FORBIDDEN
+    FORBIDDEN_ERROR(HttpStatus.FORBIDDEN, "No data access"),
 
     // [404] NOT_FOUND
     NOT_FOUND(HttpStatus.NOT_FOUND, "Not Found"),

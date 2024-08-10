@@ -41,6 +41,7 @@ public class Schedule {
         this.startDate = scheduleRequestDto.getStartDate();
         this.endDate = scheduleRequestDto.getEndDate();
         this.visible = scheduleRequestDto.getVisible();
+        this.projectId = scheduleRequestDto.getProjectId();
     }
     /*
         연관 관계 메서드

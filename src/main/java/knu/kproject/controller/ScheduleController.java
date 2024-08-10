@@ -90,6 +90,7 @@ public class ScheduleController {
         );
     }
 
+    // 미완성
     @PutMapping("/{id}")
     public ResponseEntity<Api_Response<Null>> updateSchedule(
             @AuthenticationPrincipal Long userId,
@@ -97,7 +98,7 @@ public class ScheduleController {
             Long scheduleId,
             @RequestBody ScheduleReqDto updateReqDto) {
 
-        scheduleService.updateSchedule(userId, scheduleId, updateReqDto);
+//        scheduleService.updateSchedule(userId, scheduleId, updateReqDto);
         return ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
     }
 

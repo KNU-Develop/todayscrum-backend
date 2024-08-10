@@ -30,6 +30,10 @@ public class ApiResponseUtil {
         return createResponse(CommonErrorCode.BAD_REQUEST.getHttpStatus().value(), message, null);
     }
 
+    public static <T> ResponseEntity<Api_Response<T>> createForbiddenResponse(String message) {
+        return createResponse(CommonErrorCode.FORBIDDEN_ERROR.getHttpStatus().value(), message, null);
+    }
+
     public static <T> ResponseEntity<Api_Response<T>> createUnAuthorization() {
         return createResponse(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase(), null);
     }
