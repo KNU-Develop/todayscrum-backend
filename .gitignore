@@ -8,8 +8,8 @@ build/
 !**/src/test/**/build/
 
 # Ignore all .yml files but not application.yml
-**/*.yml
 !**/src/main/resources/application.yml
+*-*.yml
 
 ### STS ###
 .apt_generated
