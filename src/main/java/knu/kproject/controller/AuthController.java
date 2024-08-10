@@ -1,6 +1,6 @@
 package knu.kproject.controller;
 
-import knu.kproject.config.JwtTokenUtil;
+import knu.kproject.config.jwt.JwtTokenUtil;
 import knu.kproject.dto.token.TokenRefreshResponse;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.ErrorCode;
@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController

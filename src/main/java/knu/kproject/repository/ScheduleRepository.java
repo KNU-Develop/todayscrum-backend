@@ -19,9 +19,10 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("endDate") LocalDateTime endDate
     );
 
-    default List<Schedule> findScheduleListOrElseThrow(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
-        return findScheduleList(userId, startDate, endDate).orElseThrow(
-
-        );
-    }
+    @Query("SELECT s " +
+            "FROM Schedule s JOIN s.userSchedules us " +
+            "WHERE us.user.id = :userId AND s.id = :scheduleId")
+    Optional<Schedule> findScheduleByUserIdAndScheduleId(
+            @Param("userId") Long userId,
+            @Param("scheduleId") Long scheduleId);
 }

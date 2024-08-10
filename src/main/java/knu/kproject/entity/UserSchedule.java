@@ -27,6 +27,7 @@ public class UserSchedule {
     public UserSchedule(User user, Schedule schedule) {
         this.user = user;
         this.schedule = schedule;
+        schedule.addUserSchedule(this);
+        user.addUserSchedule(this);
     }
-
 }

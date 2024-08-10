@@ -1,4 +1,4 @@
-package knu.kproject.config;
+package knu.kproject.config.jwt;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

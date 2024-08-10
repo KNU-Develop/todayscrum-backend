@@ -1,4 +1,4 @@
-package knu.kproject.config;
+package knu.kproject.config.oauth2;
 
 
 import knu.kproject.entity.User;

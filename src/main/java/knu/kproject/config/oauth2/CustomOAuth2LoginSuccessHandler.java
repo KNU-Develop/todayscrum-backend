@@ -1,27 +1,24 @@
-package knu.kproject.config;
+package knu.kproject.config.oauth2;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import knu.kproject.config.jwt.JwtTokenUtil;
 import knu.kproject.dto.workspace.PutworkspaceDto;
 import knu.kproject.entity.User;
 import knu.kproject.entity.Workspace;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.WorkspaceRepository;
-import knu.kproject.service.UserService;
 import knu.kproject.service.WorkspaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 
 
 @Component
@@ -52,15 +49,19 @@ public class CustomOAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSucc
             workspaceService.createWorkSpace(workSpaceDto, user.getId());
         }
 
-        String requestURL = request.getSession().getAttribute("requestURL").toString();
-        String origin;
-        if (requestURL == null || requestURL.isEmpty())
-            origin = "http://localhost:3000";
-        else {
-            origin = requestURL.split("/oauth2")[0];
-        }
-        request.getSession().removeAttribute("requestURL");
+//        String requestURL = request.getSession().getAttribute("requestURL").toString();
+//        String origin;
+//        if (requestURL == null || requestURL.isEmpty())
+//            origin = "http://localhost:3000";
+//        else {
+//            origin = requestURL.split("/oauth2")[0];
+//        }
+//        request.getSession().removeAttribute("requestURL");
 
+        String origin = request.getSession().getAttribute("origin_url").toString();
+        if (origin == null || origin.isEmpty()) {
+            origin = "NOT_FOUND_ORIGIN";
+        }
         String redirectUrl = String.format("%s/auth/token?accessToken=%s&refreshToken=%s",
                 origin,
                 URLEncoder.encode(accessToken, StandardCharsets.UTF_8),

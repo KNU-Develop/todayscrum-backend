@@ -1,4 +1,4 @@
-package knu.kproject.config;
+package knu.kproject.config.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -7,7 +7,6 @@ import knu.kproject.global.ScheduleVisible;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,6 +41,7 @@ public class Schedule {
         this.startDate = scheduleRequestDto.getStartDate();
         this.endDate = scheduleRequestDto.getEndDate();
         this.visible = scheduleRequestDto.getVisible();
+        this.projectId = scheduleRequestDto.getProjectId();
     }
     /*
         연관 관계 메서드
