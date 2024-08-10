@@ -54,13 +54,9 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         if (request.getParameter("redirect_uri") != null) {
             redirectUri = request.getParameter("redirect_uri");
         } else if (clientIp.contains(":")) {
-            if (clientIp.equals("0:0:0:0:0:0:0:1")) {
-                redirectUri = "LOCAL.IPv6.[" + clientIp + "]";
-            } else {
-                redirectUri = "DEPLOY.IPv6.[" + clientIp + "]";
-            }
-        } else if(clientIp.equals("127.0.0.1") || clientIp.equals("localhost")) {
-            redirectUri = "LOCAL.IPv4." + clientIp;
+            redirectUri = "http://[" + clientIp + "]";
+        } else {
+            redirectUri = "http://" + clientIp;
         }
         return redirectUri;
     }
