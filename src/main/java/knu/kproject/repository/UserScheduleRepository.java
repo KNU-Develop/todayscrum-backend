@@ -26,6 +26,5 @@ public interface UserScheduleRepository extends JpaRepository<UserSchedule, Long
 //            @Param("scheduleId") Long scheduleId);
 
     Optional<UserSchedule> findUserScheduleByUser_IdAndSchedule_Id(Long userId, Long scheduleId);
-    Optional<UserSchedule> findUserScheduleBySchedule();
     void deleteUserScheduleByUserAndSchedule(User user, Schedule schedule);
 }

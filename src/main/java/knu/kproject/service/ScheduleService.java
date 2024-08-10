@@ -144,22 +144,4 @@ public class ScheduleService {
             default -> false;
         };
     }
-/*
-    public void deleteScheduleById(Long scheduleId, ScheduleType type) {dis
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new EntityNotFoundException("Schedule not found with ID: " + scheduleId));
-
-        switch (type) {
-            case DELETE_THIS:
-                scheduleRepository.delete(schedule);
-                break;
-//            case DELETE_BEFORE:
-//                break;
-//            case DELETE_ALL:
-//                break;
-            default:
-                throw new IllegalArgumentException("Invalid schedule type: " + type);
-        }
-    }
-     */
 }
