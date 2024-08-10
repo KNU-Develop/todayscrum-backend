@@ -5,10 +5,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Null;
 import knu.kproject.dto.schedule.ScheduleCreateResultDto;
-import knu.kproject.dto.schedule.ScheduleHeadResDto;
+import knu.kproject.dto.schedule.ScheduleDetailResDto;
 import knu.kproject.dto.schedule.ScheduleReqDto;
-import knu.kproject.dto.schedule.ScheduleResDto;
+import knu.kproject.dto.schedule.ScheduleHeadResDto;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.SuccessCode;
 import knu.kproject.repository.UserRepository;
@@ -23,9 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -45,8 +44,8 @@ public class ScheduleController {
     })
     public ResponseEntity<Api_Response<ScheduleCreateResultDto>> createSchedule(
             @AuthenticationPrincipal Long userId,
-            @RequestBody ScheduleReqDto scheduleReqDto) {
-        ScheduleCreateResultDto scheduleCreateResultDto = scheduleService.createSchedule(userId, scheduleReqDto);
+            @RequestBody ScheduleReqDto scheduleDto) {
+        ScheduleCreateResultDto scheduleCreateResultDto = scheduleService.createSchedule(userId, scheduleDto);
         if (scheduleCreateResultDto.getNotFoundUserIds() == null) {
             return ApiResponseUtil.createResponse(
                     HttpStatus.CREATED.value(),
@@ -80,17 +79,26 @@ public class ScheduleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Api_Response<ScheduleResDto>> getScheduleDetail(
+    public ResponseEntity<Api_Response<ScheduleDetailResDto>> getScheduleDetail(
             @AuthenticationPrincipal
             Long userId,
-            @RequestParam("id") @Schema(description = "요청 일정 ID", required = true)
+            @RequestParam("id") @Schema(description = "조회 일정 ID")
             Long scheduleId) {
-        scheduleService.getScheduleDetail(userId, scheduleId);
-        ScheduleResDto ScheduleResDto = new ScheduleResDto();
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
-                ScheduleResDto
+                scheduleService.getScheduleDetail(userId, scheduleId)
         );
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Api_Response<Null>> updateSchedule(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam("id") @Schema(description = "수정 일정 ID")
+            Long scheduleId,
+            @RequestBody ScheduleReqDto updateReqDto) {
+
+        scheduleService.updateSchedule(userId, scheduleId, updateReqDto);
+        return ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
     /*

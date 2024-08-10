@@ -17,5 +17,4 @@ public interface UserScheduleRepository extends JpaRepository<UserSchedule, Long
     Optional<Schedule> findScheduleByUserIdAndScheduleId(
             @Param("userId") Long userId,
             @Param("scheduleId") Long scheduleId);
-    List<UserSchedule> findByUserId(Long userId);
 }

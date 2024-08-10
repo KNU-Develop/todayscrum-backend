@@ -1,9 +1,7 @@
 package knu.kproject.dto.schedule;
 
-import knu.kproject.global.ScheduleRole;
 import knu.kproject.global.ScheduleVisible;
 import lombok.Getter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
