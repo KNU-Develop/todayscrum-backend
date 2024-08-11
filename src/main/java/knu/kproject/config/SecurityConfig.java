@@ -3,6 +3,7 @@ package knu.kproject.config;
 
 import knu.kproject.config.jwt.JwtAuthenticationFilter;
 import knu.kproject.config.jwt.JwtTokenUtil;
+import knu.kproject.config.oauth2.CustomAuthenticationEntryPoint;
 import knu.kproject.config.oauth2.CustomOAuth2AuthorizationRequestResolver;
 import knu.kproject.config.oauth2.CustomOAuth2LoginSuccessHandler;
 import knu.kproject.config.oauth2.CustomOAuth2UserService;
@@ -26,6 +27,8 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtTokenUtil jwtTokenUtil;
     private final UserService userService;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;  // 추가
+
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -51,7 +54,11 @@ public class SecurityConfig {
                         )
                         .successHandler(customOAuth2LoginSuccessHandler)
                 )
+                .exceptionHandling(exceptionHandling ->
+                        exceptionHandling.authenticationEntryPoint(customAuthenticationEntryPoint)  // 인증되지 않은 사용자를 위한 핸들러 등록
+                )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }

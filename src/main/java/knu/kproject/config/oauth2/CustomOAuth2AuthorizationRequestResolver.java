@@ -18,9 +18,8 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
     private final OAuth2AuthorizationRequestResolver defaultResolver;
 
     public CustomOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
-        this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
+        this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization/{registrationId}");
     }
-
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
         OAuth2AuthorizationRequest authorizationRequest = defaultResolver.resolve(request);
@@ -46,7 +45,6 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
                 request.getSession().setAttribute("origin_url", origin);
             }
         }
-
     }
     private String getOriginUri(HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
