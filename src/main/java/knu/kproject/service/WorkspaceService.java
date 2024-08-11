@@ -1,13 +1,14 @@
 package knu.kproject.service;
 
 import knu.kproject.dto.workspace.PutworkspaceDto;
-import knu.kproject.entity.User;
-import knu.kproject.entity.Workspace;
+import knu.kproject.entity.user.User;
+import knu.kproject.entity.workspace.Workspace;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.WorkspaceRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.sql.Timestamp;
 import java.util.Optional;
 
@@ -18,6 +19,7 @@ public class WorkspaceService {
     private WorkspaceRepository workspaceRepository;
     @Autowired
     private UserRepository userRepository;
+
     public Workspace createWorkSpace(PutworkspaceDto workSpaceDto, Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {

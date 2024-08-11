@@ -1,6 +1,6 @@
 package knu.kproject.repository;
 
-import knu.kproject.entity.Stack;
+import knu.kproject.entity.user.Stack;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 

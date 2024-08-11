@@ -1,7 +1,7 @@
 package knu.kproject.dto.schedule;
 
 import knu.kproject.dto.UserDto.UserHeadDto;
-import knu.kproject.entity.Schedule;
+import knu.kproject.entity.schedule.Schedule;
 import knu.kproject.global.ScheduleVisible;
 
 import java.time.LocalDateTime;

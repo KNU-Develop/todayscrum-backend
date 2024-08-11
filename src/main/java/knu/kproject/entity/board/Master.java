@@ -1,13 +1,15 @@
-package knu.kproject.entity;
+package knu.kproject.entity.board;
 
 import jakarta.persistence.*;
+import knu.kproject.entity.user.User;
 import lombok.*;
 
 import java.util.UUID;
 
 @Entity
 @Getter
-@Setter @Builder
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "MASTER")

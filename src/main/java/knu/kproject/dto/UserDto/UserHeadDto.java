@@ -1,6 +1,6 @@
 package knu.kproject.dto.UserDto;
 
-import knu.kproject.entity.User;
+import knu.kproject.entity.user.User;
 
 public class UserHeadDto {
     private Long id;

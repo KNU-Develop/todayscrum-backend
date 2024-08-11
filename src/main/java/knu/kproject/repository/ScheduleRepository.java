@@ -1,6 +1,6 @@
 package knu.kproject.repository;
 
-import knu.kproject.entity.Schedule;
+import knu.kproject.entity.schedule.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

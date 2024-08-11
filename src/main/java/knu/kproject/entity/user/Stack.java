@@ -1,4 +1,4 @@
-package knu.kproject.entity;
+package knu.kproject.entity.user;
 
 import jakarta.persistence.*;
 import lombok.Getter;

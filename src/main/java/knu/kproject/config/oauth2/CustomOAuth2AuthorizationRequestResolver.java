@@ -1,4 +1,5 @@
 package knu.kproject.config.oauth2;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -46,8 +47,8 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
                 request.getSession().setAttribute("origin_url", origin);
             }
         }
-
     }
+
     private String getOriginUri(HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
         String redirectUri = "";

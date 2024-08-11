@@ -1,6 +1,6 @@
 package knu.kproject.repository;
 
-import knu.kproject.entity.Workspace;
+import knu.kproject.entity.workspace.Workspace;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

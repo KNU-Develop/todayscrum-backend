@@ -1,7 +1,7 @@
 package knu.kproject.repository;
 
-import knu.kproject.entity.Board;
-import knu.kproject.entity.Master;
+import knu.kproject.entity.board.Board;
+import knu.kproject.entity.board.Master;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

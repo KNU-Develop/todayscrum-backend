@@ -1,14 +1,8 @@
 package knu.kproject.dto.board;
 
-import knu.kproject.entity.Master;
-import knu.kproject.entity.User;
-import knu.kproject.repository.UserRepository;
+import knu.kproject.entity.board.Master;
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.UUID;
 
 
 @Data

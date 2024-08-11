@@ -1,9 +1,9 @@
 package knu.kproject.repository;
 
 
-import knu.kproject.entity.ToolName;
-import knu.kproject.entity.User;
-import knu.kproject.entity.UserTool;
+import knu.kproject.global.ToolName;
+import knu.kproject.entity.user.User;
+import knu.kproject.entity.user.UserTool;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

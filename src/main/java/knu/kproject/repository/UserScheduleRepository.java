@@ -1,14 +1,12 @@
 package knu.kproject.repository;
 
-import knu.kproject.entity.Schedule;
-import knu.kproject.entity.User;
-import knu.kproject.entity.UserSchedule;
+import knu.kproject.entity.schedule.Schedule;
+import knu.kproject.entity.user.User;
+import knu.kproject.entity.user.UserSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 public interface UserScheduleRepository extends JpaRepository<UserSchedule, Long> {
@@ -26,5 +24,6 @@ public interface UserScheduleRepository extends JpaRepository<UserSchedule, Long
 //            @Param("scheduleId") Long scheduleId);
 
     Optional<UserSchedule> findUserScheduleByUser_IdAndSchedule_Id(Long userId, Long scheduleId);
+
     void deleteUserScheduleByUserAndSchedule(User user, Schedule schedule);
 }

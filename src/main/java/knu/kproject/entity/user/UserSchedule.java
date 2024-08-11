@@ -1,16 +1,19 @@
-package knu.kproject.entity;
+package knu.kproject.entity.user;
 
 import jakarta.persistence.*;
+import knu.kproject.entity.schedule.Schedule;
 import knu.kproject.global.ScheduleRole;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 public class UserSchedule {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
