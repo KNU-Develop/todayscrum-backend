@@ -3,7 +3,11 @@ package knu.kproject.service;
 import jakarta.persistence.EntityNotFoundException;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.dto.board.InputBoardDto;
-import knu.kproject.entity.*;
+import knu.kproject.entity.board.Board;
+import knu.kproject.entity.board.Master;
+import knu.kproject.entity.project.Project;
+import knu.kproject.entity.project.ProjectUser;
+import knu.kproject.entity.user.User;
 import knu.kproject.global.ROLE;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +25,8 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final MasterRepository masterRepository;
 
-    public UUID createBoard(Long token, UUID projectId ,InputBoardDto boardDto) {
-        User my  = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
+    public UUID createBoard(Long token, UUID projectId, InputBoardDto boardDto) {
+        User my = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         Project project = projectRepositroy.findById(projectId).orElseThrow(EntityNotFoundException::new);
 
         ProjectUser self = projectUserRepository.findByUserAndProject(my, project);
@@ -60,6 +64,7 @@ public class BoardService {
 
         return board.getId();
     }
+
     public List<BoardDto> findByAllBoard(Long token, UUID projectId) {
         User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         Project project = projectRepositroy.findById(projectId).orElseThrow(EntityNotFoundException::new);
@@ -91,7 +96,7 @@ public class BoardService {
             throw new NullPointerException();
         }
 
-        board.setTitle(input.getTitle()==null ? board.getTitle() : input.getTitle());
+        board.setTitle(input.getTitle() == null ? board.getTitle() : input.getTitle());
         board.setContent(input.getContent() == null ? board.getContent() : input.getContent());
         board.setCategory(input.getCategory() == null ? board.getCategory() : input.getCategory());
         board.setProgress(input.getProgress() == null ? board.getProgress() : input.getProgress());
@@ -120,6 +125,7 @@ public class BoardService {
         board.setMaster(masterList);
         boardRepository.save(board);
     }
+
     public void deleteBoard(Long token, UUID boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(EntityNotFoundException::new);
         User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);

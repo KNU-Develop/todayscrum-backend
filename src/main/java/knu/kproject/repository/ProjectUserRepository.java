@@ -1,8 +1,8 @@
 package knu.kproject.repository;
 
-import knu.kproject.entity.Project;
-import knu.kproject.entity.ProjectUser;
-import knu.kproject.entity.User;
+import knu.kproject.entity.project.Project;
+import knu.kproject.entity.project.ProjectUser;
+import knu.kproject.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

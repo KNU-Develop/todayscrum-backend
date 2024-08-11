@@ -1,10 +1,11 @@
-package knu.kproject.entity;
+package knu.kproject.entity.project;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import knu.kproject.entity.board.Board;
+import knu.kproject.entity.workspace.Workspace;
 import lombok.*;
-import org.hibernate.annotations.Type;
 
 import java.sql.Timestamp;
 import java.util.List;

@@ -2,13 +2,9 @@ package knu.kproject.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.websocket.server.PathParam;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.dto.board.InputBoardDto;
-import knu.kproject.entity.Board;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.SuccessCode;
 import knu.kproject.service.BoardService;
@@ -55,6 +51,7 @@ public class BoarderController {
                 boardDto
         );
     }
+
     @Operation(summary = "특정 프로젝트 내 모든 board 조회", description = "프로젝트 내 모든 보드 조회 API 입니다.")
     @Parameter(name = "key", description = "projectId의 값 입니다.")
     @GetMapping("all")
@@ -67,6 +64,7 @@ public class BoarderController {
                 boardDto
         );
     }
+
     @Operation(summary = "board 수정", description = "보드 수정 API 입니다.")
     @PutMapping("")
     public ResponseEntity<Api_Response<Object>> updateBoard(@AuthenticationPrincipal Long token, @RequestParam UUID boardId, @RequestBody InputBoardDto input) {
@@ -76,6 +74,7 @@ public class BoarderController {
                 SuccessCode.UPDATE_SUCCESS.getMessage()
         );
     }
+
     @Operation(summary = "board 삭제", description = "보드 삭제 API 입니다.")
     @DeleteMapping("")
     public ResponseEntity<Api_Response<Object>> deleteBoard(@AuthenticationPrincipal Long token, @RequestParam UUID boardId) {

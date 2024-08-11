@@ -1,12 +1,15 @@
-package knu.kproject.entity;
+package knu.kproject.entity.user;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
+import knu.kproject.entity.board.Master;
+import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.global.MBTI;
 import knu.kproject.global.ROLE;
+import knu.kproject.global.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +20,8 @@ import java.util.List;
 
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -43,7 +47,7 @@ public class User {
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="social_authentication")
+    @Column(name = "social_authentication")
     private UserStatus status;
     private String oauth2Id;
     private ROLE role;
@@ -74,6 +78,7 @@ public class User {
         this.email = email;
         this.status = status;
     }
+
     public void updateUserInfo(AdditionalUserInfo userInfo) {
         if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
             this.setName(userInfo.getName());
@@ -90,6 +95,7 @@ public class User {
         this.setLocation(userInfo.getLocation());
         this.setImageUrl(userInfo.getImageUrl());
     }
+
     public void joinInfo(AdditionalUserInfo userInfo) {
         if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
             this.setName(userInfo.getName());
@@ -105,7 +111,7 @@ public class User {
         this.setRequiredTermsAgree(userInfo.isRequiredTermsAgree());
     }
 
-    public void withDraw(UserDto userDto){
+    public void withDraw(UserDto userDto) {
         this.setStatus(UserStatus.WITHDRAW);
     }
 

@@ -1,7 +1,8 @@
-package knu.kproject.entity;
+package knu.kproject.entity.workspace;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import knu.kproject.entity.project.Project;
 import lombok.*;
 
 import java.sql.Timestamp;

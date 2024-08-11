@@ -1,12 +1,10 @@
 package knu.kproject.dto.board;
 
-import knu.kproject.entity.CATEGORY;
-import knu.kproject.entity.Master;
-import knu.kproject.entity.PROGRESS;
+import knu.kproject.global.CATEGORY;
+import knu.kproject.global.PROGRESS;
 import lombok.Data;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 public class InputBoardDto {

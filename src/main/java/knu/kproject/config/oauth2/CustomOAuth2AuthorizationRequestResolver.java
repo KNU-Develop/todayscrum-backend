@@ -1,4 +1,5 @@
 package knu.kproject.config.oauth2;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -18,8 +19,9 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
     private final OAuth2AuthorizationRequestResolver defaultResolver;
 
     public CustomOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
-        this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization/{registrationId}");
+        this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
     }
+
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
         OAuth2AuthorizationRequest authorizationRequest = defaultResolver.resolve(request);
@@ -46,6 +48,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
             }
         }
     }
+
     private String getOriginUri(HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
         String redirectUri = "";

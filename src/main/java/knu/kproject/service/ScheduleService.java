@@ -6,9 +6,9 @@ import knu.kproject.dto.schedule.ScheduleCreateResultDto;
 import knu.kproject.dto.schedule.ScheduleDetailResDto;
 import knu.kproject.dto.schedule.ScheduleReqDto;
 import knu.kproject.dto.schedule.ScheduleHeadResDto;
-import knu.kproject.entity.Schedule;
-import knu.kproject.entity.User;
-import knu.kproject.entity.UserSchedule;
+import knu.kproject.entity.schedule.Schedule;
+import knu.kproject.entity.user.User;
+import knu.kproject.entity.user.UserSchedule;
 import knu.kproject.repository.ScheduleRepository;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.UserScheduleRepository;
@@ -106,11 +106,12 @@ public class ScheduleService {
         }
 
     }
+
     private void updateUserSchedules(UserSchedule prevUserSchedule, Schedule prevSchedule, ScheduleReqDto scheduleReqDto) {
         List<User> prevInviteUsers = prevSchedule.getUserSchedules().stream()
                 .map(UserSchedule::getUser).toList();
         List<Long> newInviteUserIds = scheduleReqDto.getInviteList();
-        
+
         // 초대받지 못한 기존 참여자 제거 
         for (User prevInviteUser : prevInviteUsers) {
             if (!newInviteUserIds.contains(prevInviteUser.getId())) {

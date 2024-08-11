@@ -1,9 +1,10 @@
-package knu.kproject.entity;
+package knu.kproject.entity.board;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import knu.kproject.dto.board.BoardDto;
-import knu.kproject.dto.board.MasterDto;
+import knu.kproject.entity.project.Project;
+import knu.kproject.global.CATEGORY;
+import knu.kproject.global.PROGRESS;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -39,10 +40,10 @@ public class Board {
     @JsonManagedReference
     private List<Master> master;
 
-    @Column
+    @Column(nullable = false)
     private CATEGORY category;
 
-    @Column
+    @Column(nullable = false)
     private PROGRESS progress;
 
     @Column(nullable = false, updatable = false)

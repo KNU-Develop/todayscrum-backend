@@ -3,8 +3,8 @@ package knu.kproject.dto.UserDto;
 import jakarta.validation.constraints.Email;
 import knu.kproject.global.ROLE;
 import knu.kproject.global.MBTI;
-import knu.kproject.entity.User;
-import knu.kproject.entity.UserStatus;
+import knu.kproject.entity.user.User;
+import knu.kproject.global.UserStatus;
 import lombok.Data;
 
 import java.util.ArrayList;

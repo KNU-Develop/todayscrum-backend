@@ -1,7 +1,7 @@
 package knu.kproject.dto.UserDto;
 
 
-import knu.kproject.entity.UserStack;
+import knu.kproject.entity.user.UserStack;
 import lombok.Data;
 
 @Data

@@ -2,8 +2,9 @@ package knu.kproject.service;
 
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
-import knu.kproject.entity.*;
+import knu.kproject.entity.user.*;
 import knu.kproject.exception.UserExceptionHandler;
+import knu.kproject.global.ToolName;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -29,24 +30,24 @@ public class UserService {
 
     @Transactional
     public void updateUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
-        try{
+        try {
             User user = findById(userId);
             user.updateUserInfo(additionalUserInfo);
             saveUserTools(user, additionalUserInfo.getTools());
             saveUserStacks(user, additionalUserInfo.getStacks());
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
         }
     }
 
     @Transactional
     public void addUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
-        try{
+        try {
             User user = findById(userId);
             user.joinInfo(additionalUserInfo);
             saveUserTools(user, additionalUserInfo.getTools());
             saveUserStacks(user, additionalUserInfo.getStacks());
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new UserExceptionHandler(ErrorCode.INSERT_ERROR);
         }
     }
@@ -65,10 +66,10 @@ public class UserService {
     }
 
     public UserDto getUserInfo(Long userId) {
-        try{
+        try {
             User user = findById(userId);
             return UserDto.fromEntity(user);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new UserExceptionHandler(ErrorCode.SELECT_ERROR);
         }
     }
@@ -79,17 +80,17 @@ public class UserService {
 
     @Transactional
     public void withdraw(Long userId, UserDto userDto) {
-        try{
+        try {
             User user = findById(userId);
             user.withDraw(userDto);
             userRepository.save(user);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
         }
     }
 
     private void saveUserTools(User user, Map<ToolName, String> tools) {
-        try{
+        try {
             for (Map.Entry<ToolName, String> entry : tools.entrySet()) {
                 ToolName toolName = entry.getKey();
                 String toolEmail = entry.getValue();
@@ -99,14 +100,14 @@ public class UserService {
                 userTool.setEmail(toolEmail);
                 userToolRepository.save(userTool);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
         }
     }
 
     private void saveUserStacks(User user, List<String> stacks) {
-        try{
-                userStackRepository.deleteByUser(user);
+        try {
+            userStackRepository.deleteByUser(user);
             for (String stackName : stacks) {
                 Stack stack = stackRepository.findByName(stackName)
                         .orElseGet(() -> stackRepository.save(new Stack(stackName)));
@@ -116,10 +117,11 @@ public class UserService {
                     userStackRepository.save(userStack);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
         }
     }
+
     private void validateAdditionalUserInfo(AdditionalUserInfo additionalUserInfo) {
         if (additionalUserInfo.getName() == null || additionalUserInfo.getName().trim().isEmpty()) {
             throw new UserExceptionHandler(ErrorCode.BAD_REQUEST_ERROR);

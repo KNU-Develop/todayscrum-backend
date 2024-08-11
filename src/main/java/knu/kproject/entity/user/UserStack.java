@@ -1,4 +1,4 @@
-package knu.kproject.entity;
+package knu.kproject.entity.user;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,7 +6,7 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@Table(name= "USER_STACK")
+@Table(name = "USER_STACK")
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserStack {

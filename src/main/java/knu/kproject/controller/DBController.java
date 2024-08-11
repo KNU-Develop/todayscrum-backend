@@ -1,6 +1,5 @@
 package knu.kproject.controller;
 
-import knu.kproject.entity.ProjectUser;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.global.code.SuccessCode;

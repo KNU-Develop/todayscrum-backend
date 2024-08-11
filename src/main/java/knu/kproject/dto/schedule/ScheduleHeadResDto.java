@@ -1,10 +1,11 @@
 package knu.kproject.dto.schedule;
 
 
-import knu.kproject.entity.Schedule;
+import knu.kproject.entity.schedule.Schedule;
 import knu.kproject.global.ScheduleVisible;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @NoArgsConstructor

@@ -4,7 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import knu.kproject.entity.User;
+import knu.kproject.entity.user.User;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
             }
-        } else if (userId != null && SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof OAuth2User ) {
+        } else if (userId != null && SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof OAuth2User) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
             String socialId = null;

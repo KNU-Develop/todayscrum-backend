@@ -1,8 +1,9 @@
-package knu.kproject.entity;
+package knu.kproject.entity.schedule;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import knu.kproject.dto.schedule.ScheduleReqDto;
+import knu.kproject.entity.user.UserSchedule;
 import knu.kproject.global.ScheduleVisible;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,10 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 public class Schedule {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
     private String content;
@@ -24,7 +27,7 @@ public class Schedule {
     private LocalDateTime endDate;
     @Enumerated(EnumType.STRING)
     private ScheduleVisible visible;
-//    @OneToOne
+    //    @OneToOne
 //    private Repeat repeat;
     private Long projectId;
 
@@ -43,6 +46,7 @@ public class Schedule {
         this.visible = scheduleRequestDto.getVisible();
         this.projectId = scheduleRequestDto.getProjectId();
     }
+
     /*
         연관 관계 메서드
      */
@@ -50,6 +54,7 @@ public class Schedule {
         userSchedules.add(userSchedule);
         userSchedule.setSchedule(this);
     }
+
     public void removeUserSchedule(UserSchedule userSchedule) {
         userSchedules.remove(userSchedule);
         userSchedule.setSchedule(null);

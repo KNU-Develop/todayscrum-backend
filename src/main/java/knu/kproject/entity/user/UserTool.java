@@ -1,6 +1,7 @@
-package knu.kproject.entity;
+package knu.kproject.entity.user;
 
 import jakarta.persistence.*;
+import knu.kproject.global.ToolName;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
