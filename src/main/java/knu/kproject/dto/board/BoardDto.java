@@ -1,5 +1,6 @@
 package knu.kproject.dto.board;
 
+import knu.kproject.dto.comment.CommentDto;
 import knu.kproject.entity.board.Board;
 import knu.kproject.global.CATEGORY;
 import knu.kproject.global.PROGRESS;
@@ -20,6 +21,7 @@ public class BoardDto {
     private PROGRESS progress;
     private Timestamp createdAt;
     private List<MasterDto> masters;
+    private List<CommentDto> comments;
 
     public static BoardDto fromEntity(Board board) {
         BoardDto dto = BoardDto.builder()
@@ -32,7 +34,11 @@ public class BoardDto {
                 .masters(board.getMaster().stream()
                         .map(MasterDto::fromEntity)
                         .toList())
+                .comments(board.getComments().stream()
+                        .map(CommentDto::fromEntity)
+                        .toList())
                 .build();
+
         return dto;
     }
 }
