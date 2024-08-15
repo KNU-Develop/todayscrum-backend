@@ -2,6 +2,7 @@ package knu.kproject.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import knu.kproject.dto.comment.CommentDto;
+import knu.kproject.dto.comment.InputCommentDto;
 import knu.kproject.entity.board.Board;
 import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.project.ProjectUser;
@@ -15,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,7 +42,7 @@ public class CommentService {
         return commentDtos;
     }
 
-    public void addComment(Long token, UUID boardId, CommentDto input) {
+    public void addComment(Long token, UUID boardId, InputCommentDto input) {
         Board board = boardRepository.findById(boardId).orElseThrow(EntityNotFoundException::new);
         User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         ProjectUser self = projectUserRepository.findByUserAndProject(user, board.getProject());

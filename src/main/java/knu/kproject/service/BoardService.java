@@ -45,9 +45,9 @@ public class BoardService {
                 .build();
         boardRepository.save(board);
 
-        if (boardDto.getMasters() != null) {
+        if (boardDto.getMastersId() != null) {
             List<Master> masters = new ArrayList<>();
-            for (Long id : boardDto.getMasters()) {
+            for (Long id : boardDto.getMastersId()) {
                 userRepository.findById(id).ifPresent(user -> {
                     Master master = Master.builder()
                             .board(board)
@@ -108,8 +108,8 @@ public class BoardService {
         List<User> projectUsers = projectUserRepository.findByProjectId(board.getProject().getId())
                 .stream().map(projectUser -> userRepository.findById(projectUser.getUser().getId()).orElseThrow())
                 .toList();
-        if (input.getMasters() != null) {
-            for (Long id : input.getMasters()) {
+        if (input.getMastersId() != null) {
+            for (Long id : input.getMastersId()) {
                 Optional<User> user = userRepository.findById(id);
                 if (!projectUsers.contains(user)) continue;
                 if (user.isPresent()) {

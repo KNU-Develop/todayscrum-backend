@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.dto.comment.CommentDto;
+import knu.kproject.dto.comment.InputCommentDto;
 import knu.kproject.entity.comment.Comment;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.SuccessCode;
@@ -40,8 +41,8 @@ public class CommentController {
     @Operation(summary = "comment 추가", description = "댓글 추가 API 입니다.")
     @Parameter(name = "key", description = "boardId 값 입니다.")
     @PostMapping("")
-    public ResponseEntity<Api_Response<Object>> addComment(@AuthenticationPrincipal Long token, @RequestParam UUID key, @RequestBody CommentDto commentDto) {
-        commentService.addComment(token, key, commentDto);
+    public ResponseEntity<Api_Response<Object>> addComment(@AuthenticationPrincipal Long token, @RequestParam UUID key, @RequestBody InputCommentDto input) {
+        commentService.addComment(token, key, input);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.INSERT_SUCCESS.getMessage()
         );
