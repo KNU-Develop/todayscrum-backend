@@ -11,7 +11,6 @@ import java.util.UUID;
 @Builder
 public class CommentDto {
     private UUID id;
-    private String title;
     private String description;
     private Timestamp createdAt;
     private String user;
@@ -19,7 +18,6 @@ public class CommentDto {
     public static CommentDto fromEntity(Comment comment) {
         CommentDto dto = CommentDto.builder()
                 .id(comment.getId())
-                .title(comment.getTitle())
                 .description(comment.getDescription())
                 .createdAt(comment.getCreatedAt())
                 .user(comment.getUser().getName())

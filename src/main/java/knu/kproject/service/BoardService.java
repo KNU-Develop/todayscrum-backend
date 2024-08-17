@@ -1,6 +1,7 @@
 package knu.kproject.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.dto.board.InputBoardDto;
 import knu.kproject.entity.board.Board;
@@ -37,7 +38,7 @@ public class BoardService {
         Board board = Board.builder()
                 .title(boardDto.getTitle())
                 .project(projectRepositroy.findById(projectId).orElseThrow())
-                .userId(self.getUser().getId())
+                .userName(my.getName())
                 .content(boardDto.getContent())
                 .category(boardDto.getCategory())
                 .progress(boardDto.getProgress())
@@ -85,6 +86,7 @@ public class BoardService {
         return BoardDto.fromEntity(board);
     }
 
+    @Transactional
     public void updateBoard(Long token, UUID boardId, InputBoardDto input) {
         Board board = boardRepository.findById(boardId).orElseThrow();
         User self = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
@@ -92,7 +94,7 @@ public class BoardService {
 
         ROLE myRole = projectUserRepository.findByUserAndProject(self, project).getRole();
         System.out.println(myRole);
-        if (myRole == null || myRole.equals(ROLE.GUEST)) {
+        if (myRole == null || myRole.equals(ROLE.GUEST) || (!self.getName().equals(board.getUserName()) && myRole.equals(ROLE.WRITER))) {
             throw new NullPointerException();
         }
 
@@ -101,17 +103,19 @@ public class BoardService {
         board.setCategory(input.getCategory() == null ? board.getCategory() : input.getCategory());
         board.setProgress(input.getProgress() == null ? board.getProgress() : input.getProgress());
 
-        List<Master> masterList = masterRepository.findByBoard(board);
-        masterRepository.deleteAll(masterList);
 
-        masterList = new ArrayList<>();
-        List<User> projectUsers = projectUserRepository.findByProjectId(board.getProject().getId())
-                .stream().map(projectUser -> userRepository.findById(projectUser.getUser().getId()).orElseThrow())
-                .toList();
         if (input.getMastersId() != null) {
+            List<Master> masterList = board.getMaster();
+
+            masterRepository.deleteAll(masterList);
+            masterList.clear();
+
+            List<User> projectUsers = projectUserRepository.findByProjectId(board.getProject().getId())
+                    .stream().map(projectUser -> userRepository.findById(projectUser.getUser().getId()).orElseThrow())
+                    .toList();
             for (Long id : input.getMastersId()) {
                 Optional<User> user = userRepository.findById(id);
-                if (!projectUsers.contains(user)) continue;
+                if (!projectUsers.contains(user.get())) continue;
                 if (user.isPresent()) {
                     Master master = Master.builder()
                             .board(board)
@@ -120,9 +124,9 @@ public class BoardService {
                     masterList.add(master);
                 }
             }
+            masterRepository.saveAll(masterList);
+            board.setMaster(masterList);
         }
-        masterRepository.saveAll(masterList);
-        board.setMaster(masterList);
         boardRepository.save(board);
     }
 
@@ -132,7 +136,7 @@ public class BoardService {
         Project project = board.getProject();
         ROLE myRole = projectUserRepository.findByUserAndProject(user, project).getRole();
 
-        if (myRole == null || myRole.equals(ROLE.GUEST)) {
+        if (myRole == null || myRole.equals(ROLE.GUEST) || (!user.getName().equals(board.getUserName()) && myRole.equals(ROLE.WRITER))) {
             throw new NullPointerException();
         }
 

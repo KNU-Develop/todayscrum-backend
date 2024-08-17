@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.project.Project;
+import knu.kproject.entity.user.User;
 import knu.kproject.global.CATEGORY;
 import knu.kproject.global.PROGRESS;
 import lombok.*;
@@ -29,7 +30,7 @@ public class Board {
     private Project project;
 
     @Column(nullable = false)
-    private Long userId;
+    private String userName;
 
     @Column(nullable = false)
     private String title;

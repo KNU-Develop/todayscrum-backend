@@ -21,7 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost:3008",
                         "http://localhost:3009",
                         "https://projectbuilder-frontend-git-feature-sprint01-hin6150s-projects.vercel.app/")
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Authorization", "Content-Type")
                 .exposedHeaders("Custom-Header")
                 .allowCredentials(true)

@@ -10,7 +10,6 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 public class UserTeamDto {
@@ -18,9 +17,6 @@ public class UserTeamDto {
     private String name;
     @Email
     private String email;
-    private UserStatus status;
-    private String socialId;
-    private String contact;
     private String location;
     private MBTI mbti;
     private String imageUrl;

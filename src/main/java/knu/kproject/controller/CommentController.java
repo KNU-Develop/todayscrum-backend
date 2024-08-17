@@ -16,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -42,19 +44,24 @@ public class CommentController {
     @Parameter(name = "key", description = "boardId 값 입니다.")
     @PostMapping("")
     public ResponseEntity<Api_Response<Object>> addComment(@AuthenticationPrincipal Long token, @RequestParam UUID key, @RequestBody InputCommentDto input) {
-        commentService.addComment(token, key, input);
-        return ApiResponseUtil.createSuccessResponse(
-                SuccessCode.INSERT_SUCCESS.getMessage()
+        UUID commentId = commentService.addComment(token, key, input);
+        Map<String, UUID> map = new HashMap<>();
+        map.put("CommentId", commentId);
+
+        return ApiResponseUtil.createResponse(
+                SuccessCode.INSERT_SUCCESS.getStatus(),
+                SuccessCode.INSERT_SUCCESS.getMessage(),
+                map
         );
     }
 
     @Operation(summary = "comment 수정", description = "댓글 수정 API 입니다.")
     @Parameter(name = "key", description = "commentId 값 입니다.")
     @PutMapping("")
-    public ResponseEntity<Api_Response<Object>> fixComment(@AuthenticationPrincipal Long token, @RequestParam UUID key, @RequestBody CommentDto commentDto) {
-        commentService.fixComment(token, key, commentDto);
+    public ResponseEntity<Api_Response<Object>> fixComment(@AuthenticationPrincipal Long token, @RequestParam UUID key, @RequestBody InputCommentDto input) {
+        commentService.fixComment(token, key, input);
         return ApiResponseUtil.createSuccessResponse(
-                SuccessCode.SELECT_SUCCESS.getMessage()
+                SuccessCode.UPDATE_SUCCESS.getMessage()
         );
     }
 
@@ -64,7 +71,7 @@ public class CommentController {
     public ResponseEntity<Api_Response<Object>> deleteComment(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
         commentService.deleteComment(token, key);
         return ApiResponseUtil.createSuccessResponse(
-                SuccessCode.SELECT_SUCCESS.getMessage()
+                SuccessCode.DELETE_SUCCESS.getMessage()
         );
     }
 }

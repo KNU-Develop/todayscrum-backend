@@ -15,6 +15,7 @@ import java.util.UUID;
 @Builder
 public class BoardDto {
     private UUID id;
+    private String userName;
     private String title;
     private String content;
     private CATEGORY category;
@@ -26,6 +27,7 @@ public class BoardDto {
     public static BoardDto fromEntity(Board board) {
         BoardDto dto = BoardDto.builder()
                 .id(board.getId())
+                .userName(board.getUserName())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .category(board.getCategory())

@@ -20,9 +20,6 @@ public class Comment {
     private UUID id;
 
     @Column(nullable = false)
-    private String title;
-
-    @Column
     private String description;
 
     @Column(nullable = false, updatable = false)

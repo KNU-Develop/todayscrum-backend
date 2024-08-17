@@ -1,6 +1,7 @@
 package knu.kproject.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import knu.kproject.dto.comment.CommentDto;
 import knu.kproject.dto.comment.InputCommentDto;
 import knu.kproject.entity.board.Board;
@@ -42,7 +43,7 @@ public class CommentService {
         return commentDtos;
     }
 
-    public void addComment(Long token, UUID boardId, InputCommentDto input) {
+    public UUID addComment(Long token, UUID boardId, InputCommentDto input) {
         Board board = boardRepository.findById(boardId).orElseThrow(EntityNotFoundException::new);
         User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         ProjectUser self = projectUserRepository.findByUserAndProject(user, board.getProject());
@@ -52,7 +53,6 @@ public class CommentService {
         }
 
         Comment comment = Comment.builder()
-                .title(input.getTitle())
                 .description(input.getDescription())
                 .board(board)
                 .user(user)
@@ -61,19 +61,20 @@ public class CommentService {
         board.getComments().add(comment);
         commentRepository.save(comment);
         boardRepository.save(board);
+
+        return comment.getId();
     }
 
-    public void fixComment(Long token, UUID commentId, CommentDto input) {
+    @Transactional
+    public void fixComment(Long token, UUID commentId, InputCommentDto input) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(EntityNotFoundException::new);
         User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         ProjectUser self = projectUserRepository.findByUserAndProject(user, comment.getBoard().getProject());
 
-        if (self == null || self.getRole().equals(ROLE.GUEST)) {
+        if (self == null || self.getRole().equals(ROLE.GUEST) || (!self.getUser().getName().equals(comment.getUser().getName()) && self.getRole().equals(ROLE.WRITER))) {
             throw new NullPointerException();
         }
-
-        comment.setTitle(input.getTitle());
-        comment.setDescription(input.getDescription());
+        comment.setDescription(input.getDescription() == null ? comment.getDescription() : input.getDescription());
 
         commentRepository.save(comment);
     }
@@ -83,7 +84,7 @@ public class CommentService {
         User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         ProjectUser self = projectUserRepository.findByUserAndProject(user, comment.getBoard().getProject());
 
-        if (self == null || self.getRole().equals(ROLE.GUEST)) {
+        if (self == null || self.getRole().equals(ROLE.GUEST) || (!self.getUser().getName().equals(comment.getUser().getName()) && self.getRole().equals(ROLE.WRITER))) {
             throw new NullPointerException();
         }
 
