@@ -1,9 +1,11 @@
 package knu.kproject.config.jwt;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import knu.kproject.config.SecurityConfig;
 import knu.kproject.entity.user.User;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.service.UserService;
@@ -53,30 +55,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
             }
-        } else if (userId != null && SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof OAuth2User) {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-            String socialId = null;
-
-            Map<String, Object> attributes = oAuth2User.getAttributes();
-
-            if (attributes.containsKey("sub")) {
-                socialId = (String) attributes.get("sub");
-            } else if (attributes.containsKey("id") && attributes.get("id") instanceof Integer) {
-                socialId = String.valueOf(attributes.get("id"));
-            } else if (attributes.containsKey("id") && attributes.get("id") instanceof Long socialIdLong) {
-                socialId = socialIdLong.toString();
-            }
-
-            if (socialId != null) {
-                User user = userService.findBySocialId(socialId).orElse(null);
+        } else if (userId != null && SecurityContextHolder.getContext().getAuthentication() != null) {
+            if (jwtTokenUtil.validateToken(accessToken, userId)) {
+                User user = userService.findBySocialId(userId).orElse(null);
                 if (user != null) {
-                    UsernamePasswordAuthenticationToken newAuthentication = new UsernamePasswordAuthenticationToken(user.getId(), null, new ArrayList<>());
-                    newAuthentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(newAuthentication);
-                    System.out.println("User ID set in context: " + user.getId());
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user.getId(), null, new ArrayList<>());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
-                    response.sendError(ErrorCode.TOKEN_MISSING_ERROR.getStatus(), "Invalid user");
+                    response.sendError(ErrorCode.TOKEN_MISSING_ERROR.getStatus(), "Invalid token");
                     return;
                 }
             }

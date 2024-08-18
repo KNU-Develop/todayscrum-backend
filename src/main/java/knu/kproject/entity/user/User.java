@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
+import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.board.Master;
 import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.global.MBTI;
@@ -71,6 +72,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Master> masters;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Comment> comments;
 
     public User(String name, String socialId, String email, UserStatus status) {
         this.name = name;

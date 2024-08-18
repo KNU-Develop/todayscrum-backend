@@ -2,7 +2,9 @@ package knu.kproject.entity.board;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.project.Project;
+import knu.kproject.entity.user.User;
 import knu.kproject.global.CATEGORY;
 import knu.kproject.global.PROGRESS;
 import lombok.*;
@@ -28,7 +30,7 @@ public class Board {
     private Project project;
 
     @Column(nullable = false)
-    private Long userId;
+    private String userName;
 
     @Column(nullable = false)
     private String title;
@@ -36,15 +38,20 @@ public class Board {
     @Column
     private String content;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<Master> master;
 
     @Column(nullable = false)
     private CATEGORY category;
 
     @Column(nullable = false)
     private PROGRESS progress;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Master> master;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Comment> comments;
 
     @Column(nullable = false, updatable = false)
     private Timestamp createdAt;
