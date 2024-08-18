@@ -27,9 +27,10 @@ public class BoarderController {
     private final BoardService boardService;
 
     @Operation(summary = "board 생성", description = "보드 생성 API 입니다.")
+    @Parameter(name = "key", description = "projectId의 값 입니다.")
     @PostMapping("")
-    public ResponseEntity<Api_Response<Object>> createBoard(@AuthenticationPrincipal Long token, @RequestParam UUID projectId, @RequestBody InputBoardDto boardDto) {
-        UUID boarderId = boardService.createBoard(token, projectId, boardDto);
+    public ResponseEntity<Api_Response<Object>> createBoard(@AuthenticationPrincipal Long token, @RequestParam UUID key, @RequestBody InputBoardDto boardDto) {
+        UUID boarderId = boardService.createBoard(token, key, boardDto);
         Map<String, UUID> boarderMap = new HashMap<>();
         boarderMap.put("BoarderId", boarderId);
 
@@ -41,6 +42,7 @@ public class BoarderController {
     }
 
     @Operation(summary = "board 조회", description = "보드 조회 API 입니다.")
+    @Parameter(name = "key", description = "boardId 값 입니다.")
     @GetMapping("")
     public ResponseEntity<Api_Response<Object>> findByBoard(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
         BoardDto boardDto = boardService.findByBoard(token, key);
@@ -66,9 +68,10 @@ public class BoarderController {
     }
 
     @Operation(summary = "board 수정", description = "보드 수정 API 입니다.")
+    @Parameter(name = "key", description = "boardId 값 입니다.")
     @PutMapping("")
-    public ResponseEntity<Api_Response<Object>> updateBoard(@AuthenticationPrincipal Long token, @RequestParam UUID boardId, @RequestBody InputBoardDto input) {
-        boardService.updateBoard(token, boardId, input);
+    public ResponseEntity<Api_Response<Object>> updateBoard(@AuthenticationPrincipal Long token, @RequestParam UUID key, @RequestBody InputBoardDto input) {
+        boardService.updateBoard(token, key, input);
 
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.UPDATE_SUCCESS.getMessage()
@@ -76,9 +79,10 @@ public class BoarderController {
     }
 
     @Operation(summary = "board 삭제", description = "보드 삭제 API 입니다.")
+    @Parameter(name = "key", description = "boardId 값 입니다.")
     @DeleteMapping("")
-    public ResponseEntity<Api_Response<Object>> deleteBoard(@AuthenticationPrincipal Long token, @RequestParam UUID boardId) {
-        boardService.deleteBoard(token, boardId);
+    public ResponseEntity<Api_Response<Object>> deleteBoard(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
+        boardService.deleteBoard(token, key);
 
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.DELETE_SUCCESS.getMessage()

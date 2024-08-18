@@ -1,6 +1,7 @@
 package knu.kproject.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import knu.kproject.dto.UserDto.ToolInfoDto;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.project.*;
@@ -33,10 +34,7 @@ public class ProjectService {
         UserTeamDto dto = new UserTeamDto();
         dto.setId(user.getId());
         dto.setName(user.getName());
-        dto.setSocialId(user.getSocialId());
-        dto.setStatus(user.getStatus());
         dto.setEmail(user.getEmail());
-        dto.setContact(user.getContact());
         dto.setLocation(user.getLocation());
         dto.setMbti(user.getMbti());
         dto.setImageUrl(user.getImageUrl());
@@ -125,6 +123,7 @@ public class ProjectService {
         return ProjectDto.fromEntity(project, userDto);
     }
 
+    @Transactional
     public void updateProject(Long userId, UUID projectId, PutProjectDto updatedProjectData) {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("project not found"));
@@ -144,11 +143,11 @@ public class ProjectService {
             }
         }
 
-        project.setTitle(updatedProjectData.getTitle());
-        project.setOverview(updatedProjectData.getOverview());
-        project.setStartDate(updatedProjectData.getStartDate());
-        project.setEndDate(updatedProjectData.getEndDate());
-        project.setColor(updatedProjectData.getColor());
+        project.setTitle(updatedProjectData.getTitle() == null ? project.getTitle() : updatedProjectData.getTitle());
+        project.setOverview(updatedProjectData.getOverview() == null ? project.getOverview() : updatedProjectData.getOverview());
+        project.setStartDate(updatedProjectData.getStartDate() == null ? project.getStartDate() : updatedProjectData.getStartDate());
+        project.setEndDate(updatedProjectData.getEndDate() == null ? project.getEndDate() : updatedProjectData.getEndDate());
+        project.setColor(updatedProjectData.getColor() == null ? project.getColor() : updatedProjectData.getColor());
 
         projectRepositroy.save(project);
     }
@@ -215,6 +214,7 @@ public class ProjectService {
         }
     }
 
+    @Transactional
     public void changeRole(Long userId, RoleDto roleDto) {
         User user = userRepository.findById(userId).orElseThrow();
         Project project = projectRepositroy.findById(roleDto.getProjectId()).orElseThrow();

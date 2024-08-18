@@ -1,6 +1,7 @@
 package knu.kproject.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -73,6 +74,7 @@ public class ProjectController {
             @ApiResponse(responseCode = "404", description = "프로젝트가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
+    @Parameter(name = "key", description = "projectId 값 입니다.")
     @GetMapping("/project")
     public ResponseEntity<Api_Response<Object>> getProjectById(@AuthenticationPrincipal Long userToken, @RequestParam UUID key) {
         if (userToken == null) throw new IllegalArgumentException("Authorization error");
@@ -91,6 +93,7 @@ public class ProjectController {
             @ApiResponse(responseCode = "404", description = "프로젝트가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
+    @Parameter(name = "key", description = "projectId 값 입니다.")
     @PutMapping("/project")
     public ResponseEntity<Api_Response<Object>> updateProject(@AuthenticationPrincipal Long userToken, @RequestParam UUID key, @RequestBody PutProjectDto updateProjectData) {
         if (userToken == null) throw new IllegalArgumentException("Authorization error");
@@ -105,6 +108,7 @@ public class ProjectController {
             @ApiResponse(responseCode = "404", description = "프로젝트가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
+    @Parameter(name = "key", description = "projectId 값 입니다.")
     @DeleteMapping("/project")
     public ResponseEntity<Api_Response<Object>> deleteProject(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
         if (token == null) throw new IllegalArgumentException("error");
@@ -133,6 +137,7 @@ public class ProjectController {
             @ApiResponse(responseCode = "404", description = "프로젝트가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
+    @Parameter(name = "key", description = "projectId 값 입니다.")
     @GetMapping("project/users")
     public ResponseEntity<Api_Response<Object>> getProjectToUser(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
         if (token == null) throw new IllegalArgumentException("error");
