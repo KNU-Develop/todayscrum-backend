@@ -1,5 +1,6 @@
 package knu.kproject.dto.project;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.entity.project.Project;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProjectDto {
     private UUID id;
     private String title;

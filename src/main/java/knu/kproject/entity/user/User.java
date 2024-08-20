@@ -7,6 +7,7 @@ import knu.kproject.dto.UserDto.AdditionalUserInfo;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.board.Master;
+import knu.kproject.entity.notice.Notice;
 import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.global.MBTI;
 import knu.kproject.global.ROLE;
@@ -76,6 +77,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Comment> comments;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Notice> notices;
 
     public User(String name, String socialId, String email, UserStatus status) {
         this.name = name;

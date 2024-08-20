@@ -1,5 +1,6 @@
 package knu.kproject.dto.board;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import knu.kproject.dto.comment.CommentDto;
 import knu.kproject.entity.board.Board;
 import knu.kproject.global.CATEGORY;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 @Data
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BoardDto {
     private UUID id;
     private String userName;

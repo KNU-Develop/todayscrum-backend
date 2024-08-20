@@ -4,14 +4,20 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.dto.board.InputBoardDto;
+import knu.kproject.dto.notice.NoticeDto;
 import knu.kproject.entity.board.Board;
 import knu.kproject.entity.board.Master;
+import knu.kproject.entity.notice.Notice;
 import knu.kproject.entity.project.Project;
 import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.entity.user.User;
+import knu.kproject.global.CHOICE;
+import knu.kproject.global.NOTICETYPE;
 import knu.kproject.global.ROLE;
+import knu.kproject.global.functions.Access;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -25,15 +31,16 @@ public class BoardService {
     private final ProjectUserRepository projectUserRepository;
     private final BoardRepository boardRepository;
     private final MasterRepository masterRepository;
+    private final NoticeService noticeService;
+    private final NoticeRepositroy noticeRepositroy;
 
     public UUID createBoard(Long token, UUID projectId, InputBoardDto boardDto) {
         User my = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         Project project = projectRepositroy.findById(projectId).orElseThrow(EntityNotFoundException::new);
 
         ProjectUser self = projectUserRepository.findByUserAndProject(my, project);
-        if (self == null || self.getRole().equals(ROLE.GUEST)) {
-            throw new NullPointerException();
-        }
+
+        Access.accessPossible(self, ROLE.WRITER);
 
         Board board = Board.builder()
                 .title(boardDto.getTitle())
@@ -55,6 +62,17 @@ public class BoardService {
                             .user(user)
                             .build();
                     masters.add(master);
+
+                    NoticeDto noticeDto = NoticeDto.builder()
+                            .isRead(false)
+                            .title(my.getName() + "님이 " + user.getName() + "님을 멘션으로 호출했습니다.")
+                            .type(NOTICETYPE.멘션)
+                            .originId(board.getId())
+                            .originTable("board")
+                            .user(user)
+                            .build();
+
+                    noticeService.addNotice(user, noticeDto);
                 });
             }
 
@@ -79,10 +97,10 @@ public class BoardService {
         User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         Board board = boardRepository.findById(boardId).orElseThrow(EntityNotFoundException::new);
         Project project = projectRepositroy.findById(board.getProject().getId()).orElseThrow(EntityNotFoundException::new);
-        ROLE myRole = projectUserRepository.findByUserAndProject(user, project).getRole();
-        if (myRole == null) {
-            throw new NullPointerException();
-        }
+        ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
+
+        Access.accessPossible(projectUser, ROLE.GUEST);
+
         return BoardDto.fromEntity(board);
     }
 
@@ -92,11 +110,9 @@ public class BoardService {
         User self = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
         Project project = projectRepositroy.findById(board.getProject().getId()).orElseThrow(EntityNotFoundException::new);
 
-        ROLE myRole = projectUserRepository.findByUserAndProject(self, project).getRole();
-        System.out.println(myRole);
-        if (myRole == null || myRole.equals(ROLE.GUEST) || (!self.getName().equals(board.getUserName()) && myRole.equals(ROLE.WRITER))) {
-            throw new NullPointerException();
-        }
+        ProjectUser my = projectUserRepository.findByUserAndProject(self, project);
+
+        Access.accessPossible(my, ROLE.WRITER);
 
         board.setTitle(input.getTitle() == null ? board.getTitle() : input.getTitle());
         board.setContent(input.getContent() == null ? board.getContent() : input.getContent());
@@ -114,15 +130,27 @@ public class BoardService {
                     .stream().map(projectUser -> userRepository.findById(projectUser.getUser().getId()).orElseThrow())
                     .toList();
             for (Long id : input.getMastersId()) {
-                Optional<User> user = userRepository.findById(id);
-                if (!projectUsers.contains(user.get())) continue;
-                if (user.isPresent()) {
-                    Master master = Master.builder()
-                            .board(board)
-                            .user(user.get())
-                            .build();
-                    masterList.add(master);
-                }
+                userRepository.findById(id)
+                        .filter(user -> projectUsers.contains(user))
+                        .ifPresent(user -> {
+                            Master master = Master.builder()
+                                    .board(board)
+                                    .user(user)
+                                    .build();
+
+                            masterList.add(master);
+
+                            NoticeDto noticeDto = NoticeDto.builder()
+                                    .isRead(false)
+                                    .title(self.getName() + "님이 " + user.getName() + "님을 멘션으로 호출했습니다.")
+                                    .type(NOTICETYPE.멘션)
+                                    .originId(board.getId())
+                                    .originTable("board")
+                                    .user(user)
+                                    .build();
+
+                            noticeService.addNotice(user, noticeDto);
+                        });
             }
             masterRepository.saveAll(masterList);
             board.setMaster(masterList);
@@ -133,10 +161,11 @@ public class BoardService {
     public void deleteBoard(Long token, UUID boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(EntityNotFoundException::new);
         User user = userRepository.findById(token).orElseThrow(EntityNotFoundException::new);
-        Project project = board.getProject();
-        ROLE myRole = projectUserRepository.findByUserAndProject(user, project).getRole();
+        ProjectUser myRole = projectUserRepository.findByUserAndProject(user, board.getProject());
 
-        if (myRole == null || myRole.equals(ROLE.GUEST) || (!user.getName().equals(board.getUserName()) && myRole.equals(ROLE.WRITER))) {
+        Access.accessPossible(myRole, ROLE.WRITER);
+
+        if (myRole.getRole() == null || myRole.getRole().equals(ROLE.GUEST) || (!user.getName().equals(board.getUserName()) && myRole.getRole().equals(ROLE.WRITER))) {
             throw new NullPointerException();
         }
 

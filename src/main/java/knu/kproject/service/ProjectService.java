@@ -2,14 +2,20 @@ package knu.kproject.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.Null;
 import knu.kproject.dto.UserDto.ToolInfoDto;
 import knu.kproject.dto.UserDto.UserDto;
+import knu.kproject.dto.notice.NoticeDto;
 import knu.kproject.dto.project.*;
+import knu.kproject.entity.notice.Notice;
 import knu.kproject.entity.project.Project;
 import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.entity.user.User;
 import knu.kproject.entity.workspace.Workspace;
+import knu.kproject.global.CHOICE;
+import knu.kproject.global.NOTICETYPE;
 import knu.kproject.global.ROLE;
+import knu.kproject.global.functions.Access;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,8 +31,7 @@ public class ProjectService {
     private final WorkspaceRepository workspaceRepository;
     private final ProjectRepositroy projectRepositroy;
     private final ProjectUserRepository projectUserRepository;
-    private final BoardService boardService;
-    private final BoardRepository boardRepository;
+    private final NoticeService noticeService;
 
     public UserTeamDto fromEntity(User user, Project project) {
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
@@ -48,6 +53,21 @@ public class ProjectService {
                 .collect(Collectors.toList()));
 
         return dto;
+    }
+
+    // 특정 프로젝트 내에 존재하는 유저 탐색해서 project내 유저로 변환
+    private ProjectDto convertToDto(Project project) {
+        List<User> users = project.getProjectUsers().stream()
+                .map(ProjectUser::getUser)
+                .toList();
+        List<UserTeamDto> userDto = new ArrayList<>();
+        for (User user : users) {
+            ROLE role = projectUserRepository.findByUserAndProject(user, project).getRole();
+            UserTeamDto dto = fromEntity(user, project);
+            dto.setRole(role);
+            userDto.add(dto);
+        }
+        return ProjectDto.fromEntity(project, userDto);
     }
 
     public UUID createProject(PutProjectDto projectDto, Long userId) {
@@ -73,7 +93,9 @@ public class ProjectService {
                 .project(project)
                 .role(ROLE.OWNER)
                 .color(project.getColor())
+                .choice(CHOICE.수락)
                 .build();
+
         List<ProjectUser> projectUserList = new ArrayList<>();
         projectUserList.add(projectUser);
 
@@ -103,35 +125,22 @@ public class ProjectService {
     public ProjectDto getProjectById(Long userToken, UUID projectId) {
         User user = userRepository.findById(userToken).orElseThrow();
         Project project = projectRepositroy.findById(projectId).orElseThrow();
-        if (!projectUserRepository.existsByProjectAndUser(project, user)) throw new NullPointerException();
+        ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
+
+        Access.accessPossible(projectUser, ROLE.GUEST);
 
         return convertToDto(project);
     }
 
-    // 특정 프로젝트 내에 존재하는 유저 탐색해서 project내 유저로 변환
-    private ProjectDto convertToDto(Project project) {
-        List<User> users = project.getProjectUsers().stream()
-                .map(ProjectUser::getUser)
-                .toList();
-        List<UserTeamDto> userDto = new ArrayList<>();
-        for (User user : users) {
-            ROLE role = projectUserRepository.findByUserAndProject(user, project).getRole();
-            UserTeamDto dto = fromEntity(user, project);
-            dto.setRole(role);
-            userDto.add(dto);
-        }
-        return ProjectDto.fromEntity(project, userDto);
-    }
-
     @Transactional
     public void updateProject(Long userId, UUID projectId, PutProjectDto updatedProjectData) {
+        User u = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("project not found"));
-        ROLE role = projectUserRepository.findByUserAndProject(userRepository.findById(userId).orElseThrow(), project).getRole();
+        ProjectUser projectUser = projectUserRepository.findByUserAndProject(u, project);
 
-        if (role.equals(ROLE.GUEST)) {
-            throw new NullPointerException();
-        }
+        Access.accessPossible(projectUser, ROLE.WRITER);
+
         List<ProjectUser> projectUserList = projectUserRepository.findByProjectId(projectId);
         // 유저와 프로젝트 색이 일치할 경우, 프로젝트 색을 따름, 다를경우 개인 색 유지
         for (ProjectUser user : projectUserList) {
@@ -157,11 +166,9 @@ public class ProjectService {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("project not found"));
 
-        ROLE role = projectUserRepository.findByUserAndProject(user, project).getRole();
+        ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
 
-        if (!role.equals(ROLE.OWNER)) {
-            throw new NullPointerException();
-        }
+        Access.accessPossible(projectUser, ROLE.OWNER);
 
         projectRepositroy.delete(project);
     }
@@ -170,9 +177,8 @@ public class ProjectService {
         User user1 = userRepository.findById(token).orElseThrow();
         Project project = projectRepositroy.findById(projectId).orElseThrow();
 
-        if (!projectUserRepository.existsByProjectAndUser(project, user1)) {
-            throw new NullPointerException();
-        }
+        ProjectUser projectUser = projectUserRepository.findByUserAndProject(user1, project);
+        Access.accessPossible(projectUser, ROLE.GUEST);
 
         List<User> users = project.getProjectUsers().stream()
                 .map(ProjectUser::getUser)
@@ -191,23 +197,33 @@ public class ProjectService {
         User user1 = userRepository.findById(token).orElseThrow();
         Project project = projectRepositroy.findById(inviteDto.getProjectId()).orElseThrow(() -> new EntityNotFoundException("not found project"));
 
-        ROLE role = projectUserRepository.findByUserAndProject(user1, project).getRole();
-
-        if (role.equals(ROLE.GUEST)) {
-            throw new NullPointerException();
-        }
+        ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(user1, project);
+        Access.accessPossible(projectUser1, ROLE.GUEST);
 
         List<String> userEmails = inviteDto.getUserEmails();
         for (String email : userEmails) {
             if (userRepository.existsByEmail(email)) {
                 User user = userRepository.findByEmail(email);
                 if (!projectUserRepository.existsByProjectAndUser(project, user)) {
-                    ProjectUser projectUser = new ProjectUser();
-                    projectUser.setProject(project);
-                    projectUser.setUser(user);
-                    projectUser.setRole(ROLE.GUEST);
-                    projectUser.setColor(project.getColor());
+                    NoticeDto noticeDto = NoticeDto.builder()
+                            .isRead(false)
+                            .title(user1.getName() + "님이 " + project.getTitle() + "에 초대했습니다.")
+                            .type(NOTICETYPE.초대)
+                            .originId(project.getId())
+                            .originTable("project")
+                            .user(user)
+                            .choice(CHOICE.미정)
+                            .build();
 
+                    ProjectUser projectUser = ProjectUser.builder()
+                            .project(project)
+                            .user(user)
+                            .role(ROLE.GUEST)
+                            .color(project.getColor())
+                            .choice(CHOICE.미정)
+                            .build();
+
+                    noticeService.addNotice(user, noticeDto);
                     projectUserRepository.save(projectUser);
                 }
             }
@@ -218,12 +234,9 @@ public class ProjectService {
     public void changeRole(Long userId, RoleDto roleDto) {
         User user = userRepository.findById(userId).orElseThrow();
         Project project = projectRepositroy.findById(roleDto.getProjectId()).orElseThrow();
-
         ProjectUser self = projectUserRepository.findByUserAndProject(user, project);
 
-        if (self.getRole().equals(ROLE.GUEST)) {
-            throw new NullPointerException();
-        }
+        Access.accessPossible(self, ROLE.GUEST);
 
         Map<String, ROLE> roles = roleDto.getRoles();
         for (Map.Entry<String, ROLE> entry : roles.entrySet()) {
@@ -243,11 +256,9 @@ public class ProjectService {
     public void deleteProjectUser(Long userId, UUID projectId, List<String> userEmails) {
         User self = userRepository.findById(userId).orElseThrow();
         Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new EntityNotFoundException("project not found"));
-        ROLE role = projectUserRepository.findByUserAndProject(self, project).getRole();
 
-        if (!role.equals(ROLE.OWNER)) {
-            throw new NullPointerException();
-        }
+        ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(self, project);
+        Access.accessPossible(projectUser1, ROLE.GUEST);
 
         List<ProjectUser> projectUsers = project.getProjectUsers();
         for (ProjectUser projectUser : projectUsers) {
