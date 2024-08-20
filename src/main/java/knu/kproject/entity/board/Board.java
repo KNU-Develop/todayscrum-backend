@@ -1,5 +1,6 @@
 package knu.kproject.entity.board;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import knu.kproject.entity.comment.Comment;
@@ -27,6 +28,7 @@ public class Board {
 
     @ManyToOne
     @JoinColumn(nullable = false)
+    @JsonBackReference
     private Project project;
 
     @Column(nullable = false)
@@ -38,10 +40,11 @@ public class Board {
     @Column
     private String content;
 
-
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CATEGORY category;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PROGRESS progress;
 

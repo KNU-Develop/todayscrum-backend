@@ -1,5 +1,6 @@
 package knu.kproject.dto.project;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.Email;
 import knu.kproject.dto.UserDto.ToolInfoDto;
 import knu.kproject.entity.user.User;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserTeamDto {
     private Long id;
     private String name;
