@@ -11,8 +11,12 @@ public enum ScheduleErrorCode implements ErrorCode {
     // 400
     INVALID_REQUEST_USER_ID(HttpStatus.BAD_REQUEST, ""),
 
+    // 403
+    NO_INVITE_SCHEDULE(HttpStatus.FORBIDDEN, "No invite schedule, need invite"),
+    NO_ACCESS_SCHEDULE(HttpStatus.FORBIDDEN, "No access schedule, need role 'OWNER' or 'WRITE'"),
+
     // 404
-    NOT_FOUND_SCHEDULE(HttpStatus.NOT_FOUND, "존재하지 않는 일정입니다."),
+    NOT_FOUND(HttpStatus.NOT_FOUND, "Not Found Schedule"),
 
     ;
     private final HttpStatus httpStatus;

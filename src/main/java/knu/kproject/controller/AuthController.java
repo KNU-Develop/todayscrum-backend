@@ -36,5 +36,4 @@ public class AuthController {
                     .body("Invalid refresh token");
         }
     }
-
 }

@@ -1,6 +1,7 @@
 package knu.kproject.util;
 
 import knu.kproject.exception.code.CommonErrorCode;
+import knu.kproject.exception.code.ErrorCode;
 import knu.kproject.global.code.Api_Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,9 @@ public class ApiResponseUtil {
     public static <T> ResponseEntity<Api_Response<T>> createSuccessResponse(String message) {
         return createResponse(HttpStatus.OK.value(), message, null);
     }
-
+    public static <T> ResponseEntity<Api_Response<T>> createErrorResponse(ErrorCode errorCode) {
+        return createResponse(errorCode.getHttpStatus().value(), errorCode.getMessage(), null);
+    }
     public static <T> ResponseEntity<Api_Response<T>> createErrorResponse(String message, int code) {
         return createResponse(code, message, null);
     }
