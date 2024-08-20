@@ -42,4 +42,14 @@ public class GlobalExceptionHandler {
                 ErrorCode.SELECT_ERROR.getStatus()
         );
     }
+
+
+
+
+
+
+    @ExceptionHandler(ScheduleException.class)
+    public final ResponseEntity<?> handleScheduleException(ScheduleException e) {
+        return ApiResponseUtil.createErrorResponse(e.errorCode);
+    }
 }
