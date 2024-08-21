@@ -6,13 +6,16 @@ import knu.kproject.dto.UserDto.UpdateUserDto;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.entity.user.*;
 import knu.kproject.exception.UserExceptionHandler;
+import knu.kproject.exception.code.UserErrorCode;
 import knu.kproject.global.ToolName;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,51 +30,63 @@ public class UserService {
 
     public User findById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UserExceptionHandler(ErrorCode.NOT_FOUND_ERROR));
+                .orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
     }
 
     @Transactional
     public void updateUserInfo(Long userId, UpdateUserDto updateUserDto) {
+        User user = findById(userId);
         try {
-            User user = findById(userId);
             user.updateUserInfo(updateUserDto);
             saveUserTools(user, updateUserDto.getTools());
             saveUserStacks(user, updateUserDto.getStacks());
+        } catch (DataIntegrityViolationException e) {
+            throw new UserExceptionHandler(UserErrorCode.INVALID_USER_DATA);
         } catch (Exception e) {
-            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+            throw new UserExceptionHandler(UserErrorCode.UPDATE_ERROR);
         }
     }
 
     @Transactional
     public void addUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
+        User user = findById(userId);
         try {
-            User user = findById(userId);
             user.addAdditionalInfo(additionalUserInfo);
             saveUserTools(user, additionalUserInfo.getTools());
             saveUserStacks(user, additionalUserInfo.getStacks());
+        } catch (DataIntegrityViolationException e) {
+            // 데이터 무결성 위반 시 처리
+            throw new UserExceptionHandler(UserErrorCode.INVALID_USER_DATA);
         } catch (Exception e) {
-            throw new UserExceptionHandler(ErrorCode.INSERT_ERROR);
+            // 기타 예기치 않은 모든 오류 처리
+            throw new UserExceptionHandler(UserErrorCode.INSERT_ERROR);
         }
     }
 
-    @Transactional
-    public void joinUser(Long userId, JoinUserDto joinUserDto) {
+
+    public void joinInfo(Long userId, JoinUserDto joinUserDto) {
+        User user = findById(userId);
         try {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UserExceptionHandler(ErrorCode.NOT_FOUND_ERROR));
+            if (!joinUserDto.isRequiredTermsAgree()) {
+                throw new UserExceptionHandler(UserErrorCode.INVALID_USER_DATA, "User must agree to the required terms.");
+            }
             user.joinInfo(joinUserDto);
             userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new UserExceptionHandler(UserErrorCode.INVALID_USER_DATA);
         } catch (Exception e) {
-            throw new UserExceptionHandler(ErrorCode.INSERT_ERROR);
+            throw new UserExceptionHandler(UserErrorCode.INSERT_ERROR);
         }
+
     }
+
 
     public UserDto getUserInfo(Long userId) {
         try {
             User user = findById(userId);
             return UserDto.fromEntity(user);
         } catch (Exception e) {
-            throw new UserExceptionHandler(ErrorCode.SELECT_ERROR);
+            throw new UserExceptionHandler(UserErrorCode.SELECT_ERROR);
         }
     }
 
@@ -86,7 +101,7 @@ public class UserService {
             user.withDraw(userDto);
             userRepository.save(user);
         } catch (Exception e) {
-            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+            throw new UserExceptionHandler(UserErrorCode.UPDATE_ERROR);
         }
     }
 
@@ -95,14 +110,16 @@ public class UserService {
             for (Map.Entry<ToolName, String> entry : tools.entrySet()) {
                 ToolName toolName = entry.getKey();
                 String toolEmail = entry.getValue();
-
+                if (!EnumSet.allOf(ToolName.class).contains(toolName)) {
+                    throw new UserExceptionHandler(UserErrorCode.INVALID_USER_DATA, "Invalid tool name provided: GITHUB or NOTION or FIGMA");
+                }
                 UserTool userTool = userToolRepository.findByUserAndTool(user, toolName)
                         .orElse(new UserTool(user, toolName, toolEmail));
                 userTool.setEmail(toolEmail);
                 userToolRepository.save(userTool);
             }
         } catch (Exception e) {
-            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+            throw new UserExceptionHandler(UserErrorCode.UPDATE_ERROR);
         }
     }
 
@@ -119,7 +136,7 @@ public class UserService {
                 }
             }
         } catch (Exception e) {
-            throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
+            throw new UserExceptionHandler(UserErrorCode.UPDATE_ERROR);
         }
     }
 }

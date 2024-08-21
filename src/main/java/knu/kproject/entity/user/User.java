@@ -105,12 +105,14 @@ public class User {
     }
 
     public void joinInfo(JoinUserDto userInfo) {
-        if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
-            this.setName(userInfo.getName());
+        if (userInfo.getName() == null || userInfo.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be empty.");
         }
-        if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
-            this.setContact(userInfo.getContact());
+        if (userInfo.getContact() == null || userInfo.getContact().trim().isEmpty()) {
+            throw new IllegalArgumentException("Contact cannot be empty.");
         }
+        this.setName(userInfo.getName());
+        this.setContact(userInfo.getContact());
         this.setStatus(UserStatus.JOIN);
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
         this.setRequiredTermsAgree(userInfo.isRequiredTermsAgree());
