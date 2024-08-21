@@ -63,7 +63,7 @@ public class NoticeService {
 
             projectUserRepository.save(projectUser);
         } else if (input.getChoice().equals(CHOICE.거절)) {
-            projectUserRepository.delete(projectUser);
+            projectUser.setChoice(CHOICE.거절);
             notice.setChoice(CHOICE.거절);
         }
         noticeRepositroy.save(notice);

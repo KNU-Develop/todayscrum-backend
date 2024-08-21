@@ -1,7 +1,7 @@
 package knu.kproject.service;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Null;
 import knu.kproject.dto.UserDto.ToolInfoDto;
 import knu.kproject.dto.UserDto.UserDto;
@@ -19,6 +19,8 @@ import knu.kproject.global.functions.Access;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -44,6 +46,7 @@ public class ProjectService {
         dto.setMbti(user.getMbti());
         dto.setImageUrl(user.getImageUrl());
         dto.setRole(user.getRole());
+        dto.setChoice(projectUser.getChoice());
         dto.setColor(projectUser.getColor());
         dto.setTools(user.getUserTools().stream()
                 .map(ToolInfoDto::fromEntity)
@@ -93,7 +96,6 @@ public class ProjectService {
                 .project(project)
                 .role(ROLE.OWNER)
                 .color(project.getColor())
-                .choice(CHOICE.수락)
                 .build();
 
         List<ProjectUser> projectUserList = new ArrayList<>();
@@ -173,24 +175,17 @@ public class ProjectService {
         projectRepositroy.delete(project);
     }
 
-    public List<UserDto> findByAllProjectUsers(Long token, UUID projectId) {
+    public List<UserTeamDto> findByAllProjectUsers(Long token, UUID projectId) {
         User user1 = userRepository.findById(token).orElseThrow();
         Project project = projectRepositroy.findById(projectId).orElseThrow();
 
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user1, project);
         Access.accessPossible(projectUser, ROLE.GUEST);
 
-        List<User> users = project.getProjectUsers().stream()
-                .map(ProjectUser::getUser)
+        List<UserTeamDto> users = project.getProjectUsers().stream()
+                .map(projectUser1 -> fromEntity(projectUser1.getUser(), projectUser1.getProject()))
                 .toList();
-        List<UserDto> userDto = new ArrayList<>();
-        for (User user : users) {
-            ROLE role = projectUserRepository.findByUserAndProject(user, project).getRole();
-            UserDto dto = UserDto.fromEntity(user);
-            dto.setRole(role);
-            userDto.add(dto);
-        }
-        return userDto;
+        return users;
     }
 
     public void addUser(Long token, InviteDto inviteDto) {
@@ -212,7 +207,7 @@ public class ProjectService {
                             .originId(project.getId())
                             .originTable("project")
                             .user(user)
-                            .choice(CHOICE.미정)
+                            .choice(CHOICE.전송)
                             .build();
 
                     ProjectUser projectUser = ProjectUser.builder()
@@ -220,7 +215,7 @@ public class ProjectService {
                             .user(user)
                             .role(ROLE.GUEST)
                             .color(project.getColor())
-                            .choice(CHOICE.미정)
+                            .choice(CHOICE.전송)
                             .build();
 
                     noticeService.addNotice(user, noticeDto);
@@ -253,18 +248,26 @@ public class ProjectService {
         }
     }
 
+    private final EntityManager entityManager;
+
+    @Transactional
     public void deleteProjectUser(Long userId, UUID projectId, List<String> userEmails) {
         User self = userRepository.findById(userId).orElseThrow();
         Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new EntityNotFoundException("project not found"));
 
         ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(self, project);
-        Access.accessPossible(projectUser1, ROLE.GUEST);
+        Access.accessDeletePossible(projectUser1, ROLE.OWNER);
 
-        List<ProjectUser> projectUsers = project.getProjectUsers();
-        for (ProjectUser projectUser : projectUsers) {
+        Iterator<ProjectUser> projectUserIterator = project.getProjectUsers().iterator();
+
+        while (projectUserIterator.hasNext()) {
+            ProjectUser projectUser = projectUserIterator.next();
             for (String email : userEmails) {
                 User user = userRepository.findByEmail(email);
-                if (user.getId() == projectUser.getUser().getId()) {
+                if (user != null && user.equals(projectUser.getUser())) {
+                    projectUserIterator.remove();
+                    user.getProjectUsers().remove(projectUser);
+
                     projectUserRepository.delete(projectUser);
                 }
             }

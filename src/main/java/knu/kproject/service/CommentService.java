@@ -6,6 +6,7 @@ import knu.kproject.dto.comment.CommentDto;
 import knu.kproject.dto.comment.InputCommentDto;
 import knu.kproject.dto.notice.NoticeDto;
 import knu.kproject.entity.board.Board;
+import knu.kproject.entity.board.Master;
 import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.entity.user.User;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,8 +29,8 @@ public class CommentService {
     private final ProjectUserRepository projectUserRepository;
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
-    private final NoticeRepositroy noticeRepositroy;
     private final NoticeService noticeService;
+    private final MasterRepository masterRepository;
 
     public List<CommentDto> getCommentList(Long token, UUID boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(EntityNotFoundException::new);
@@ -58,8 +60,32 @@ public class CommentService {
                 .build();
 
 
-        board.getComments().add(comment);
         commentRepository.save(comment);
+
+        if (!input.getMasterId().isEmpty()) {
+            List<User> projectUsers = projectUserRepository.findByProjectId(board.getProject().getId())
+                    .stream().map(projectUser -> userRepository.findById(projectUser.getUser().getId()).orElseThrow())
+                    .toList();
+
+            List<Master> masters = new ArrayList<>();
+            for (Long id : input.getMasterId()) {
+                userRepository.findById(id)
+                        .filter(usr -> projectUsers.contains(user))
+                        .ifPresent(usr -> {
+                            Master master = Master.builder()
+                                    .comment(comment)
+                                    .user(user)
+                                    .build();
+
+                            masters.add(master);
+                        });
+            }
+            masterRepository.saveAll(masters);
+            comment.setMasters(masters);
+            commentRepository.save(comment);
+
+        }
+        board.getComments().add(comment);
         boardRepository.save(board);
 
         NoticeDto noticeDto = NoticeDto.builder()
@@ -88,6 +114,19 @@ public class CommentService {
             throw new NullPointerException();
         }
         comment.setDescription(input.getDescription() == null ? comment.getDescription() : input.getDescription());
+
+        if (input.getMasterId() != null && !input.getMasterId().isEmpty()) {
+            List<Master> masterList = comment.getMasters();
+            comment.getMasters().clear();
+            masterRepository.deleteAll(masterList);
+
+            comment.setMasters(input.getMasterId().stream()
+                    .map(id -> Master.builder()
+                            .user(userRepository.findById(id).orElseThrow(EntityNotFoundException::new))
+                            .comment(comment)
+                            .build())
+                    .toList());
+        }
 
         commentRepository.save(comment);
     }

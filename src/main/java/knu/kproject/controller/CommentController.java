@@ -56,20 +56,18 @@ public class CommentController {
     }
 
     @Operation(summary = "comment 수정", description = "댓글 수정 API 입니다.")
-    @Parameter(name = "key", description = "commentId 값 입니다.")
-    @PutMapping("")
-    public ResponseEntity<Api_Response<Object>> fixComment(@AuthenticationPrincipal Long token, @RequestParam UUID key, @RequestBody InputCommentDto input) {
-        commentService.fixComment(token, key, input);
+    @PutMapping("{commentId}")
+    public ResponseEntity<Api_Response<Object>> fixComment(@AuthenticationPrincipal Long token, @PathVariable UUID commentId, @RequestBody InputCommentDto input) {
+        commentService.fixComment(token, commentId, input);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.UPDATE_SUCCESS.getMessage()
         );
     }
 
     @Operation(summary = "comment 삭제", description = "댓글 삭제 API 입니다.")
-    @Parameter(name = "key", description = "commentId 값 입니다.")
-    @DeleteMapping("")
-    public ResponseEntity<Api_Response<Object>> deleteComment(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
-        commentService.deleteComment(token, key);
+    @DeleteMapping("{commentId}")
+    public ResponseEntity<Api_Response<Object>> deleteComment(@AuthenticationPrincipal Long token, @PathVariable UUID commentId) {
+        commentService.deleteComment(token, commentId);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.DELETE_SUCCESS.getMessage()
         );

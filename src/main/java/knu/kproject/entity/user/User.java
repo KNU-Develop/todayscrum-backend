@@ -12,10 +12,7 @@ import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.global.MBTI;
 import knu.kproject.global.ROLE;
 import knu.kproject.global.UserStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +23,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,7 +64,7 @@ public class User {
     @JsonManagedReference
     private List<UserSchedule> userSchedules = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ProjectUser> projectUsers;
 

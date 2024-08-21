@@ -6,10 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import knu.kproject.dto.UserDto.UserDto;
-import knu.kproject.dto.project.InviteDto;
-import knu.kproject.dto.project.ProjectDto;
-import knu.kproject.dto.project.PutProjectDto;
-import knu.kproject.dto.project.RoleDto;
+import knu.kproject.dto.project.*;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.SuccessCode;
 import knu.kproject.service.ProjectService;
@@ -142,7 +139,7 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> getProjectToUser(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
         if (token == null) throw new IllegalArgumentException("error");
 
-        List<UserDto> users = projectService.findByAllProjectUsers(token, key);
+        List<UserTeamDto> users = projectService.findByAllProjectUsers(token, key);
 
         return ResponseEntity.ok().body(Api_Response.builder()
                 .code(200).message("SUCCESS").result(users).build());

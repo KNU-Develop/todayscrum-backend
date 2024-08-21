@@ -54,26 +54,31 @@ public class BoardService {
         boardRepository.save(board);
 
         if (boardDto.getMastersId() != null) {
+            List<User> userList = projectUserRepository.findByProjectId(board.getProject().getId()).stream()
+                    .map(projectUser -> projectUser.getUser())
+                    .toList();
             List<Master> masters = new ArrayList<>();
             for (Long id : boardDto.getMastersId()) {
-                userRepository.findById(id).ifPresent(user -> {
-                    Master master = Master.builder()
-                            .board(board)
-                            .user(user)
-                            .build();
-                    masters.add(master);
+                userRepository.findById(id)
+                        .filter(user -> userList.contains(user))
+                        .ifPresent(user -> {
+                            Master master = Master.builder()
+                                    .board(board)
+                                    .user(user)
+                                    .build();
+                            masters.add(master);
 
-                    NoticeDto noticeDto = NoticeDto.builder()
-                            .isRead(false)
-                            .title(my.getName() + "님이 " + user.getName() + "님을 멘션으로 호출했습니다.")
-                            .type(NOTICETYPE.멘션)
-                            .originId(board.getId())
-                            .originTable("board")
-                            .user(user)
-                            .build();
+                            NoticeDto noticeDto = NoticeDto.builder()
+                                    .isRead(false)
+                                    .title(my.getName() + "님이 " + user.getName() + "님을 멘션으로 호출했습니다.")
+                                    .type(NOTICETYPE.멘션)
+                                    .originId(board.getId())
+                                    .originTable("board")
+                                    .user(user)
+                                    .build();
 
-                    noticeService.addNotice(user, noticeDto);
-                });
+                            noticeService.addNotice(user, noticeDto);
+                        });
             }
 
             masterRepository.saveAll(masters);
