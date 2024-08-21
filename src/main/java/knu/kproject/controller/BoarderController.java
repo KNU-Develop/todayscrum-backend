@@ -44,8 +44,7 @@ public class BoarderController {
     public ResponseEntity<Api_Response<Object>> findByBoard(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
         BoardDto boardDto = boardService.findByBoard(token, key);
 
-        return ApiResponseUtil.createResponse(
-                SuccessCode.SELECT_SUCCESS.getStatus(),
+        return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 boardDto
         );
@@ -57,8 +56,7 @@ public class BoarderController {
     public ResponseEntity<Api_Response<Object>> findByAllBoard(@AuthenticationPrincipal Long token, @RequestParam UUID key) {
         List<BoardDto> boardDto = boardService.findByAllBoard(token, key);
 
-        return ApiResponseUtil.createResponse(
-                SuccessCode.SELECT_SUCCESS.getStatus(),
+        return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 boardDto
         );

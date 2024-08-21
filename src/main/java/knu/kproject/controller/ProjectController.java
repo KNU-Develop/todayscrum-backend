@@ -57,8 +57,7 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> getProjectsByWorkspaceId(@AuthenticationPrincipal Long key) {
         List<ProjectDto> projects = projectService.getProjectByWorkspaceId(key);
 
-        return  ApiResponseUtil.createResponse(
-                SuccessCode.SELECT_SUCCESS.getStatus(),
+        return  ApiResponseUtil.createSuccessResponse(
                 SuccessCode.SELECT_SUCCESS.getMessage(),
                 projects
         );
