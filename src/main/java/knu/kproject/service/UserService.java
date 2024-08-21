@@ -1,6 +1,8 @@
 package knu.kproject.service;
 
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
+import knu.kproject.dto.UserDto.JoinUserDto;
+import knu.kproject.dto.UserDto.UpdateUserDto;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.entity.user.*;
 import knu.kproject.exception.UserExceptionHandler;
@@ -29,12 +31,12 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
+    public void updateUserInfo(Long userId, UpdateUserDto updateUserDto) {
         try {
             User user = findById(userId);
-            user.updateUserInfo(additionalUserInfo);
-            saveUserTools(user, additionalUserInfo.getTools());
-            saveUserStacks(user, additionalUserInfo.getStacks());
+            user.updateUserInfo(updateUserDto);
+            saveUserTools(user, updateUserDto.getTools());
+            saveUserStacks(user, updateUserDto.getStacks());
         } catch (Exception e) {
             throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
         }
@@ -44,7 +46,7 @@ public class UserService {
     public void addUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
         try {
             User user = findById(userId);
-            user.joinInfo(additionalUserInfo);
+            user.addAdditionalInfo(additionalUserInfo);
             saveUserTools(user, additionalUserInfo.getTools());
             saveUserStacks(user, additionalUserInfo.getStacks());
         } catch (Exception e) {
@@ -53,12 +55,11 @@ public class UserService {
     }
 
     @Transactional
-    public void joinUser(Long userId, AdditionalUserInfo additionalUserInfo) {
-        validateAdditionalUserInfo(additionalUserInfo);
+    public void joinUser(Long userId, JoinUserDto joinUserDto) {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new UserExceptionHandler(ErrorCode.NOT_FOUND_ERROR));
-            user.joinInfo(additionalUserInfo);
+            user.joinInfo(joinUserDto);
             userRepository.save(user);
         } catch (Exception e) {
             throw new UserExceptionHandler(ErrorCode.INSERT_ERROR);
@@ -119,18 +120,6 @@ public class UserService {
             }
         } catch (Exception e) {
             throw new UserExceptionHandler(ErrorCode.UPDATE_ERROR);
-        }
-    }
-
-    private void validateAdditionalUserInfo(AdditionalUserInfo additionalUserInfo) {
-        if (additionalUserInfo.getName() == null || additionalUserInfo.getName().trim().isEmpty()) {
-            throw new UserExceptionHandler(ErrorCode.BAD_REQUEST_ERROR);
-        }
-        if (additionalUserInfo.getEmail() == null || additionalUserInfo.getEmail().trim().isEmpty()) {
-            throw new UserExceptionHandler(ErrorCode.BAD_REQUEST_ERROR);
-        }
-        if (additionalUserInfo.getContact() == null || additionalUserInfo.getContact().trim().isEmpty()) {
-            throw new UserExceptionHandler(ErrorCode.BAD_REQUEST_ERROR);
         }
     }
 }

@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
+import knu.kproject.dto.UserDto.JoinUserDto;
+import knu.kproject.dto.UserDto.UpdateUserDto;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.ErrorCode;
@@ -39,12 +41,12 @@ public class UserController {
     })
     public ResponseEntity<?> join(
             @Parameter(description = "회원가입 시 필요한 추가 정보", required = true)
-            @Valid @RequestBody AdditionalUserInfo additionalInfo,
+            @Valid @RequestBody JoinUserDto joinUserDto,
             @Parameter(description = "현재 인증된 사용자의 ID", required = true)
             @AuthenticationPrincipal Long userId) {
         ResponseEntity<Api_Response<Boolean>> result;
         try {
-            userService.joinUser(userId, additionalInfo);
+            userService.joinUser(userId, joinUserDto);
             result = ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
         } catch (IllegalArgumentException e) {
             result = ApiResponseUtil.createBadRequestResponse(e.getMessage());
@@ -124,12 +126,12 @@ public class UserController {
     @PutMapping("/info/optional")
     public ResponseEntity<?> updateUserInfo(
             @Parameter(description = "회원 정보 수정", required = true)
-            @Valid @RequestBody AdditionalUserInfo additionalInfo,
+            @Valid @RequestBody UpdateUserDto updateUserDto,
             @Parameter(description = "현재 인증된 사용자의 ID", required = true)
             @AuthenticationPrincipal Long userId) {
         ResponseEntity<Api_Response<Boolean>> result;
         try {
-            userService.updateUserInfo(userId, additionalInfo);
+            userService.updateUserInfo(userId, updateUserDto);
             result = ApiResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS.getMessage());
         } catch (IllegalArgumentException e) {
             result = ApiResponseUtil.createBadRequestResponse(e.getMessage());

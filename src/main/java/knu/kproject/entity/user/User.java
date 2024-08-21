@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
+import knu.kproject.dto.UserDto.JoinUserDto;
+import knu.kproject.dto.UserDto.UpdateUserDto;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.board.Master;
@@ -89,29 +91,22 @@ public class User {
         this.status = status;
     }
 
-    public void updateUserInfo(AdditionalUserInfo userInfo) {
+    public void updateUserInfo(UpdateUserDto userInfo) {
         if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
             this.setName(userInfo.getName());
-        }
-        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
-            this.setEmail(userInfo.getEmail());
         }
         if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
             this.setContact(userInfo.getContact());
         }
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
-
         this.setMbti(userInfo.getMbti());
         this.setLocation(userInfo.getLocation());
         this.setImageUrl(userInfo.getImageUrl());
     }
 
-    public void joinInfo(AdditionalUserInfo userInfo) {
+    public void joinInfo(JoinUserDto userInfo) {
         if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
             this.setName(userInfo.getName());
-        }
-        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
-            this.setEmail(userInfo.getEmail());
         }
         if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
             this.setContact(userInfo.getContact());
@@ -119,6 +114,12 @@ public class User {
         this.setStatus(UserStatus.JOIN);
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
         this.setRequiredTermsAgree(userInfo.isRequiredTermsAgree());
+    }
+
+    public void addAdditionalInfo(AdditionalUserInfo userInfo) {
+        this.setMbti(userInfo.getMbti());
+        this.setLocation(userInfo.getLocation());
+        this.setImageUrl(userInfo.getImageUrl());
     }
 
     public void withDraw(UserDto userDto) {
