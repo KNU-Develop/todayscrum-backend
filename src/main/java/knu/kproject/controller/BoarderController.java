@@ -34,11 +34,8 @@ public class BoarderController {
         Map<String, UUID> boarderMap = new HashMap<>();
         boarderMap.put("BoarderId", boarderId);
 
-        return ApiResponseUtil.createResponse(
-                SuccessCode.INSERT_SUCCESS.getStatus(),
-                SuccessCode.INSERT_SUCCESS.getMessage(),
-                boarderMap
-        );
+        return ApiResponseUtil.createSuccessResponse(
+                SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
     @Operation(summary = "board 조회", description = "보드 조회 API 입니다.")

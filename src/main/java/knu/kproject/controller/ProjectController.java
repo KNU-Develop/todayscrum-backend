@@ -39,15 +39,12 @@ public class ProjectController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("")
-    public ResponseEntity<Api_Response<Object>> createProject(@RequestBody PutProjectDto projectDto, @AuthenticationPrincipal Long key) {
+    public ResponseEntity<Api_Response<ProjectDto>> createProject(@RequestBody PutProjectDto projectDto, @AuthenticationPrincipal Long key) {
         UUID projectId = projectService.createProject(projectDto, key);
         Map<String, UUID> projectMap = new HashMap<>();
         projectMap.put("projectId", projectId);
-        return ResponseEntity.ok().body(Api_Response.builder()
-                .code(SuccessCode.INSERT_SUCCESS.getStatus())
-                .message(SuccessCode.INSERT_SUCCESS.getMessage())
-                .result(projectMap)
-                .build());
+        return ApiResponseUtil.createSuccessResponse(
+                SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
     @Operation(summary = "모든 프로젝트 조회", description = "특정 workspace 아래 존재하는 모든 project 조회 API 입니다.")
@@ -60,11 +57,11 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> getProjectsByWorkspaceId(@AuthenticationPrincipal Long key) {
         List<ProjectDto> projects = projectService.getProjectByWorkspaceId(key);
 
-        return ResponseEntity.ok().body(Api_Response.builder()
-                .code(SuccessCode.SELECT_SUCCESS.getStatus())
-                .message(SuccessCode.SELECT_SUCCESS.getMessage())
-                .result(projects)
-                .build());
+        return  ApiResponseUtil.createResponse(
+                SuccessCode.SELECT_SUCCESS.getStatus(),
+                SuccessCode.SELECT_SUCCESS.getMessage(),
+                projects
+        );
     }
 
     @Operation(summary = "특정 프로젝트 조회", description = "특정 project 조회 API 입니다.")
@@ -79,10 +76,11 @@ public class ProjectController {
     public ResponseEntity<Api_Response<Object>> getProjectById(@AuthenticationPrincipal Long userToken, @RequestParam UUID key) {
         if (userToken == null) throw new IllegalArgumentException("Authorization error");
         ProjectDto project = projectService.getProjectById(userToken, key);
-        return ResponseEntity.ok().body(Api_Response.builder()
-                .code(SuccessCode.SELECT_SUCCESS.getStatus())
-                .message(SuccessCode.SELECT_SUCCESS.getMessage())
-                .result(project).build());
+        return ApiResponseUtil.createResponse(
+                SuccessCode.SELECT_SUCCESS.getStatus(),
+                SuccessCode.SELECT_SUCCESS.getMessage(),
+                project
+        );
     }
 
     @Operation(summary = "특정 프로젝트 수정", description = "특정 project 수정 API 입니다.")
