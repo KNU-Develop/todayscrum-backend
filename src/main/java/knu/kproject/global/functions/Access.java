@@ -20,7 +20,7 @@ public class Access {
             throw new ProjectException(ProjectErrorCode.FORBIDEN_ROLE);
         } else if (projectUser.getRole().equals(ROLE.GUEST) && (require.equals(ROLE.WRITER) || require.equals(ROLE.OWNER))) {
             throw new ProjectException(ProjectErrorCode.FORBIDEN_ROLE);
-        } else if (projectUser.getChoice() != null && (projectUser.getChoice().equals(CHOICE.전송) || projectUser.getChoice().equals(CHOICE.거절)) && (require.equals(ROLE.WRITER) || require.equals(ROLE.OWNER))) {
+        } else if (projectUser.getChoice() != null && (projectUser.getChoice().equals(CHOICE.전송) || projectUser.getChoice().equals(CHOICE.거절)) || (require.equals(ROLE.WRITER) || require.equals(ROLE.OWNER))) {
             throw new ProjectException(ProjectErrorCode.INVITED_YET);
         } else if (projectUser.getChoice() == null && !projectUser.getRole().equals(ROLE.MASTER)) {
             throw new ProjectException(ProjectErrorCode.NOT_INVITE);
