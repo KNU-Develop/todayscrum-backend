@@ -39,12 +39,14 @@ public class ProjectController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("")
-    public ResponseEntity<Api_Response<ProjectDto>> createProject(@RequestBody PutProjectDto projectDto, @AuthenticationPrincipal Long key) {
+    public ResponseEntity<Api_Response<Object>> createProject(@RequestBody PutProjectDto projectDto, @AuthenticationPrincipal Long key) {
         UUID projectId = projectService.createProject(projectDto, key);
         Map<String, UUID> projectMap = new HashMap<>();
         projectMap.put("projectId", projectId);
-        return ApiResponseUtil.createSuccessResponse(
-                SuccessCode.INSERT_SUCCESS.getMessage());
+        return ApiResponseUtil. createSuccessResponse(
+                SuccessCode.INSERT_SUCCESS.getMessage(),
+                projectMap
+        );
     }
 
     @Operation(summary = "모든 프로젝트 조회", description = "특정 workspace 아래 존재하는 모든 project 조회 API 입니다.")
