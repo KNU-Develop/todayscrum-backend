@@ -10,7 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class AdditionalUserInfo {
+public class UpdateUserDto {
+    private String name;
+    private String contact;
+    private boolean marketingEmailOptIn;
+
     private String location;
     private MBTI mbti;
     private String imageUrl;
