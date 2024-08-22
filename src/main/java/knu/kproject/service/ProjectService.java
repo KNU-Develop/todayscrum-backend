@@ -1,17 +1,21 @@
 package knu.kproject.service;
 
+import ch.qos.logback.core.joran.conditional.IfAction;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Null;
 import knu.kproject.dto.UserDto.ToolInfoDto;
 import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.notice.NoticeDto;
 import knu.kproject.dto.project.*;
-import knu.kproject.entity.notice.Notice;
 import knu.kproject.entity.project.Project;
 import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.entity.user.User;
 import knu.kproject.entity.workspace.Workspace;
+import knu.kproject.exception.ProjectException;
+import knu.kproject.exception.UserExceptionHandler;
+import knu.kproject.exception.code.ProjectErrorCode;
+import knu.kproject.exception.code.UserErrorCode;
 import knu.kproject.global.CHOICE;
 import knu.kproject.global.NOTICETYPE;
 import knu.kproject.global.ROLE;
@@ -19,6 +23,7 @@ import knu.kproject.global.functions.Access;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -44,6 +49,7 @@ public class ProjectService {
         dto.setMbti(user.getMbti());
         dto.setImageUrl(user.getImageUrl());
         dto.setRole(user.getRole());
+        dto.setChoice(projectUser.getChoice());
         dto.setColor(projectUser.getColor());
         dto.setTools(user.getUserTools().stream()
                 .map(ToolInfoDto::fromEntity)
@@ -73,8 +79,8 @@ public class ProjectService {
     public UUID createProject(PutProjectDto projectDto, Long userId) {
         List<Workspace> workspaces = workspaceRepository.findByOwnerId(userId);
 
-        if (userId == null) throw new IllegalArgumentException("illegal error");
-        if (workspaces.isEmpty()) throw new EntityNotFoundException("workspace not found");
+        if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
 
         Project project = Project.builder()
                 .title(projectDto.getTitle())
@@ -89,11 +95,10 @@ public class ProjectService {
         projectRepositroy.save(project);
 
         ProjectUser projectUser = ProjectUser.builder()
-                .user(userRepository.findById(userId).orElseThrow())
+                .user(user)
                 .project(project)
-                .role(ROLE.OWNER)
+                .role(ROLE.MASTER)
                 .color(project.getColor())
-                .choice(CHOICE.수락)
                 .build();
 
         List<ProjectUser> projectUserList = new ArrayList<>();
@@ -108,9 +113,9 @@ public class ProjectService {
     }
 
     public List<ProjectDto> getProjectByWorkspaceId(Long workspaceId) {
-        if (workspaceId == null) throw new IllegalArgumentException("error");
+        if (workspaceId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
+        workspaceRepository.findById(workspaceId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
 
-        workspaceRepository.findById(workspaceId).orElseThrow(() -> new EntityNotFoundException("workspace not found"));
         List<Project> projects = projectRepositroy.findByWorkspaceOwnerId(workspaceId);
         List<ProjectUser> subProjects = projectUserRepository.findByUserId(workspaceId);
         for (ProjectUser projectUser : subProjects) {
@@ -123,8 +128,10 @@ public class ProjectService {
     }
 
     public ProjectDto getProjectById(Long userToken, UUID projectId) {
-        User user = userRepository.findById(userToken).orElseThrow();
-        Project project = projectRepositroy.findById(projectId).orElseThrow();
+        if (userToken == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
+
+        User user = userRepository.findById(userToken).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
+        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
 
         Access.accessPossible(projectUser, ROLE.GUEST);
@@ -134,9 +141,10 @@ public class ProjectService {
 
     @Transactional
     public void updateProject(Long userId, UUID projectId, PutProjectDto updatedProjectData) {
-        User u = userRepository.findById(userId).orElseThrow(EntityNotFoundException::new);
+        if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
+        User u = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
         Project project = projectRepositroy.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("project not found"));
+                .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(u, project);
 
         Access.accessPossible(projectUser, ROLE.WRITER);
@@ -162,10 +170,10 @@ public class ProjectService {
     }
 
     public void deleteProject(Long token, UUID projectId) {
-        User user = userRepository.findById(token).orElseThrow();
+        if (token == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
+        User user = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
         Project project = projectRepositroy.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("project not found"));
-
+                .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
 
         Access.accessPossible(projectUser, ROLE.OWNER);
@@ -173,31 +181,25 @@ public class ProjectService {
         projectRepositroy.delete(project);
     }
 
-    public List<UserDto> findByAllProjectUsers(Long token, UUID projectId) {
-        User user1 = userRepository.findById(token).orElseThrow();
-        Project project = projectRepositroy.findById(projectId).orElseThrow();
-
+    public List<UserTeamDto> findByAllProjectUsers(Long token, UUID projectId) {
+        if (token == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
+        User user1 = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
+        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user1, project);
         Access.accessPossible(projectUser, ROLE.GUEST);
 
-        List<User> users = project.getProjectUsers().stream()
-                .map(ProjectUser::getUser)
+        List<UserTeamDto> users = project.getProjectUsers().stream()
+                .map(projectUser1 -> fromEntity(projectUser1.getUser(), projectUser1.getProject()))
                 .toList();
-        List<UserDto> userDto = new ArrayList<>();
-        for (User user : users) {
-            ROLE role = projectUserRepository.findByUserAndProject(user, project).getRole();
-            UserDto dto = UserDto.fromEntity(user);
-            dto.setRole(role);
-            userDto.add(dto);
-        }
-        return userDto;
+        return users;
     }
 
-    public void addUser(Long token, InviteDto inviteDto) {
-        User user1 = userRepository.findById(token).orElseThrow();
-        Project project = projectRepositroy.findById(inviteDto.getProjectId()).orElseThrow(() -> new EntityNotFoundException("not found project"));
-
+    public void addUser(Long token, UUID projectId, InviteDto inviteDto) {
+        if (token == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
+        User user1 = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
+        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(user1, project);
+
         Access.accessPossible(projectUser1, ROLE.GUEST);
 
         List<String> userEmails = inviteDto.getUserEmails();
@@ -212,7 +214,7 @@ public class ProjectService {
                             .originId(project.getId())
                             .originTable("project")
                             .user(user)
-                            .choice(CHOICE.미정)
+                            .choice(CHOICE.전송)
                             .build();
 
                     ProjectUser projectUser = ProjectUser.builder()
@@ -220,7 +222,7 @@ public class ProjectService {
                             .user(user)
                             .role(ROLE.GUEST)
                             .color(project.getColor())
-                            .choice(CHOICE.미정)
+                            .choice(CHOICE.전송)
                             .build();
 
                     noticeService.addNotice(user, noticeDto);
@@ -231,40 +233,46 @@ public class ProjectService {
     }
 
     @Transactional
-    public void changeRole(Long userId, RoleDto roleDto) {
-        User user = userRepository.findById(userId).orElseThrow();
-        Project project = projectRepositroy.findById(roleDto.getProjectId()).orElseThrow();
+    public void changeRole(Long userId, UUID projectId, RoleDto roleDto) {
+        if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
+        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser self = projectUserRepository.findByUserAndProject(user, project);
 
         Access.accessPossible(self, ROLE.GUEST);
 
-        Map<String, ROLE> roles = roleDto.getRoles();
-        for (Map.Entry<String, ROLE> entry : roles.entrySet()) {
-            Long id = Long.parseLong(entry.getKey());
+        Map<Long, ROLE> roles = roleDto.getRoles();
+        for (Map.Entry<Long, ROLE> entry : roles.entrySet()) {
+            Long id = entry.getKey();
             ROLE role = entry.getValue();
 
-            ProjectUser projectUser = projectUserRepository.findByUserAndProject(userRepository.findById(id).orElseThrow(), project);
-            if (role.equals(ROLE.OWNER) && self.getRole().equals(ROLE.WRITER)) {
-                throw new NullPointerException();
-            }
+            ProjectUser projectUser = projectUserRepository.findByUserAndProject(userRepository.findById(id).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER)), project);
+            Access.accessPossible(self, role);
             projectUser.setRole(role);
 
             projectUserRepository.save(projectUser);
         }
     }
 
-    public void deleteProjectUser(Long userId, UUID projectId, List<String> userEmails) {
-        User self = userRepository.findById(userId).orElseThrow();
-        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new EntityNotFoundException("project not found"));
-
+    @Transactional
+    public void deleteProjectUser(Long userId, UUID projectId, List<Long> UserId) {
+        if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
+        User self = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
+        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(self, project);
-        Access.accessPossible(projectUser1, ROLE.GUEST);
+        Access.accessPossible(projectUser1, ROLE.OWNER);
 
-        List<ProjectUser> projectUsers = project.getProjectUsers();
-        for (ProjectUser projectUser : projectUsers) {
-            for (String email : userEmails) {
-                User user = userRepository.findByEmail(email);
-                if (user.getId() == projectUser.getUser().getId()) {
+        Iterator<ProjectUser> projectUserIterator = project.getProjectUsers().iterator();
+
+        while (projectUserIterator.hasNext()) {
+            ProjectUser projectUser = projectUserIterator.next();
+            for (Long id : UserId) {
+                User user = userRepository.findById(id).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
+                if (user != null && user.equals(projectUser.getUser())) {
+                    projectUserIterator.remove();
+                    user.getProjectUsers().remove(projectUser);
+
                     projectUserRepository.delete(projectUser);
                 }
             }

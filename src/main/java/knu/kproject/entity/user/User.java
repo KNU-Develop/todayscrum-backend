@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
+import knu.kproject.dto.UserDto.JoinUserDto;
+import knu.kproject.dto.UserDto.UpdateUserDto;
 import knu.kproject.dto.UserDto.UserDto;
+import knu.kproject.entity.board.Board;
 import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.board.Master;
 import knu.kproject.entity.notice.Notice;
@@ -12,10 +15,7 @@ import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.global.MBTI;
 import knu.kproject.global.ROLE;
 import knu.kproject.global.UserStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,9 +67,13 @@ public class User {
     @JsonManagedReference
     private List<UserSchedule> userSchedules = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ProjectUser> projectUsers;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Board> boards;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -89,36 +94,37 @@ public class User {
         this.status = status;
     }
 
-    public void updateUserInfo(AdditionalUserInfo userInfo) {
+    public void updateUserInfo(UpdateUserDto userInfo) {
         if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
             this.setName(userInfo.getName());
-        }
-        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
-            this.setEmail(userInfo.getEmail());
         }
         if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
             this.setContact(userInfo.getContact());
         }
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
-
         this.setMbti(userInfo.getMbti());
         this.setLocation(userInfo.getLocation());
         this.setImageUrl(userInfo.getImageUrl());
     }
 
-    public void joinInfo(AdditionalUserInfo userInfo) {
-        if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
-            this.setName(userInfo.getName());
+    public void joinInfo(JoinUserDto userInfo) {
+        if (userInfo.getName() == null || userInfo.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be empty.");
         }
-        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
-            this.setEmail(userInfo.getEmail());
+        if (userInfo.getContact() == null || userInfo.getContact().trim().isEmpty()) {
+            throw new IllegalArgumentException("Contact cannot be empty.");
         }
-        if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
-            this.setContact(userInfo.getContact());
-        }
+        this.setName(userInfo.getName());
+        this.setContact(userInfo.getContact());
         this.setStatus(UserStatus.JOIN);
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
         this.setRequiredTermsAgree(userInfo.isRequiredTermsAgree());
+    }
+
+    public void addAdditionalInfo(AdditionalUserInfo userInfo) {
+        this.setMbti(userInfo.getMbti());
+        this.setLocation(userInfo.getLocation());
+        this.setImageUrl(userInfo.getImageUrl());
     }
 
     public void withDraw(UserDto userDto) {
