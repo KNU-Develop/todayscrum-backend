@@ -1,19 +1,19 @@
 package knu.kproject.service;
 
-import jakarta.persistence.EntityNotFoundException;
-import knu.kproject.dto.UserDto.UserHeadDto;
-import knu.kproject.dto.schedule.ScheduleCreateResultDto;
-import knu.kproject.dto.schedule.ScheduleDetailResDto;
-import knu.kproject.dto.schedule.ScheduleReqDto;
-import knu.kproject.dto.schedule.ScheduleHeadResDto;
+import knu.kproject.dto.schedule.*;
 import knu.kproject.entity.schedule.Schedule;
 import knu.kproject.entity.user.User;
 import knu.kproject.entity.user.UserSchedule;
+import knu.kproject.exception.ScheduleException;
+import knu.kproject.exception.code.ScheduleErrorCode;
+import knu.kproject.global.schedule.ScheduleInviteState;
+import knu.kproject.global.schedule.ScheduleUpdateType;
 import knu.kproject.repository.ScheduleRepository;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.UserScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static knu.kproject.global.ScheduleRole.*;
+import static knu.kproject.global.schedule.ScheduleInviteState.ACCEPT;
+import static knu.kproject.global.schedule.ScheduleInviteState.WAIT;
+import static knu.kproject.global.schedule.ScheduleRole.*;
 
 
 @Service
@@ -32,113 +34,100 @@ public class ScheduleService {
     private final UserScheduleRepository userScheduleRepository;
     private final UserRepository userRepository;
 
-    public ScheduleCreateResultDto createSchedule(Long userId, ScheduleReqDto scheduleReqDto) {
-        Schedule newSchedule = scheduleRepository.save(new Schedule(scheduleReqDto));
-        List<Long> notFoundUserIds = null;
+    @Transactional
+    public ScheduleResDto createSchedule(Long userId, ScheduleReqDto scheduleReqDto) {
+        Schedule newSchedule = new Schedule(scheduleReqDto);
         if (scheduleReqDto.getProjectId() == null) {
-            inviteUser(newSchedule, userId);
+            inviteUser(newSchedule, userId, ACCEPT);
         } else {
-            notFoundUserIds = inviteUsersToProjectSchedule(newSchedule, scheduleReqDto.getInviteList());
+            for (Long inviteUserId : scheduleReqDto.getInviteList()) {
+                inviteUser(newSchedule, inviteUserId, WAIT);
+            }
         }
-        return new ScheduleCreateResultDto(newSchedule.getId(), notFoundUserIds);
+        scheduleRepository.save(newSchedule);
+        return new ScheduleResDto(newSchedule);
     }
 
-
-    private boolean inviteUser(Schedule schedule, Long userId) {
+    // 일정 초대 로직 : UserSchedule 생성 및 관리
+    private void inviteUser(Schedule schedule, Long userId, ScheduleInviteState state) {
         Optional<User> findUserOpt = userRepository.findById(userId);
         if (findUserOpt.isPresent()) {
-            UserSchedule userSchedule = new UserSchedule(findUserOpt.get(), schedule);
+            UserSchedule userSchedule = new UserSchedule(findUserOpt.get(), schedule, state);
             userScheduleRepository.save(userSchedule);
-            return true;
         }
-        return false;
     }
 
-    private List<Long> inviteUsersToProjectSchedule(Schedule schedule, List<Long> inviteList) {
-        List<Long> notFoundUserList = new ArrayList<>();
-        for (Long userId : inviteList) {
-            if (!inviteUser(schedule, userId))
-                notFoundUserList.add(userId);
-        }
-        return notFoundUserList;
-    }
-
-    public List<ScheduleHeadResDto> getScheduleList(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
+    /*
+        - 일정 목록 조회
+     */
+    @Transactional
+    public List<ScheduleResDto> getScheduleList(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
         List<Schedule> schedules = scheduleRepository.findScheduleList(userId, startDate, endDate)
                 .orElse(Collections.emptyList());
-        return schedules.stream().map(ScheduleHeadResDto::new).collect(Collectors.toList());
+        return schedules.stream().map(ScheduleResDto::new).collect(Collectors.toList());
     }
 
-    public ScheduleDetailResDto getScheduleDetail(Long userId, Long scheduleId) {
-        Schedule findSchedule = userScheduleRepository.findScheduleByUserIdAndScheduleId(userId, scheduleId)
-                .orElseThrow(EntityNotFoundException::new); // 404
-
-        List<UserHeadDto> userDtos = null;
-
-        if (findSchedule.getProjectId() != null) {
-            userDtos = findSchedule.getUserSchedules().stream()
-                    .map(userSchedule -> new UserHeadDto(userSchedule.getUser()))
-                    .toList();
-        }
-        return new ScheduleDetailResDto(findSchedule, findSchedule.getProjectId(), userDtos);
+    /*
+        - 일정 관련자에 한해(참여 상태 고려 안함) 일정 세부 정보 반환
+        - 프로젝트 일정인 경우 참여자 정보(id, 이름, 이메일, 참여 상태)를 포함해 반환
+     */
+    @Transactional
+    public ScheduleResDto getSchedule(Long userId, Long scheduleId) {
+        UserSchedule findSchedule = userScheduleRepository.findUserScheduleByUser_IdAndSchedule_Id(userId, scheduleId)
+                .orElseThrow(()-> new ScheduleException(ScheduleErrorCode.NOT_FOUND)); // 404
+        Schedule schedule = findSchedule.getSchedule();
+        return new ScheduleResDto(schedule);
     }
 
+    // 여기까지 완료
 
+
+
+
+    @Transactional
     public void updateSchedule(Long userId, Long scheduleId, ScheduleReqDto scheduleReqDto) {
         UserSchedule findUserSchedule = userScheduleRepository.findUserScheduleByUser_IdAndSchedule_Id(userId, scheduleId)
-                .orElseThrow(NullPointerException::new); // 403
+                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NO_INVITE_SCHEDULE)); // 403
 
         if (haveChangeableRole(findUserSchedule)) {
-
-            Schedule prevSchedule = scheduleRepository.findById(scheduleId).orElseThrow(EntityNotFoundException::new); // 404
-
-            // 팀 프로젝트 일정 참여자 수정
-            List<UserSchedule> prevUserSchedules = prevSchedule.getUserSchedules();
-            List<User> prevInviteUsers = new ArrayList<>();
-            for (UserSchedule prevUserSchedule : prevUserSchedules) {
-                prevInviteUsers.add(prevUserSchedule.getUser());
-            }
-            updateUserSchedules(findUserSchedule, prevSchedule, scheduleReqDto);
-
+            Schedule schedule = findUserSchedule.getSchedule();
+            schedule.updateSchedule(scheduleReqDto);
+            List<Long> newInviteUserIds = scheduleReqDto.getInviteList();
+            updateInviteList(findUserSchedule, newInviteUserIds);
 
         } else {
-            throw new NullPointerException(); // 403
+            throw new ScheduleException(ScheduleErrorCode.NO_ACCESS_SCHEDULE); // 403
         }
-
     }
 
-    private void updateUserSchedules(UserSchedule prevUserSchedule, Schedule prevSchedule, ScheduleReqDto scheduleReqDto) {
-        List<User> prevInviteUsers = prevSchedule.getUserSchedules().stream()
-                .map(UserSchedule::getUser).toList();
-        List<Long> newInviteUserIds = scheduleReqDto.getInviteList();
+    private void updateInviteList(UserSchedule userSchedule, List<Long> newInviteUserIds) {
+        Schedule schedule = userSchedule.getSchedule();
+        List<UserSchedule> prevUserSchedules = schedule.getUserSchedules();
+        List<User> prevInviteUsers = prevUserSchedules.stream().map(UserSchedule::getUser).toList();
+        List<Long> prevInviteUserIds = prevInviteUsers.stream().map(User::getId).toList();
 
-        // 초대받지 못한 기존 참여자 제거 
-        for (User prevInviteUser : prevInviteUsers) {
-            if (!newInviteUserIds.contains(prevInviteUser.getId())) {
-                userScheduleRepository.deleteUserScheduleByUserAndSchedule(prevInviteUser, prevSchedule);
-                prevInviteUser.removeUserSchedule(prevUserSchedule);
-                prevSchedule.removeUserSchedule(prevUserSchedule);
-            }
-        }
-        // 초대 안된 새로운 사용자 추가
-        for (Long newInviteUserId : newInviteUserIds) {
-            if (prevInviteUsers.stream().noneMatch(user -> user.getId().equals(newInviteUserId))) {
-                User newUser = userRepository.findById(newInviteUserId)
-                        .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + newInviteUserId));
-                UserSchedule newUserSchedule = new UserSchedule();
-                newUserSchedule.setUser(newUser);
-                newUserSchedule.setSchedule(prevSchedule);
-                newUserSchedule.setRole(WRITE);
-
-                prevSchedule.getUserSchedules().add(newUserSchedule);
-                newUser.getUserSchedules().add(newUserSchedule);
-
-                userScheduleRepository.save(newUserSchedule);
-            }
+        // 새로 일정에 초대되는 인원 new - prev
+        List<Long> newInviteList = new ArrayList<>(newInviteUserIds);
+        newInviteList.removeAll(prevInviteUserIds);
+        for (Long inviteUserId : newInviteList) {
+            inviteUser(schedule, inviteUserId, WAIT);
         }
 
+
+        // 기존에 초대 유저 중 더 이상 초대되지 않는 인원 prev - new
+        List<Long> removeInviteList = new ArrayList<>(prevInviteUserIds);
+        removeInviteList.removeAll(newInviteUserIds);
+        for (Long userId : removeInviteList) {
+            for (User prevInviteUser : prevInviteUsers) {
+                if (userId.equals(prevInviteUser.getId())) {
+                    userSchedule.unUserSchedule();
+                    userScheduleRepository.deleteByUserAndSchedule(prevInviteUser, schedule);
+                }
+            }
+        }
     }
 
+    // 일정 수정 권한 확인 로직
     private Boolean haveChangeableRole(UserSchedule userSchedule) {
         return switch (userSchedule.getRole()) {
             case OWNER, WRITE -> true;
@@ -146,4 +135,22 @@ public class ScheduleService {
         };
     }
 
+    @Transactional
+    public void deleteSchedule(Long userId, Long scheduleId, ScheduleUpdateType type) {
+        UserSchedule findUserSchedule = userScheduleRepository.findUserScheduleByUser_IdAndSchedule_Id(userId, scheduleId)
+                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NO_INVITE_SCHEDULE));
+        if (haveChangeableRole(findUserSchedule)) {
+            switch (type) {
+                case THIS:
+                    List<UserSchedule> userSchedules = findUserSchedule.getSchedule().getUserSchedules();
+                    for (UserSchedule userSchedule : userSchedules) {
+                        userSchedule.unUserSchedule();
+                    }
+                    userScheduleRepository.deleteAll(userSchedules);
+                    scheduleRepository.delete(findUserSchedule.getSchedule());
+            }
+        } else {
+            throw new ScheduleException(ScheduleErrorCode.NO_ACCESS_SCHEDULE);
+        }
+    }
 }

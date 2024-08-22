@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import knu.kproject.dto.schedule.ScheduleReqDto;
 import knu.kproject.entity.user.UserSchedule;
-import knu.kproject.global.ScheduleVisible;
+import knu.kproject.global.schedule.ScheduleVisible;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,8 +27,6 @@ public class Schedule {
     private LocalDateTime endDate;
     @Enumerated(EnumType.STRING)
     private ScheduleVisible visible;
-    //    @OneToOne
-//    private Repeat repeat;
     private Long projectId;
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -59,7 +57,14 @@ public class Schedule {
         userSchedules.remove(userSchedule);
         userSchedule.setSchedule(null);
     }
-
+    public void updateSchedule(ScheduleReqDto scheduleRequestDto) {
+        this.title = scheduleRequestDto.getTitle();
+        this.content = scheduleRequestDto.getContent();
+        this.startDate = scheduleRequestDto.getStartDate();
+        this.endDate = scheduleRequestDto.getEndDate();
+        this.visible = scheduleRequestDto.getVisible();
+        this.projectId = scheduleRequestDto.getProjectId();
+    }
 }
 
 

@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import knu.kproject.dto.UserDto.AdditionalUserInfo;
+import knu.kproject.dto.UserDto.JoinUserDto;
+import knu.kproject.dto.UserDto.UpdateUserDto;
 import knu.kproject.dto.UserDto.UserDto;
+import knu.kproject.entity.board.Board;
 import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.board.Master;
 import knu.kproject.entity.notice.Notice;
@@ -70,6 +73,10 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
+    private List<Board> boards;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Master> masters;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -87,36 +94,37 @@ public class User {
         this.status = status;
     }
 
-    public void updateUserInfo(AdditionalUserInfo userInfo) {
+    public void updateUserInfo(UpdateUserDto userInfo) {
         if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
             this.setName(userInfo.getName());
-        }
-        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
-            this.setEmail(userInfo.getEmail());
         }
         if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
             this.setContact(userInfo.getContact());
         }
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
-
         this.setMbti(userInfo.getMbti());
         this.setLocation(userInfo.getLocation());
         this.setImageUrl(userInfo.getImageUrl());
     }
 
-    public void joinInfo(AdditionalUserInfo userInfo) {
-        if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
-            this.setName(userInfo.getName());
+    public void joinInfo(JoinUserDto userInfo) {
+        if (userInfo.getName() == null || userInfo.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be empty.");
         }
-        if (userInfo.getEmail() != null && !userInfo.getEmail().trim().isEmpty()) {
-            this.setEmail(userInfo.getEmail());
+        if (userInfo.getContact() == null || userInfo.getContact().trim().isEmpty()) {
+            throw new IllegalArgumentException("Contact cannot be empty.");
         }
-        if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
-            this.setContact(userInfo.getContact());
-        }
+        this.setName(userInfo.getName());
+        this.setContact(userInfo.getContact());
         this.setStatus(UserStatus.JOIN);
         this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
         this.setRequiredTermsAgree(userInfo.isRequiredTermsAgree());
+    }
+
+    public void addAdditionalInfo(AdditionalUserInfo userInfo) {
+        this.setMbti(userInfo.getMbti());
+        this.setLocation(userInfo.getLocation());
+        this.setImageUrl(userInfo.getImageUrl());
     }
 
     public void withDraw(UserDto userDto) {
