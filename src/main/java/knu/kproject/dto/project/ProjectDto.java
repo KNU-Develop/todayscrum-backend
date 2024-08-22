@@ -27,7 +27,6 @@ public class ProjectDto {
     private Long workspaceId;
     private String color;
     private List<UserTeamDto> users;
-    private List<BoardDto> boards;
 
     public static ProjectDto fromEntity(Project project, List<UserTeamDto> users) {
         ProjectDto dto = ProjectDto.builder()
@@ -38,9 +37,6 @@ public class ProjectDto {
                 .endDate(project.getEndDate())
                 .workspaceId(project.getWorkspace().getId())
                 .users(users)
-                .boards(project.getBoards().stream()
-                        .map(BoardDto::fromEntity)
-                        .toList())
                 .color(project.getColor())
                 .build();
 

@@ -31,8 +31,10 @@ public class Board {
     @JsonBackReference
     private Project project;
 
-    @Column(nullable = false)
-    private String userName;
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    @JsonBackReference
+    private User user;
 
     @Column(nullable = false)
     private String title;

@@ -1,8 +1,11 @@
 package knu.kproject.entity.board;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.user.User;
 import lombok.*;
+import org.hibernate.annotations.ManyToAny;
 
 import java.util.UUID;
 
@@ -20,9 +23,17 @@ public class Master {
 
     @ManyToOne
     @JoinColumn(nullable = false)
-    private Board board;
+    @JsonBackReference
+    private User user;
 
     @ManyToOne
-    @JoinColumn(nullable = false)
-    private User user;
+    @JoinColumn
+    @JsonBackReference
+    private Board board;
+
+
+    @ManyToOne
+    @JoinColumn
+    @JsonBackReference
+    private Comment comment;
 }

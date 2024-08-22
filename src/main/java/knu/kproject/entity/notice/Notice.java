@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Entity
@@ -38,6 +39,9 @@ public class Notice {
 
     @Column(nullable = false)
     private UUID originId;
+
+    @Column(nullable = false, updatable = false)
+    private Timestamp createAt;
 
     @JoinColumn(nullable = false)
     @ManyToOne

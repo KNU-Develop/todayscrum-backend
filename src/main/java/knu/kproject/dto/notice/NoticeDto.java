@@ -8,6 +8,7 @@ import knu.kproject.global.NOTICETYPE;
 import lombok.Builder;
 import lombok.Data;
 
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Data
@@ -22,6 +23,7 @@ public class NoticeDto {
     private UUID originId;
     private User user;
     private CHOICE choice;
+    private Timestamp createdAt;
 
     public static NoticeDto fromEntity(Notice notice) {
         NoticeDto noticeDto = NoticeDto.builder()
@@ -33,6 +35,7 @@ public class NoticeDto {
                 .originTable(notice.getOriginTable())
                 .user(notice.getUser())
                 .choice(notice.getChoice())
+                .createdAt(notice.getCreateAt())
                 .build();
         return noticeDto;
     }

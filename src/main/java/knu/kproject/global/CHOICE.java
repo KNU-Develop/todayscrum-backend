@@ -5,6 +5,6 @@ import lombok.Data;
 
 public enum CHOICE {
     수락,
-    미정,
+    전송,
     거절
 }

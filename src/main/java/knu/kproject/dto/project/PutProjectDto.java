@@ -1,6 +1,8 @@
 package knu.kproject.dto.project;
 
-import lombok.Data;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.sql.Timestamp;
 

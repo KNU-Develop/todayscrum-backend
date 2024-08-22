@@ -28,7 +28,7 @@ public enum ErrorCode {
     MISSING_REQUEST_PARAMETER_ERROR(400, "G004", "Missing Servlet RequestParameter Exception"),
 
     // 입력/출력 값이 유효하지 않음
-    IO_ERROR(400, "G005", "I/O Exception"),
+    IO_ERROR(400, "G005", "request가 잘못됬습니다."),
 
     // com.google.gson JSON 파싱 실패
     JSON_PARSE_ERROR(400, "G006", "JsonParseException"),
@@ -64,7 +64,7 @@ public enum ErrorCode {
     USER_AUTH_ERROR(404, "G015", "User authentication failed"),
 
     // 지원하지 않는 JWT 토큰일 때 발생
-    UNSUPPORTED_JWT_TOKEN(400,"G017", "The provided JWT token is not supported"),
+    UNSUPPORTED_JWT_TOKEN(400, "G017", "The provided JWT token is not supported"),
 
     // 토큰이 없을 때 발생
     TOKEN_MISSING_ERROR(401, "G018", "Token is missing."),
