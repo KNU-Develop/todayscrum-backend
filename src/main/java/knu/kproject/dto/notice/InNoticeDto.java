@@ -8,6 +8,6 @@ import java.util.UUID;
 
 @Data
 public class InNoticeDto {
-    private UUID noticeId;
+    private boolean isRead;
     private CHOICE choice;
 }

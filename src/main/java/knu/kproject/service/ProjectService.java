@@ -38,39 +38,20 @@ public class ProjectService {
     private final ProjectUserRepository projectUserRepository;
     private final NoticeService noticeService;
 
-    public UserTeamDto fromEntity(User user, Project project) {
-        ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
-
-        UserTeamDto dto = new UserTeamDto();
-        dto.setId(user.getId());
-        dto.setName(user.getName());
-        dto.setEmail(user.getEmail());
-        dto.setLocation(user.getLocation());
-        dto.setMbti(user.getMbti());
-        dto.setImageUrl(user.getImageUrl());
-        dto.setRole(user.getRole());
-        dto.setChoice(projectUser.getChoice());
-        dto.setColor(projectUser.getColor());
-        dto.setTools(user.getUserTools().stream()
-                .map(ToolInfoDto::fromEntity)
-                .collect(Collectors.toList()));
-        dto.setStackNames(user.getUserStacks().stream()
-                .map(userStack -> userStack.getStack().getName())
-                .collect(Collectors.toList()));
-
-        return dto;
-    }
-
     // 특정 프로젝트 내에 존재하는 유저 탐색해서 project내 유저로 변환
     private ProjectDto convertToDto(Project project) {
         List<User> users = project.getProjectUsers().stream()
+                .filter(projectUser -> {
+                    if (projectUser.getChoice() != null && projectUser.getChoice().equals(CHOICE.수락)) return true;
+                    return false;
+                })
                 .map(ProjectUser::getUser)
                 .toList();
         List<UserTeamDto> userDto = new ArrayList<>();
         for (User user : users) {
-            ROLE role = projectUserRepository.findByUserAndProject(user, project).getRole();
-            UserTeamDto dto = fromEntity(user, project);
-            dto.setRole(role);
+            ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
+            UserTeamDto dto = UserTeamDto.fromEntity(projectUser);
+            dto.setRole(projectUser.getRole());
             userDto.add(dto);
         }
         return ProjectDto.fromEntity(project, userDto);
@@ -81,34 +62,15 @@ public class ProjectService {
 
         if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User user = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-
-        Project project = Project.builder()
-                .title(projectDto.getTitle())
-                .overview(projectDto.getOverview())
-                .startDate(projectDto.getStartDate())
-                .endDate(projectDto.getEndDate())
-                .workspace(workspaces.get(0))
-                .createdAt(new Timestamp(System.currentTimeMillis()))
-                .color(projectDto.getColor())
-                .build();
+        Project project = new Project(projectDto, workspaces.get(0));
 
         projectRepositroy.save(project);
-
-        ProjectUser projectUser = ProjectUser.builder()
-                .user(user)
-                .project(project)
-                .role(ROLE.MASTER)
-                .color(project.getColor())
-                .build();
-
+        ProjectUser projectUser = new ProjectUser(user, project, ROLE.MASTER, CHOICE.수락);
         List<ProjectUser> projectUserList = new ArrayList<>();
         projectUserList.add(projectUser);
-
         projectUserRepository.save(projectUser);
-
         project.setProjectUsers(projectUserList);
         projectRepositroy.save(project);
-
         return project.getId();
     }
 
@@ -129,13 +91,10 @@ public class ProjectService {
 
     public ProjectDto getProjectById(Long userToken, UUID projectId) {
         if (userToken == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
-
         User user = userRepository.findById(userToken).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
         Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
-
         Access.accessPossible(projectUser, ROLE.GUEST);
-
         return convertToDto(project);
     }
 
@@ -146,9 +105,7 @@ public class ProjectService {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(u, project);
-
         Access.accessPossible(projectUser, ROLE.WRITER);
-
         List<ProjectUser> projectUserList = projectUserRepository.findByProjectId(projectId);
         // 유저와 프로젝트 색이 일치할 경우, 프로젝트 색을 따름, 다를경우 개인 색 유지
         for (ProjectUser user : projectUserList) {
@@ -159,13 +116,7 @@ public class ProjectService {
                 user.setColor(updatedProjectData.getColor());
             }
         }
-
-        project.setTitle(updatedProjectData.getTitle() == null ? project.getTitle() : updatedProjectData.getTitle());
-        project.setOverview(updatedProjectData.getOverview() == null ? project.getOverview() : updatedProjectData.getOverview());
-        project.setStartDate(updatedProjectData.getStartDate() == null ? project.getStartDate() : updatedProjectData.getStartDate());
-        project.setEndDate(updatedProjectData.getEndDate() == null ? project.getEndDate() : updatedProjectData.getEndDate());
-        project.setColor(updatedProjectData.getColor() == null ? project.getColor() : updatedProjectData.getColor());
-
+        project.update(updatedProjectData);
         projectRepositroy.save(project);
     }
 
@@ -175,9 +126,7 @@ public class ProjectService {
         Project project = projectRepositroy.findById(projectId)
                 .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
-
         Access.accessPossible(projectUser, ROLE.OWNER);
-
         projectRepositroy.delete(project);
     }
 
@@ -189,7 +138,7 @@ public class ProjectService {
         Access.accessPossible(projectUser, ROLE.GUEST);
 
         List<UserTeamDto> users = project.getProjectUsers().stream()
-                .map(projectUser1 -> fromEntity(projectUser1.getUser(), projectUser1.getProject()))
+                .map(projectUser1 -> UserTeamDto.fromEntity(projectUser1))
                 .toList();
         return users;
     }
@@ -199,7 +148,6 @@ public class ProjectService {
         User user1 = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
         Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(user1, project);
-
         Access.accessPossible(projectUser1, ROLE.GUEST);
 
         List<String> userEmails = inviteDto.getUserEmails();
@@ -207,25 +155,8 @@ public class ProjectService {
             if (userRepository.existsByEmail(email)) {
                 User user = userRepository.findByEmail(email);
                 if (!projectUserRepository.existsByProjectAndUser(project, user)) {
-                    NoticeDto noticeDto = NoticeDto.builder()
-                            .isRead(false)
-                            .title(user1.getName() + "님이 " + project.getTitle() + "에 초대했습니다.")
-                            .type(NOTICETYPE.초대)
-                            .originId(project.getId())
-                            .originTable("project")
-                            .user(user)
-                            .choice(CHOICE.전송)
-                            .build();
-
-                    ProjectUser projectUser = ProjectUser.builder()
-                            .project(project)
-                            .user(user)
-                            .role(ROLE.GUEST)
-                            .color(project.getColor())
-                            .choice(CHOICE.전송)
-                            .build();
-
-                    noticeService.addNotice(user, noticeDto);
+                    ProjectUser projectUser = new ProjectUser(user, project, ROLE.GUEST, CHOICE.전송);
+                    noticeService.addNotice(user, new NoticeDto(user1, user, project));
                     projectUserRepository.save(projectUser);
                 }
             }
@@ -235,11 +166,9 @@ public class ProjectService {
     @Transactional
     public void changeRole(Long userId, UUID projectId, RoleDto roleDto) {
         if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
-
         User user = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
         Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser self = projectUserRepository.findByUserAndProject(user, project);
-
         Access.accessPossible(self, ROLE.GUEST);
 
         Map<Long, ROLE> roles = roleDto.getRoles();

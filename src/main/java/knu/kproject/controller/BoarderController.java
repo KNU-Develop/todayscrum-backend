@@ -24,7 +24,7 @@ import java.util.UUID;
 
 @Tag(name = "Board API", description = "Board API 명세서 입니다.")
 @RestController
-@RequestMapping("project/board")
+@RequestMapping("project/{projectId}/board")
 @RequiredArgsConstructor
 public class BoarderController {
     private final BoardService boardService;
@@ -38,7 +38,7 @@ public class BoarderController {
             @ApiResponse(responseCode = "404", description = "프로젝트가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PostMapping("/{projectId}")
+    @PostMapping("/")
     public ResponseEntity<Api_Response<Object>> createBoard(@AuthenticationPrincipal Long token, @PathVariable UUID projectId, @RequestBody InputBoardDto boardDto) {
         UUID boarderId = boardService.createBoard(token, projectId, boardDto);
         Map<String, UUID> boarderMap = new HashMap<>();
@@ -76,7 +76,7 @@ public class BoarderController {
             @ApiResponse(responseCode = "404", description = "프로젝트가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @GetMapping("/{projectId}")
+    @GetMapping("/")
     public ResponseEntity<Api_Response<Object>> findByAllBoard(@AuthenticationPrincipal Long token, @PathVariable UUID projectId) {
         List<BoardDto> boardDto = boardService.findByAllBoard(token, projectId);
 
