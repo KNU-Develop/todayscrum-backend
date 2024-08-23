@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Data
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommentDto {
     private UUID id;
     private String description;

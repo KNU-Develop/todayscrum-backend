@@ -3,6 +3,7 @@ package knu.kproject.entity.board;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import knu.kproject.dto.board.InputBoardDto;
 import knu.kproject.entity.comment.Comment;
 import knu.kproject.entity.project.Project;
 import knu.kproject.entity.user.User;
@@ -61,4 +62,21 @@ public class Board {
     @Column(nullable = false, updatable = false)
     private Timestamp createdAt;
 
+    public Board(User user, Project project, InputBoardDto dto) {
+        this.title = dto.getTitle();
+        this.project = project;
+        this.user = user;
+        this.content = dto.getContent();
+        this.category = dto.getCategory();
+        this.progress = dto.getProgress();
+        this.createdAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    public void update(InputBoardDto dto, List<Master> masters) {
+        this.setTitle(dto.getTitle() == null ? this.getTitle() : dto.getTitle());
+        this.setContent(dto.getContent() == null ? this.getContent() : dto.getContent());
+        this.setCategory(dto.getCategory() == null ? this.getCategory() : dto.getCategory());
+        this.setProgress(dto.getProgress() == null ? this.getProgress() : dto.getProgress());
+        this.setMaster(dto.getMastersId() == null ? this.getMaster() : masters);
+    }
 }

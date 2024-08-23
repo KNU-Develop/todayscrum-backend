@@ -36,4 +36,14 @@ public class Master {
     @JoinColumn
     @JsonBackReference
     private Comment comment;
+
+    public Master(User user, Board board) {
+        this.user = user;
+        this.board = board;
+    }
+
+    public Master(User user, Comment comment) {
+        this.user = user;
+        this.comment = comment;
+    }
 }

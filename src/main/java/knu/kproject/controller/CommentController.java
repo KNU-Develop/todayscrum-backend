@@ -26,7 +26,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Comment API", description = "보드 내 댓글 api 입니다.")
-@RequestMapping("project/board/comment/")
+@RequestMapping("project/{projectId}/board/{boardId}/comment/")
 public class CommentController {
     private final CommentService commentService;
 
@@ -38,7 +38,7 @@ public class CommentController {
             @ApiResponse(responseCode = "404", description = "보드가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @GetMapping("{boardId}")
+    @GetMapping("")
     public ResponseEntity<Api_Response<Object>> findComment(@AuthenticationPrincipal Long token, @PathVariable UUID boardId) {
         List<CommentDto> commentDtoList = commentService.getCommentList(token, boardId);
         return ApiResponseUtil.createResponse(
@@ -57,7 +57,7 @@ public class CommentController {
             @ApiResponse(responseCode = "404", description = "보드가 존재하지 않음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PostMapping("{boardId}")
+    @PostMapping("")
     public ResponseEntity<Api_Response<Object>> addComment(@AuthenticationPrincipal Long token, @PathVariable UUID boardId, @RequestBody InputCommentDto input) {
         UUID commentId = commentService.addComment(token, boardId, input);
         Map<String, UUID> map = new HashMap<>();

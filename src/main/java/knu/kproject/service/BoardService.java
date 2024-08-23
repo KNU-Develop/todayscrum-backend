@@ -45,19 +45,10 @@ public class BoardService {
         ProjectUser self = projectUserRepository.findByUserAndProject(my, project);
 
         Access.accessPossible(self, ROLE.WRITER);
-
-        Board board = Board.builder()
-                .title(boardDto.getTitle())
-                .project(projectRepositroy.findById(projectId).orElseThrow())
-                .user(my)
-                .content(boardDto.getContent())
-                .category(boardDto.getCategory())
-                .progress(boardDto.getProgress())
-                .createdAt(new Timestamp(System.currentTimeMillis()))
-                .build();
+        Board board = new Board(my, project, boardDto);
         boardRepository.save(board);
 
-        if (boardDto.getMastersId() != null) {
+        if (boardDto.getMastersId() != null && !boardDto.getMastersId().isEmpty()) {
             List<User> userList = projectUserRepository.findByProjectId(board.getProject().getId()).stream()
                     .map(projectUser -> projectUser.getUser())
                     .toList();
@@ -68,29 +59,15 @@ public class BoardService {
                         .ifPresent(user -> {
                             ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
 
-                            if (Access.accessBoard2(projectUser, board)) {
-                                Master master = Master.builder()
-                                        .board(board)
-                                        .user(user)
-                                        .build();
-
+                            if (Access.accessMaster(projectUser)) {
+                                Master master = new Master(user, board);
                                 masters.add(master);
                                 if (!my.equals(user)) {
-                                    NoticeDto noticeDto = NoticeDto.builder()
-                                            .isRead(false)
-                                            .title(my.getName() + "님이 " + user.getName() + "님을 멘션으로 호출했습니다.")
-                                            .type(NOTICETYPE.멘션)
-                                            .originId(board.getId())
-                                            .originTable("board")
-                                            .user(user)
-                                            .build();
-
-                                    noticeService.addNotice(user, noticeDto);
+                                    noticeService.addNotice(user, new NoticeDto(my, user, board, NOTICETYPE.멘션));
                                 }
                             }
                         });
             }
-
             masterRepository.saveAll(masters);
             board.setMaster(masters);
             boardRepository.save(board);
@@ -131,16 +108,8 @@ public class BoardService {
 
         Access.accessPossible(my, ROLE.WRITER);
         Access.accessBoard(my, board);
-
-        board.setTitle(input.getTitle() == null ? board.getTitle() : input.getTitle());
-        board.setContent(input.getContent() == null ? board.getContent() : input.getContent());
-        board.setCategory(input.getCategory() == null ? board.getCategory() : input.getCategory());
-        board.setProgress(input.getProgress() == null ? board.getProgress() : input.getProgress());
-
-
         if (input.getMastersId() != null) {
             List<Master> masterList = board.getMaster();
-
             masterRepository.deleteAll(masterList);
             masterList.clear();
 
@@ -152,31 +121,19 @@ public class BoardService {
                         .filter(user -> projectUsers.contains(user))
                         .ifPresent(user -> {
                             ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, board.getProject());
-
-                            if (Access.accessBoard2(projectUser, board)) {
-                                Master master = Master.builder()
-                                        .board(board)
-                                        .user(user)
-                                        .build();
-
+                            if (Access.accessMaster(projectUser)) {
+                                Master master = new Master(user, board);
                                 masterList.add(master);
                                 if (!my.getUser().equals(user)) {
-                                    NoticeDto noticeDto = NoticeDto.builder()
-                                            .isRead(false)
-                                            .title(my.getUser().getName() + "님이 " + user.getName() + "님을 멘션으로 호출했습니다.")
-                                            .type(NOTICETYPE.멘션)
-                                            .originId(board.getId())
-                                            .originTable("board")
-                                            .user(user)
-                                            .build();
-
-                                    noticeService.addNotice(user, noticeDto);
+                                    noticeService.addNotice(user, new NoticeDto(self, user, board, NOTICETYPE.멘션));
                                 }
                             }
                         });
             }
             masterRepository.saveAll(masterList);
-            board.setMaster(masterList);
+            board.update(input, masterList);
+        } else {
+            board.update(input, null);
         }
         boardRepository.save(board);
     }
