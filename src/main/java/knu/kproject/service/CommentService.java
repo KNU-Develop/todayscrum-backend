@@ -60,18 +60,10 @@ public class CommentService {
         ProjectUser self = projectUserRepository.findByUserAndProject(user, board.getProject());
 
         Access.accessPossible(self, ROLE.WRITER);
-
-        Comment comment = Comment.builder()
-                .description(input.getDescription())
-                .board(board)
-                .user(user)
-                .createdAt(new Timestamp(System.currentTimeMillis()))
-                .build();
-
-
+        Comment comment = new Comment(user, board, input);
         commentRepository.save(comment);
 
-        if (!input.getMasterId().isEmpty()) {
+        if (input.getMasterId() != null && !input.getMasterId().isEmpty()) {
             List<User> projectUsers = projectUserRepository.findByProjectId(board.getProject().getId())
                     .stream().map(projectUser -> userRepository.findById(projectUser.getUser().getId()).orElseThrow())
                     .toList();
@@ -82,24 +74,11 @@ public class CommentService {
                         .filter(usr -> projectUsers.contains(user))
                         .ifPresent(usr -> {
                             ProjectUser projectUser = projectUserRepository.findByUserAndProject(usr, comment.getBoard().getProject());
-                            if (Access.accessComment(projectUser, comment)) {
-                                Master master = Master.builder()
-                                        .comment(comment)
-                                        .user(usr)
-                                        .build();
-
+                            if (Access.accessMaster(projectUser)) {
+                                Master master = new Master(usr, comment);
                                 masters.add(master);
                                 if (!user.equals(usr)) {
-                                    NoticeDto noticeDto = NoticeDto.builder()
-                                            .isRead(false)
-                                            .title(user.getName() + "님이 " + usr.getName() + "님을 멘션으로 호출했습니다.")
-                                            .type(NOTICETYPE.멘션)
-                                            .originId(comment.getId())
-                                            .originTable("comment")
-                                            .user(usr)
-                                            .build();
-
-                                    noticeService.addNotice(usr, noticeDto);
+                                    noticeService.addNotice(usr, new NoticeDto(user, usr, comment));
                                 }
                             }
                         });
@@ -111,18 +90,9 @@ public class CommentService {
         }
         board.getComments().add(comment);
         boardRepository.save(board);
-
-        NoticeDto noticeDto = NoticeDto.builder()
-                .isRead(false)
-                .title(user.getName() + "님이 " + board.getUser().getName() + "님의 보드에 댓글을 달았습니다.")
-                .type(NOTICETYPE.댓글)
-                .originId(comment.getId())
-                .originTable("comment")
-                .user(board.getUser())
-                .build();
-
-        noticeService.addNotice(board.getUser(), noticeDto);
-
+        if (!user.equals(board.getUser())) {
+            noticeService.addNotice(board.getUser(), new NoticeDto(user, board.getUser(), board, NOTICETYPE.댓글));
+        }
         return comment.getId();
     }
 
@@ -138,8 +108,6 @@ public class CommentService {
         if (self == null || self.getRole().equals(ROLE.GUEST) || (!self.getUser().getName().equals(comment.getUser().getName()) && self.getRole().equals(ROLE.WRITER))) {
             throw new ProjectException(ProjectErrorCode.FORBIDEN_ROLE);
         }
-        comment.setDescription(input.getDescription() == null ? comment.getDescription() : input.getDescription());
-
         if (input.getMasterId() != null && !input.getMasterId().isEmpty()) {
             List<Master> masterList = comment.getMasters();
             comment.getMasters().clear();
@@ -156,34 +124,23 @@ public class CommentService {
                         .filter(usr -> projectUsers.contains(user))
                         .ifPresent(usr -> {
                             ProjectUser projectUser = projectUserRepository.findByUserAndProject(usr, comment.getBoard().getProject());
-                            if (Access.accessComment(projectUser, comment)) {
-                                Master master = Master.builder()
-                                        .comment(comment)
-                                        .user(usr)
-                                        .build();
-
+                            if (Access.accessMaster(projectUser)) {
+                                Master master = new Master(usr, comment);
                                 masterList.add(master);
                                 if (!user.equals(usr)) {
-                                    NoticeDto noticeDto = NoticeDto.builder()
-                                            .isRead(false)
-                                            .title(user.getName() + "님이 " + usr.getName() + "님을 멘션으로 호출했습니다.")
-                                            .type(NOTICETYPE.멘션)
-                                            .originId(comment.getId())
-                                            .originTable("comment")
-                                            .user(usr)
-                                            .build();
-
-                                    noticeService.addNotice(usr, noticeDto);
+                                    noticeService.addNotice(usr, new NoticeDto(user, usr, comment));
                                 }
                             }
 
                         });
 
                 masterRepository.saveAll(masterList);
-                comment.setMasters(masterList);
+                comment.update(input, masterList);
                 commentRepository.save(comment);
 
             }
+        } else {
+            comment.update(input, null);
         }
         commentRepository.save(comment);
     }
@@ -195,7 +152,7 @@ public class CommentService {
         ProjectUser self = projectUserRepository.findByUserAndProject(user, comment.getBoard().getProject());
 
         Access.accessPossible(self, ROLE.WRITER);
-        Access.accessComment2(self, comment);
+        Access.accessComment(self, comment);
 
         commentRepository.delete(comment);
 

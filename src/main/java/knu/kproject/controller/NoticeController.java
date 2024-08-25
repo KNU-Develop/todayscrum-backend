@@ -49,9 +49,9 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "알림이 없습니다."),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PostMapping("/")
-    public ResponseEntity<Api_Response<Object>> acceptInvite(@AuthenticationPrincipal Long token, @RequestBody InNoticeDto input) {
-        noticeService.acceptInvite(token, input);
+    @PostMapping("/{notieceId}")
+    public ResponseEntity<Api_Response<Object>> acceptInvite(@AuthenticationPrincipal Long token, @PathVariable UUID notieceId, @RequestBody InNoticeDto input) {
+        noticeService.acceptInvite(token, notieceId, input);
 
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.UPDATE_SUCCESS.getMessage()

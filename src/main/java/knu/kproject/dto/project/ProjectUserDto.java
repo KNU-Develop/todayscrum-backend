@@ -6,7 +6,7 @@ import knu.kproject.global.ROLE;
 import lombok.Data;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProjectUserDto {
     private Long projectId;
     private String userId;

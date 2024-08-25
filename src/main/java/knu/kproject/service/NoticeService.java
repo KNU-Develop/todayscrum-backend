@@ -17,6 +17,7 @@ import knu.kproject.repository.ProjectRepositroy;
 import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -33,17 +34,7 @@ public class NoticeService {
     private final ProjectUserRepository projectUserRepository;
 
     public void addNotice(User user, NoticeDto input) {
-        Notice notice = Notice.builder()
-                .isRead(false)
-                .title(input.getTitle())
-                .type(input.getType())
-                .originTable(input.getOriginTable())
-                .originId(input.getOriginId())
-                .user(input.getUser())
-                .choice(input.getChoice())
-                .createAt(new Timestamp(System.currentTimeMillis()))
-                .build();
-
+        Notice notice = new Notice(input);
         noticeRepositroy.save(notice);
         user.getNotices().add(notice);
         userRepository.save(user);
@@ -60,23 +51,28 @@ public class NoticeService {
         return noticeDtoList;
     }
 
-    public void acceptInvite(Long token, InNoticeDto input) {
+    public void acceptInvite(Long token, UUID noticeId, InNoticeDto input) {
         User user = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Notice notice = noticeRepositroy.findById(input.getNoticeId()).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_NOTICE));
+        Notice notice = noticeRepositroy.findById(noticeId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_NOTICE));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, projectRepositroy.findById(notice.getOriginId()).orElse(null));
 
-        if (input.getChoice().equals(CHOICE.수락)) {
-            projectUser.setChoice(CHOICE.수락);
-            notice.setChoice(CHOICE.수락);
-
-            projectUserRepository.save(projectUser);
-        } else if (input.getChoice().equals(CHOICE.거절)) {
-            projectUser.setChoice(CHOICE.거절);
-            notice.setChoice(CHOICE.거절);
-        } else if (input.getChoice().equals(CHOICE.전송)) {
-            projectUser.setChoice(CHOICE.전송);
-            notice.setChoice(CHOICE.전송);
+        if (input.isRead()) {
+            notice.setRead(true);
+            noticeRepositroy.save(notice);
         }
-        noticeRepositroy.save(notice);
+        if (input.getChoice() != null) {
+            if (input.getChoice().equals(CHOICE.수락)) {
+                projectUser.setChoice(CHOICE.수락);
+                notice.setChoice(CHOICE.수락);
+            } else if (input.getChoice().equals(CHOICE.거절)) {
+                projectUser.setChoice(CHOICE.거절);
+                notice.setChoice(CHOICE.거절);
+            } else if (input.getChoice().equals(CHOICE.전송)) {
+                projectUser.setChoice(CHOICE.전송);
+                notice.setChoice(CHOICE.전송);
+            }
+            projectUserRepository.save(projectUser);
+            noticeRepositroy.save(notice);
+        }
     }
 }

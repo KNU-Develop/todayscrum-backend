@@ -2,6 +2,7 @@ package knu.kproject.entity.project;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import knu.kproject.entity.project.Project;
 import knu.kproject.entity.user.User;
 import knu.kproject.global.CHOICE;
 import knu.kproject.global.ROLE;
@@ -38,4 +39,12 @@ public class ProjectUser {
 
     @Column
     private CHOICE choice;
+
+    public ProjectUser(User user, Project project, ROLE role, CHOICE choice) {
+        this.user = user;
+        this.project = project;
+        this.role = role;
+        this.color = project.getColor();
+        this.choice = choice;
+    }
 }
