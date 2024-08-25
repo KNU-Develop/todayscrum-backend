@@ -155,8 +155,8 @@ public class ProjectController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @DeleteMapping("/project/{projectId}/user")
-    public ResponseEntity<Api_Response<Object>> deleteProjectUser(@AuthenticationPrincipal Long token, @PathVariable UUID projectId, @Valid @RequestBody DeleteId deleteId) {
-        projectService.deleteProjectUser(token, projectId, deleteId.getUserId());
+    public ResponseEntity<Api_Response<Object>> deleteProjectUser(@AuthenticationPrincipal Long token, @PathVariable UUID projectId, @Valid @RequestBody InviteDto deleteId) {
+        projectService.deleteProjectUser(token, projectId, deleteId);
         return ApiResponseUtil.createSuccessResponse(SuccessCode.DELETE_SUCCESS.getMessage());
     }
 

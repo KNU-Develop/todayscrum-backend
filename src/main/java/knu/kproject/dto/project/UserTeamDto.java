@@ -28,6 +28,7 @@ public class UserTeamDto {
     private String imageUrl;
     private ROLE role;
     private String color;
+    private CHOICE choice;
     private List<ToolInfoDto> tools = new ArrayList<>();
     private List<String> stackNames;
 
@@ -41,6 +42,7 @@ public class UserTeamDto {
                 .imageUrl(projectUser.getUser().getImageUrl())
                 .role(projectUser.getRole())
                 .color(projectUser.getColor())
+                .choice(projectUser.getChoice())
                 .tools(projectUser.getUser().getUserTools().stream()
                         .map(ToolInfoDto::fromEntity)
                         .toList())
