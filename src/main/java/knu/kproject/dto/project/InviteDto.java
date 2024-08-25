@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Data
 public class InviteDto {
-    private List<String> userEmails;
+    private String email;
 }

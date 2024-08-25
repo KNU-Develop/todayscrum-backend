@@ -150,15 +150,12 @@ public class ProjectService {
         ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(user1, project);
         Access.accessPossible(projectUser1, ROLE.GUEST);
 
-        List<String> userEmails = inviteDto.getUserEmails();
-        for (String email : userEmails) {
-            if (userRepository.existsByEmail(email)) {
-                User user = userRepository.findByEmail(email);
-                if (!projectUserRepository.existsByProjectAndUser(project, user)) {
-                    ProjectUser projectUser = new ProjectUser(user, project, ROLE.GUEST, CHOICE.전송);
-                    noticeService.addNotice(user, new NoticeDto(user1, user, project));
-                    projectUserRepository.save(projectUser);
-                }
+        if (userRepository.existsByEmail(inviteDto.getEmail())) {
+            User user = userRepository.findByEmail(inviteDto.getEmail());
+            if (!projectUserRepository.existsByProjectAndUser(project, user)) {
+                ProjectUser projectUser = new ProjectUser(user, project, ROLE.GUEST, CHOICE.전송);
+                noticeService.addNotice(user, new NoticeDto(user1, user, project));
+                projectUserRepository.save(projectUser);
             }
         }
     }
@@ -185,25 +182,38 @@ public class ProjectService {
     }
 
     @Transactional
-    public void deleteProjectUser(Long userId, UUID projectId, List<Long> UserId) {
+    public void deleteProjectUser(Long userId, UUID projectId, InviteDto deleteDto) {
         if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User self = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
         Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(self, project);
         Access.accessPossible(projectUser1, ROLE.OWNER);
 
-        Iterator<ProjectUser> projectUserIterator = project.getProjectUsers().iterator();
+//        Iterator<ProjectUser> projectUserIterator = project.getProjectUsers().iterator();
+//
+//        while (projectUserIterator.hasNext()) {
+//            ProjectUser projectUser = projectUserIterator.next();
+//
+//            for (Long id : UserId) {
+//                User user = userRepository.findById(id).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
+//                if (user != null && user.equals(projectUser.getUser())) {
+//                    projectUserIterator.remove();
+//                    user.getProjectUsers().remove(projectUser);
+//
+//                    projectUserRepository.delete(projectUser);
+//                }
+//            }
+//        }
 
-        while (projectUserIterator.hasNext()) {
-            ProjectUser projectUser = projectUserIterator.next();
-            for (Long id : UserId) {
-                User user = userRepository.findById(id).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-                if (user != null && user.equals(projectUser.getUser())) {
-                    projectUserIterator.remove();
-                    user.getProjectUsers().remove(projectUser);
+        List<ProjectUser> projectUserList = project.getProjectUsers();
+        User user = userRepository.findByEmail(deleteDto.getEmail());
+        Iterator<ProjectUser> iterator = projectUserList.iterator();
 
-                    projectUserRepository.delete(projectUser);
-                }
+        while (iterator.hasNext()) {
+            ProjectUser projectUser = iterator.next();
+            if (projectUser.getUser().equals(user)) {
+                iterator.remove();
+                projectUserRepository.delete(projectUser);
             }
         }
     }
