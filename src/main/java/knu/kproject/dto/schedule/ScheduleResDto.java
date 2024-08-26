@@ -11,6 +11,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class ScheduleResDto {
@@ -21,7 +22,7 @@ public class ScheduleResDto {
     private LocalDateTime endDate;
     @Schema(description = "일정의 공개 범위", example = "PUBLIC", allowableValues = {"PUBLIC", "PRIVATE"})
     private ScheduleVisible visible;
-    private Long projectId;
+    private UUID projectId;
     private List<ScheduleInviteUserDto> inviteList = new ArrayList<>();
 
     public ScheduleResDto(Schedule schedule) {
@@ -31,7 +32,7 @@ public class ScheduleResDto {
         this.startDate = schedule.getStartDate();
         this.endDate = schedule.getEndDate();
         this.visible = schedule.getVisible();
-        this.projectId = schedule.getProjectId();
+        this.projectId = schedule.getProject().getId();
         List<UserSchedule> userScheduleList = schedule.getUserSchedules();
         for (UserSchedule userSchedule : userScheduleList) {
             this.inviteList.add(new ScheduleInviteUserDto(userSchedule.getUser(), userSchedule.getInviteState()));

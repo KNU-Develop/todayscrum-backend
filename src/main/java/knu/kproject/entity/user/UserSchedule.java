@@ -1,6 +1,7 @@
 package knu.kproject.entity.user;
 
 import jakarta.persistence.*;
+import knu.kproject.dto.schedule.DateRange;
 import knu.kproject.entity.schedule.Schedule;
 import knu.kproject.global.schedule.ScheduleInviteState;
 import knu.kproject.global.schedule.ScheduleRole;
@@ -28,6 +29,9 @@ public class UserSchedule {
     private ScheduleRole role;
 
     private ScheduleInviteState inviteState;
+
+    @Embedded
+    private DateRange dateRange;
 
 
     public UserSchedule(User user, Schedule schedule, ScheduleInviteState state) {

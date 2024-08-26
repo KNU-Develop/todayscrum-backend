@@ -3,6 +3,7 @@ package knu.kproject.entity.schedule;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import knu.kproject.dto.schedule.ScheduleReqDto;
+import knu.kproject.entity.project.Project;
 import knu.kproject.entity.user.UserSchedule;
 import knu.kproject.global.schedule.ScheduleVisible;
 import lombok.Getter;
@@ -27,7 +28,10 @@ public class Schedule {
     private LocalDateTime endDate;
     @Enumerated(EnumType.STRING)
     private ScheduleVisible visible;
-    private Long projectId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -36,13 +40,13 @@ public class Schedule {
     /*
         생성자
      */
-    public Schedule(ScheduleReqDto scheduleRequestDto) {
+    public Schedule(ScheduleReqDto scheduleRequestDto, Project project) {
         this.title = scheduleRequestDto.getTitle();
         this.content = scheduleRequestDto.getContent();
         this.startDate = scheduleRequestDto.getStartDate();
         this.endDate = scheduleRequestDto.getEndDate();
         this.visible = scheduleRequestDto.getVisible();
-        this.projectId = scheduleRequestDto.getProjectId();
+        this.project = project;
     }
 
     /*
@@ -57,13 +61,13 @@ public class Schedule {
         userSchedules.remove(userSchedule);
         userSchedule.setSchedule(null);
     }
-    public void updateSchedule(ScheduleReqDto scheduleRequestDto) {
+    public void updateSchedule(ScheduleReqDto scheduleRequestDto, Project project) {
         this.title = scheduleRequestDto.getTitle();
         this.content = scheduleRequestDto.getContent();
         this.startDate = scheduleRequestDto.getStartDate();
         this.endDate = scheduleRequestDto.getEndDate();
         this.visible = scheduleRequestDto.getVisible();
-        this.projectId = scheduleRequestDto.getProjectId();
+        this.project = project;
     }
 }
 

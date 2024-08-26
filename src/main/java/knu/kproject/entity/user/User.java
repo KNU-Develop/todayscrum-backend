@@ -87,6 +87,9 @@ public class User {
     @JsonManagedReference
     private List<Notice> notices;
 
+    @Column
+    private String color;
+
     public User(String name, String socialId, String email, UserStatus status) {
         this.name = name;
         this.socialId = socialId;
