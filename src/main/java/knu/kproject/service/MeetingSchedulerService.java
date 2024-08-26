@@ -17,10 +17,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,19 +81,17 @@ public class MeetingSchedulerService {
         }
 
         // Step 5: 각 시간대에 대해 가능한 참석자 수 계산
+        // 사용자별로 일정 그룹화
+        Map<User, List<Schedule>> userSchedulesMap = allSchedules.stream()
+                .collect(Collectors.groupingBy(UserSchedule::getUser,
+                        Collectors.mapping(UserSchedule::getSchedule, Collectors.toList())));
+
         for (TimeSlot slot : availableSlots) {
             int attendeeCount = 0;
             for (ProjectUser pu : projectUsers) {
-                boolean isAvailable = true;
-                for (UserSchedule us : allSchedules) {
-                    if (us.getUser().equals(pu.getUser())) {
-                        Schedule schedule = us.getSchedule();
-                        if (!(schedule.getEndDate().isBefore(slot.getStartTime()) || schedule.getStartDate().isAfter(slot.getEndTime()))) {
-                            isAvailable = false;
-                            break;
-                        }
-                    }
-                }
+                List<Schedule> userSchedules = userSchedulesMap.getOrDefault(pu.getUser(), new ArrayList<>());
+                boolean isAvailable = userSchedules.stream()
+                        .noneMatch(schedule -> !(schedule.getEndDate().isBefore(slot.getStartTime()) || schedule.getStartDate().isAfter(slot.getEndTime())));
                 if (isAvailable) {
                     attendeeCount++;
                 }
@@ -106,6 +101,7 @@ public class MeetingSchedulerService {
 
         return availableSlots;
     }
+
 
     private List<TimeSlot> recommendOptimalTimeSlots(List<TimeSlot> availableTimeSlots) {
         return availableTimeSlots.stream()
