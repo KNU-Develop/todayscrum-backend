@@ -8,6 +8,7 @@ import knu.kproject.entity.user.User;
 import knu.kproject.entity.user.UserSchedule;
 import knu.kproject.exception.ProjectException;
 import knu.kproject.exception.UserExceptionHandler;
+import knu.kproject.exception.code.MeetingErrorCode;
 import knu.kproject.exception.code.ProjectErrorCode;
 import knu.kproject.exception.code.UserErrorCode;
 import knu.kproject.global.ROLE;
@@ -16,6 +17,7 @@ import knu.kproject.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,49 +41,71 @@ public class MeetingSchedulerService {
 
         List<UserSchedule> allSchedules = userScheduleRepository.findByProjectIdAndDateRange(projectId, startDate, endDate);
 
+        if (allSchedules == null) {
+            allSchedules = new ArrayList<>();
+        }
+
         List<ProjectUser> projectUsers = projectUserRepository.findByProjectId(projectId);
 
         List<TimeSlot> availableTimeSlots = calculateAvailableTimeSlots(allSchedules, projectUsers, startDate, endDate);
 
+        List<TimeSlot> optimalTimeSlots = recommendOptimalTimeSlots(availableTimeSlots);
+
+        boolean hasAvailableSlotForTwoOrMore = optimalTimeSlots.stream()
+                .anyMatch(slot -> slot.getAttendeeCount() >= 2);
+
+        if (!hasAvailableSlotForTwoOrMore) {
+            throw new UserExceptionHandler(MeetingErrorCode.NO_AVAILABLE_MEETING_TIME);
+        }
         return recommendOptimalTimeSlots(availableTimeSlots);
     }
 
+    public List<TimeSlot> recommendMeetingsForNextThreeDays(Long userId, UUID projectId) {
+        LocalDate today = LocalDate.now();
+        List<TimeSlot> allRecommendedSlots = new ArrayList<>();
+
+        for (int i = 0; i < 3; i++) {
+            LocalDateTime startOfDay = today.plusDays(i).atStartOfDay();
+            LocalDateTime endOfDay = today.plusDays(i).atTime(23, 59, 59);
+
+            List<TimeSlot> dailyRecommendedSlots = recommendMeetingTimes(userId, projectId, startOfDay, endOfDay);
+
+            allRecommendedSlots.addAll(dailyRecommendedSlots.stream().limit(2).collect(Collectors.toList()));
+        }
+
+        return allRecommendedSlots;
+    }
+
     private List<TimeSlot> calculateAvailableTimeSlots(List<UserSchedule> allSchedules, List<ProjectUser> projectUsers, LocalDateTime startDate, LocalDateTime endDate) {
-        // Step 1: 모든 일정의 시작 시간과 종료 시간을 수집하고, 시작 시간 기준으로 정렬
         List<Schedule> schedules = allSchedules.stream()
                 .map(UserSchedule::getSchedule)
                 .sorted(Comparator.comparing(Schedule::getStartDate))
-                .collect(Collectors.toList());
+                .toList();
 
         List<TimeSlot> availableSlots = new ArrayList<>();
 
-        // Step 2: 첫 번째 빈 시간대 (시작 시간부터 첫 번째 일정 전까지)
-        if (!schedules.isEmpty() && schedules.get(0).getStartDate().isAfter(startDate)) {
-            availableSlots.add(new TimeSlot(startDate, schedules.get(0).getStartDate()));
-        }
+        if (schedules.isEmpty()) {
+            LocalDateTime startOfDay = startDate.withHour(7).withMinute(0);
+            LocalDateTime endOfDay = startDate.withHour(23).withMinute(0);
+            availableSlots.add(new TimeSlot(startOfDay, endOfDay));
+        } else {
+            if (schedules.get(0).getStartDate().isAfter(startDate)) {
+                availableSlots.add(new TimeSlot(startDate, schedules.get(0).getStartDate()));
+            }
+            for (int i = 0; i < schedules.size() - 1; i++) {
+                LocalDateTime endCurrent = schedules.get(i).getEndDate();
+                LocalDateTime startNext = schedules.get(i + 1).getStartDate();
 
-        // Step 3: 중간의 빈 시간대 (일정 사이의 시간대)
-        for (int i = 0; i < schedules.size() - 1; i++) {
-            LocalDateTime endCurrent = schedules.get(i).getEndDate();
-            LocalDateTime startNext = schedules.get(i + 1).getStartDate();
-
-            if (endCurrent.isBefore(startNext)) {
-                availableSlots.add(new TimeSlot(endCurrent, startNext));
+                if (endCurrent.isBefore(startNext)) {
+                    availableSlots.add(new TimeSlot(endCurrent, startNext));
+                }
+            }
+            if (schedules.get(schedules.size() - 1).getEndDate().isBefore(endDate)) {
+                availableSlots.add(new TimeSlot(schedules.get(schedules.size() - 1).getEndDate(), endDate));
             }
         }
 
-        // Step 4: 마지막 빈 시간대 (마지막 일정 이후)
-        if (!schedules.isEmpty() && schedules.get(schedules.size() - 1).getEndDate().isBefore(endDate)) {
-            availableSlots.add(new TimeSlot(schedules.get(schedules.size() - 1).getEndDate(), endDate));
-        }
-
-        // 전체 기간이 비어있는 경우
-        if (schedules.isEmpty()) {
-            availableSlots.add(new TimeSlot(startDate, endDate));
-        }
-
-        // Step 5: 각 시간대에 대해 가능한 참석자 수 계산
-        // 사용자별로 일정 그룹화
+        // 프로젝트 사용자 별로 해당 시간대에 참석 가능한지 확인
         Map<User, List<Schedule>> userSchedulesMap = allSchedules.stream()
                 .collect(Collectors.groupingBy(UserSchedule::getUser,
                         Collectors.mapping(UserSchedule::getSchedule, Collectors.toList())));
@@ -91,35 +115,32 @@ public class MeetingSchedulerService {
             for (ProjectUser pu : projectUsers) {
                 List<Schedule> userSchedules = userSchedulesMap.getOrDefault(pu.getUser(), new ArrayList<>());
                 boolean isAvailable = userSchedules.stream()
-                        .noneMatch(schedule -> !(schedule.getEndDate().isBefore(slot.getStartTime()) || schedule.getStartDate().isAfter(slot.getEndTime())));
+                        .noneMatch(schedule ->
+                                schedule.getEndDate().isAfter(slot.getStartTime()) && schedule.getStartDate().isBefore(slot.getEndTime()));
                 if (isAvailable) {
                     attendeeCount++;
                 }
             }
             slot.setAttendeeCount(attendeeCount);
         }
-
         return availableSlots;
     }
 
 
     private List<TimeSlot> recommendOptimalTimeSlots(List<TimeSlot> availableTimeSlots) {
         return availableTimeSlots.stream()
-                // 01시부터 07시까지의 시간대를 제외
-                .filter(slot -> slot.getStartTime().getHour() >= 7 || slot.getEndTime().getHour() <= 1)
-                // 시간대가 30분 이상인지 확인
+                .filter(slot -> slot.getStartTime().getHour() >= 7 && slot.getEndTime().getHour() <= 23) // 7시부터 23시까지
                 .filter(slot -> java.time.Duration.between(slot.getStartTime(), slot.getEndTime()).toMinutes() >= 30)
-                // 참석자 수가 많은 순서로 정렬하고, 시간이 같은 경우에는 시간이 긴 순서로 정렬
                 .sorted((slot1, slot2) -> {
                     int attendeeComparison = Integer.compare(slot2.getAttendeeCount(), slot1.getAttendeeCount());
                     if (attendeeComparison != 0) {
-                        return attendeeComparison; // 참석자 수가 많은 순서
+                        return attendeeComparison;
                     }
                     long duration1 = java.time.Duration.between(slot1.getStartTime(), slot1.getEndTime()).toMinutes();
                     long duration2 = java.time.Duration.between(slot2.getStartTime(), slot2.getEndTime()).toMinutes();
-                    return Long.compare(duration2, duration1); // 가장 긴 시간대 순
+                    return Long.compare(duration2, duration1);
                 })
-                .limit(5) // 최대 5개의 시간대만 반환
+                .limit(5)
                 .collect(Collectors.toList());
     }
 }

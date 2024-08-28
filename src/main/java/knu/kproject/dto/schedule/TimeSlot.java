@@ -14,11 +14,6 @@ public class TimeSlot {
     private LocalDateTime endTime;
     private int attendeeCount;
 
-    public TimeSlot(LocalDateTime startTime, LocalDateTime endTime, int attendeeCount) {
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.attendeeCount = attendeeCount;
-    }
     public TimeSlot(LocalDateTime startTime, LocalDateTime endTime) {
         this.startTime = startTime;
         this.endTime = endTime;

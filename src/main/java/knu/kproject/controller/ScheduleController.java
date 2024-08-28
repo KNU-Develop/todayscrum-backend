@@ -48,13 +48,16 @@ public class ScheduleController {
     public ResponseEntity<Api_Response<ScheduleResDto>> createSchedule(
             @AuthenticationPrincipal Long userId,
             @RequestBody ScheduleReqDto scheduleDto) {
-        Project project = projectRepository.findById(scheduleDto.getProjectId())
-                .orElseThrow(() -> new UserExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = null;
+        if (scheduleDto.getProjectId() != null) {
+            project = projectRepository.findById(scheduleDto.getProjectId())
+                    .orElseThrow(() -> new UserExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        }
         ScheduleResDto scheduleResDto = scheduleService.createSchedule(userId, scheduleDto, project);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.INSERT_SUCCESS.getMessage(),
                 scheduleResDto
-            );
+        );
     }
 
     @GetMapping("/list")
