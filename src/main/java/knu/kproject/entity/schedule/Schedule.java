@@ -29,8 +29,8 @@ public class Schedule {
     @Enumerated(EnumType.STRING)
     private ScheduleVisible visible;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "project_id")
     private Project project;
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -46,7 +46,9 @@ public class Schedule {
         this.startDate = scheduleRequestDto.getStartDate();
         this.endDate = scheduleRequestDto.getEndDate();
         this.visible = scheduleRequestDto.getVisible();
-        this.project = project;
+        if (project != null) {
+            this.project = project;
+        }
     }
 
     /*
@@ -67,7 +69,9 @@ public class Schedule {
         this.startDate = scheduleRequestDto.getStartDate();
         this.endDate = scheduleRequestDto.getEndDate();
         this.visible = scheduleRequestDto.getVisible();
-        this.project = project;
+        if (project != null) {
+            this.project = project;
+        }
     }
 }
 

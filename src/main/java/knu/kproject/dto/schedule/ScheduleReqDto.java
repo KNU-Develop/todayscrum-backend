@@ -28,7 +28,7 @@ public class ScheduleReqDto {
     @Schema(description = "일정의 공개 범위", example = "PUBLIC", allowableValues = {"PUBLIC", "PRIVATE"})
     private ScheduleVisible visible;
 
-    @Schema(description = "프로젝트 ID", example = "1")
+    @Schema(description = "프로젝트 ID", example = "550e8400-e29b-41d4-a716-446655440000")
     private UUID projectId;
 
     @Schema(description = "초대할 사용자 ID 목록", example = "[1, 2, 3]")
