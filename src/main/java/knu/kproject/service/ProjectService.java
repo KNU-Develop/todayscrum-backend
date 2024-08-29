@@ -1,11 +1,5 @@
 package knu.kproject.service;
 
-import ch.qos.logback.core.joran.conditional.IfAction;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.constraints.Null;
-import knu.kproject.dto.UserDto.ToolInfoDto;
-import knu.kproject.dto.UserDto.UserDto;
 import knu.kproject.dto.notice.NoticeDto;
 import knu.kproject.dto.project.*;
 import knu.kproject.entity.project.Project;
@@ -17,7 +11,6 @@ import knu.kproject.exception.UserExceptionHandler;
 import knu.kproject.exception.code.ProjectErrorCode;
 import knu.kproject.exception.code.UserErrorCode;
 import knu.kproject.global.CHOICE;
-import knu.kproject.global.NOTICETYPE;
 import knu.kproject.global.ROLE;
 import knu.kproject.global.functions.Access;
 import knu.kproject.repository.*;
@@ -25,16 +18,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
     private final UserRepository userRepository;
     private final WorkspaceRepository workspaceRepository;
-    private final ProjectRepositroy projectRepositroy;
+    private final ProjectRepository projectRepository;
     private final ProjectUserRepository projectUserRepository;
     private final NoticeService noticeService;
 
@@ -64,13 +55,13 @@ public class ProjectService {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
         Project project = new Project(projectDto, workspaces.get(0));
 
-        projectRepositroy.save(project);
+        projectRepository.save(project);
         ProjectUser projectUser = new ProjectUser(user, project, ROLE.MASTER, CHOICE.수락);
         List<ProjectUser> projectUserList = new ArrayList<>();
         projectUserList.add(projectUser);
         projectUserRepository.save(projectUser);
         project.setProjectUsers(projectUserList);
-        projectRepositroy.save(project);
+        projectRepository.save(project);
         return project.getId();
     }
 
@@ -78,10 +69,10 @@ public class ProjectService {
         if (workspaceId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         workspaceRepository.findById(workspaceId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
 
-        List<Project> projects = projectRepositroy.findByWorkspaceOwnerId(workspaceId);
+        List<Project> projects = projectRepository.findByWorkspaceOwnerId(workspaceId);
         List<ProjectUser> subProjects = projectUserRepository.findByUserId(workspaceId);
         for (ProjectUser projectUser : subProjects) {
-            if (!projects.contains(projectUser.getProject())) {
+            if (!projects.contains(projectUser.getProject()) && projectUser.getChoice().equals(CHOICE.수락)) {
                 projects.add(projectUser.getProject());
             }
         }
@@ -92,9 +83,8 @@ public class ProjectService {
     public ProjectDto getProjectById(Long userToken, UUID projectId) {
         if (userToken == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User user = userRepository.findById(userToken).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
-        Access.accessPossible(projectUser, ROLE.GUEST);
         return convertToDto(project);
     }
 
@@ -102,7 +92,7 @@ public class ProjectService {
     public void updateProject(Long userId, UUID projectId, PutProjectDto updatedProjectData) {
         if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User u = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Project project = projectRepositroy.findById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(u, project);
         Access.accessPossible(projectUser, ROLE.WRITER);
@@ -117,23 +107,23 @@ public class ProjectService {
             }
         }
         project.update(updatedProjectData);
-        projectRepositroy.save(project);
+        projectRepository.save(project);
     }
 
     public void deleteProject(Long token, UUID projectId) {
         if (token == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User user = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Project project = projectRepositroy.findById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
         Access.accessPossible(projectUser, ROLE.OWNER);
-        projectRepositroy.delete(project);
+        projectRepository.delete(project);
     }
 
     public List<UserTeamDto> findByAllProjectUsers(Long token, UUID projectId) {
         if (token == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User user1 = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user1, project);
         Access.accessPossible(projectUser, ROLE.GUEST);
 
@@ -146,17 +136,19 @@ public class ProjectService {
     public void addUser(Long token, UUID projectId, InviteDto inviteDto) {
         if (token == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User user1 = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(user1, project);
         Access.accessPossible(projectUser1, ROLE.GUEST);
 
         if (userRepository.existsByEmail(inviteDto.getEmail())) {
             User user = userRepository.findByEmail(inviteDto.getEmail());
             if (!projectUserRepository.existsByProjectAndUser(project, user)) {
-                ProjectUser projectUser = new ProjectUser(user, project, ROLE.GUEST, CHOICE.전송);
+                ProjectUser projectUser = new ProjectUser(user, project, ROLE.WRITER, CHOICE.전송);
                 noticeService.addNotice(user, new NoticeDto(user1, user, project));
                 projectUserRepository.save(projectUser);
             }
+        } else {
+            throw new ProjectException(ProjectErrorCode.NOT_FOUND_USER);
         }
     }
 
@@ -164,7 +156,7 @@ public class ProjectService {
     public void changeRole(Long userId, UUID projectId, RoleDto roleDto) {
         if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User user = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser self = projectUserRepository.findByUserAndProject(user, project);
         Access.accessPossible(self, ROLE.GUEST);
 
@@ -185,25 +177,10 @@ public class ProjectService {
     public void deleteProjectUser(Long userId, UUID projectId, InviteDto deleteDto) {
         if (userId == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User self = userRepository.findById(userId).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(self, project);
         Access.accessPossible(projectUser1, ROLE.OWNER);
 
-//        Iterator<ProjectUser> projectUserIterator = project.getProjectUsers().iterator();
-//
-//        while (projectUserIterator.hasNext()) {
-//            ProjectUser projectUser = projectUserIterator.next();
-//
-//            for (Long id : UserId) {
-//                User user = userRepository.findById(id).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-//                if (user != null && user.equals(projectUser.getUser())) {
-//                    projectUserIterator.remove();
-//                    user.getProjectUsers().remove(projectUser);
-//
-//                    projectUserRepository.delete(projectUser);
-//                }
-//            }
-//        }
 
         List<ProjectUser> projectUserList = project.getProjectUsers();
         User user = userRepository.findByEmail(deleteDto.getEmail());

@@ -23,7 +23,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -87,24 +86,27 @@ public class User {
     @JsonManagedReference
     private List<Notice> notices;
 
+    @Column
+    private String color;
+
     public User(String name, String socialId, String email, UserStatus status) {
-        this.name = name;
-        this.socialId = socialId;
-        this.email = email;
+        this.name = name.trim();
+        this.socialId = socialId.trim();
+        this.email = email.trim();
         this.status = status;
     }
 
     public void updateUserInfo(UpdateUserDto userInfo) {
         if (userInfo.getName() != null && !userInfo.getName().trim().isEmpty()) {
-            this.setName(userInfo.getName());
+            this.name = userInfo.getName().trim();
         }
         if (userInfo.getContact() != null && !userInfo.getContact().trim().isEmpty()) {
-            this.setContact(userInfo.getContact());
+            this.contact = userInfo.getContact();
         }
-        this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
-        this.setMbti(userInfo.getMbti());
-        this.setLocation(userInfo.getLocation());
-        this.setImageUrl(userInfo.getImageUrl());
+        this.marketingEmailOptIn = userInfo.isMarketingEmailOptIn();
+        this.mbti = userInfo.getMbti();
+        this.location = userInfo.getLocation().trim();
+        this.imageUrl = userInfo.getImageUrl();
     }
 
     public void joinInfo(JoinUserDto userInfo) {
@@ -114,23 +116,22 @@ public class User {
         if (userInfo.getContact() == null || userInfo.getContact().trim().isEmpty()) {
             throw new IllegalArgumentException("Contact cannot be empty.");
         }
-        this.setName(userInfo.getName());
-        this.setContact(userInfo.getContact());
-        this.setStatus(UserStatus.JOIN);
-        this.setMarketingEmailOptIn(userInfo.isMarketingEmailOptIn());
-        this.setRequiredTermsAgree(userInfo.isRequiredTermsAgree());
+        this.name = userInfo.getName().trim();
+        this.contact = userInfo.getContact();
+        this.status = UserStatus.JOIN;
+        this.marketingEmailOptIn = userInfo.isMarketingEmailOptIn();
+        this.requiredTermsAgree = userInfo.isRequiredTermsAgree();
     }
 
     public void addAdditionalInfo(AdditionalUserInfo userInfo) {
-        this.setMbti(userInfo.getMbti());
-        this.setLocation(userInfo.getLocation());
-        this.setImageUrl(userInfo.getImageUrl());
+        this.mbti = userInfo.getMbti();
+        this.location = userInfo.getLocation().trim();
+        this.imageUrl = userInfo.getImageUrl();
     }
 
     public void withDraw(UserDto userDto) {
-        this.setStatus(UserStatus.WITHDRAW);
+        this.status = UserStatus.WITHDRAW;
     }
-
 
     /*
         User <-> Schedule 연관 관계 메서드

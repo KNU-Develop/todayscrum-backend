@@ -1,21 +1,14 @@
 package knu.kproject.exception;
 
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.ConstraintViolationException;
-import jdk.jfr.Experimental;
-import knu.kproject.exception.code.CommonErrorCode;
-import knu.kproject.exception.code.ProjectErrorCode;
+import jdk.jshell.spi.ExecutionControl;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.ErrorCode;
 import knu.kproject.util.ApiResponseUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.PropertyValueException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -5,7 +5,6 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
 @Table(name = "USER_STACK")
 @NoArgsConstructor
 @AllArgsConstructor

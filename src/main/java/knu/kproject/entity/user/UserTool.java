@@ -2,11 +2,13 @@ package knu.kproject.entity.user;
 
 import jakarta.persistence.*;
 import knu.kproject.global.ToolName;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Table(name = "USER_TOOL")
 public class UserTool {

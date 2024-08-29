@@ -9,9 +9,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Null;
 import knu.kproject.dto.schedule.ScheduleReqDto;
 import knu.kproject.dto.schedule.ScheduleResDto;
+import knu.kproject.entity.project.Project;
+import knu.kproject.exception.UserExceptionHandler;
+import knu.kproject.exception.code.ProjectErrorCode;
 import knu.kproject.global.code.Api_Response;
 import knu.kproject.global.code.SuccessCode;
 import knu.kproject.global.schedule.ScheduleUpdateType;
+import knu.kproject.repository.ProjectRepository;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.service.ScheduleService;
 import knu.kproject.util.ApiResponseUtil;
@@ -34,6 +38,7 @@ import java.util.List;
 @Tag(name = "스케쥴 API", description = "스케줄 관리를 위한 API 입니다.")
 public class ScheduleController {
     private final ScheduleService scheduleService;
+    private final ProjectRepository projectRepository;
 
     @PostMapping
     @Operation(summary = "일정 등록", description = "일정을 등록합니다. 프로젝트 ID가 존재할 경우 프로젝트 일정으로 등록하며 사용자를 자동으로 초대합니다.")
@@ -43,11 +48,16 @@ public class ScheduleController {
     public ResponseEntity<Api_Response<ScheduleResDto>> createSchedule(
             @AuthenticationPrincipal Long userId,
             @RequestBody ScheduleReqDto scheduleDto) {
-        ScheduleResDto scheduleResDto = scheduleService.createSchedule(userId, scheduleDto);
+        Project project = null;
+        if (scheduleDto.getProjectId() != null) {
+            project = projectRepository.findById(scheduleDto.getProjectId())
+                    .orElseThrow(() -> new UserExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        }
+        ScheduleResDto scheduleResDto = scheduleService.createSchedule(userId, scheduleDto, project);
         return ApiResponseUtil.createSuccessResponse(
                 SuccessCode.INSERT_SUCCESS.getMessage(),
                 scheduleResDto
-            );
+        );
     }
 
     @GetMapping("/list")
@@ -99,7 +109,9 @@ public class ScheduleController {
             @PathVariable("id") @Schema(description = "일정 ID") Long scheduleId,
             @RequestBody ScheduleReqDto updateReqDto
     ) {
-        scheduleService.updateSchedule(userId, scheduleId, updateReqDto);
+        Project project = projectRepository.findById(updateReqDto.getProjectId())
+                .orElseThrow(() -> new UserExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        scheduleService.updateSchedule(userId, scheduleId, updateReqDto, project);
         return ApiResponseUtil.createSuccessResponse(SuccessCode.INSERT_SUCCESS.getMessage());
     }
 
