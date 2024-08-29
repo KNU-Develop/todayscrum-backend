@@ -6,9 +6,12 @@ import knu.kproject.entity.schedule.Schedule;
 import knu.kproject.entity.user.User;
 import knu.kproject.entity.user.UserSchedule;
 import knu.kproject.exception.ScheduleException;
+import knu.kproject.exception.UserExceptionHandler;
+import knu.kproject.exception.code.ProjectErrorCode;
 import knu.kproject.exception.code.ScheduleErrorCode;
 import knu.kproject.global.schedule.ScheduleInviteState;
 import knu.kproject.global.schedule.ScheduleUpdateType;
+import knu.kproject.repository.ProjectRepository;
 import knu.kproject.repository.ScheduleRepository;
 import knu.kproject.repository.UserRepository;
 import knu.kproject.repository.UserScheduleRepository;
@@ -25,7 +28,6 @@ import java.util.stream.Collectors;
 
 import static knu.kproject.global.schedule.ScheduleInviteState.ACCEPT;
 import static knu.kproject.global.schedule.ScheduleInviteState.WAIT;
-import static knu.kproject.global.schedule.ScheduleRole.*;
 
 
 @Service
@@ -34,9 +36,15 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final UserScheduleRepository userScheduleRepository;
     private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
 
     @Transactional
-    public ScheduleResDto createSchedule(Long userId, ScheduleReqDto scheduleReqDto, Project project) {
+    public ScheduleResDto createSchedule(Long userId, ScheduleReqDto scheduleReqDto) {
+        Project project = null;
+        if (scheduleReqDto.getProjectId() != null) {
+            project = projectRepository.findById(scheduleReqDto.getProjectId())
+                    .orElseThrow(() -> new UserExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        }
         Schedule newSchedule = new Schedule(scheduleReqDto, project);
         if (scheduleReqDto.getProjectId() == null) {
             inviteUser(newSchedule, userId, ACCEPT);
@@ -74,7 +82,7 @@ public class ScheduleService {
      */
     @Transactional
     public ScheduleResDto getSchedule(Long userId, Long scheduleId) {
-        UserSchedule findSchedule = userScheduleRepository.findUserScheduleByUser_IdAndSchedule_Id(userId, scheduleId)
+        UserSchedule findSchedule = userScheduleRepository.findByUser_IdAndSchedule_Id(userId, scheduleId)
                 .orElseThrow(()-> new ScheduleException(ScheduleErrorCode.NOT_FOUND)); // 404
         Schedule schedule = findSchedule.getSchedule();
         return new ScheduleResDto(schedule);
@@ -86,16 +94,21 @@ public class ScheduleService {
 
 
     @Transactional
-    public void updateSchedule(Long userId, Long scheduleId, ScheduleReqDto scheduleReqDto, Project project) {
-        UserSchedule findUserSchedule = userScheduleRepository.findUserScheduleByUser_IdAndSchedule_Id(userId, scheduleId)
-                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NO_INVITE_SCHEDULE)); // 403
+    public void updateSchedule(Long userId, Long scheduleId, ScheduleReqDto scheduleReqDto) {
+        Project project = null;
+        if (scheduleReqDto.getProjectId() != null) {
+            project = projectRepository.findById(scheduleReqDto.getProjectId())
+                    .orElseThrow(() -> new UserExceptionHandler(ProjectErrorCode.NOT_FOUND_PROJECT));
+        }
+
+        UserSchedule findUserSchedule = userScheduleRepository.findByUser_IdAndSchedule_Id(userId, scheduleId)
+                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NOT_FOUND)); // 404
 
         if (haveChangeableRole(findUserSchedule)) {
             Schedule schedule = findUserSchedule.getSchedule();
             schedule.updateSchedule(scheduleReqDto, project);
             List<Long> newInviteUserIds = scheduleReqDto.getInviteList();
             updateInviteList(findUserSchedule, newInviteUserIds);
-
         } else {
             throw new ScheduleException(ScheduleErrorCode.NO_ACCESS_SCHEDULE); // 403
         }
@@ -106,9 +119,14 @@ public class ScheduleService {
         List<UserSchedule> prevUserSchedules = schedule.getUserSchedules();
         List<User> prevInviteUsers = prevUserSchedules.stream().map(UserSchedule::getUser).toList();
         List<Long> prevInviteUserIds = prevInviteUsers.stream().map(User::getId).toList();
-
+        System.out.println("ASD");
         // 새로 일정에 초대되는 인원 new - prev
+        if (newInviteUserIds == null) {
+            newInviteUserIds = new ArrayList<>();
+            newInviteUserIds.add(userSchedule.getUser().getId());
+        }
         List<Long> newInviteList = new ArrayList<>(newInviteUserIds);
+        System.out.println(newInviteList);
         newInviteList.removeAll(prevInviteUserIds);
         for (Long inviteUserId : newInviteList) {
             inviteUser(schedule, inviteUserId, WAIT);
@@ -117,6 +135,7 @@ public class ScheduleService {
 
         // 기존에 초대 유저 중 더 이상 초대되지 않는 인원 prev - new
         List<Long> removeInviteList = new ArrayList<>(prevInviteUserIds);
+        System.out.println(removeInviteList);
         removeInviteList.removeAll(newInviteUserIds);
         for (Long userId : removeInviteList) {
             for (User prevInviteUser : prevInviteUsers) {
@@ -138,16 +157,11 @@ public class ScheduleService {
 
     @Transactional
     public void deleteSchedule(Long userId, Long scheduleId, ScheduleUpdateType type) {
-        UserSchedule findUserSchedule = userScheduleRepository.findUserScheduleByUser_IdAndSchedule_Id(userId, scheduleId)
-                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NO_INVITE_SCHEDULE));
+        UserSchedule findUserSchedule = userScheduleRepository.findByUser_IdAndSchedule_Id(userId, scheduleId)
+                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NOT_FOUND));
         if (haveChangeableRole(findUserSchedule)) {
             switch (type) {
                 case THIS:
-                    List<UserSchedule> userSchedules = findUserSchedule.getSchedule().getUserSchedules();
-                    for (UserSchedule userSchedule : userSchedules) {
-                        userSchedule.unUserSchedule();
-                    }
-                    userScheduleRepository.deleteAll(userSchedules);
                     scheduleRepository.delete(findUserSchedule.getSchedule());
             }
         } else {

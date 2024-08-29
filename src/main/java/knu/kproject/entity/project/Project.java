@@ -5,11 +5,13 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import knu.kproject.dto.project.PutProjectDto;
 import knu.kproject.entity.board.Board;
+import knu.kproject.entity.schedule.Schedule;
 import knu.kproject.entity.workspace.Workspace;
 import lombok.*;
 import org.hibernate.jdbc.Work;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,6 +54,9 @@ public class Project {
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Board> boards;
+
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    private List<Schedule> schedules = new ArrayList<>();
 
     @Column
     private String color;

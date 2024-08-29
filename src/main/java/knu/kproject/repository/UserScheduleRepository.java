@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public interface UserScheduleRepository extends JpaRepository<UserSchedule, Long> {
 
-    Optional<UserSchedule> findUserScheduleByUser_IdAndSchedule_Id(Long userId, Long scheduleId);
+    Optional<UserSchedule> findByUser_IdAndSchedule_Id(Long userId, Long scheduleId);
     void deleteByUserAndSchedule(User user, Schedule schedule);
     void deleteBySchedule_IdAndUser_Id(Long schedule_id, Long user_id);
 
