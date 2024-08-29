@@ -1,13 +1,11 @@
 package knu.kproject.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import knu.kproject.dto.board.BoardDto;
 import knu.kproject.dto.board.InputBoardDto;
 import knu.kproject.dto.notice.NoticeDto;
 import knu.kproject.entity.board.Board;
 import knu.kproject.entity.board.Master;
-import knu.kproject.entity.notice.Notice;
 import knu.kproject.entity.project.Project;
 import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.entity.user.User;
@@ -15,23 +13,19 @@ import knu.kproject.exception.ProjectException;
 import knu.kproject.exception.UserExceptionHandler;
 import knu.kproject.exception.code.ProjectErrorCode;
 import knu.kproject.exception.code.UserErrorCode;
-import knu.kproject.global.CHOICE;
 import knu.kproject.global.NOTICETYPE;
 import knu.kproject.global.ROLE;
 import knu.kproject.global.functions.Access;
 import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
 
-import java.awt.image.PackedColorModel;
-import java.sql.Timestamp;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class BoardService {
-    private final ProjectRepositroy projectRepositroy;
+    private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ProjectUserRepository projectUserRepository;
     private final BoardRepository boardRepository;
@@ -41,7 +35,7 @@ public class BoardService {
     public UUID createBoard(Long token, UUID projectId, InputBoardDto boardDto) {
         if (token == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User my = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser self = projectUserRepository.findByUserAndProject(my, project);
 
         Access.accessPossible(self, ROLE.WRITER);
@@ -79,7 +73,7 @@ public class BoardService {
     public List<BoardDto> findByAllBoard(Long token, UUID projectId) {
         if (token == null) throw new ProjectException(ProjectErrorCode.BAD_AUTHORIZATION);
         User user = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-        Project project = projectRepositroy.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
 
         Access.accessPossible(projectUser, ROLE.GUEST);

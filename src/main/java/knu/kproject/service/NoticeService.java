@@ -1,6 +1,5 @@
 package knu.kproject.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import knu.kproject.dto.notice.InNoticeDto;
 import knu.kproject.dto.notice.NoticeDto;
 import knu.kproject.dto.notice.OutNoticeDto;
@@ -13,14 +12,12 @@ import knu.kproject.exception.code.ProjectErrorCode;
 import knu.kproject.exception.code.UserErrorCode;
 import knu.kproject.global.CHOICE;
 import knu.kproject.repository.NoticeRepositroy;
-import knu.kproject.repository.ProjectRepositroy;
+import knu.kproject.repository.ProjectRepository;
 import knu.kproject.repository.ProjectUserRepository;
 import knu.kproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +27,7 @@ import java.util.UUID;
 public class NoticeService {
     private final NoticeRepositroy noticeRepositroy;
     private final UserRepository userRepository;
-    private final ProjectRepositroy projectRepositroy;
+    private final ProjectRepository projectRepository;
     private final ProjectUserRepository projectUserRepository;
 
     public void addNotice(User user, NoticeDto input) {
@@ -54,7 +51,7 @@ public class NoticeService {
     public void acceptInvite(Long token, UUID noticeId, InNoticeDto input) {
         User user = userRepository.findById(token).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
         Notice notice = noticeRepositroy.findById(noticeId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_NOTICE));
-        ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, projectRepositroy.findById(notice.getOriginId()).orElse(null));
+        ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, projectRepository.findById(notice.getOriginId()).orElse(null));
 
         if (input.isRead()) {
             notice.setRead(true);

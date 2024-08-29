@@ -2,12 +2,15 @@ package knu.kproject.dto.schedule;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import knu.kproject.global.schedule.ScheduleVisible;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
+@Builder
 @Schema(description = "일정 등록 요청 데이터")
 public class ScheduleReqDto {
     @Schema(description = "일정 제목", example = "일정 제목")
@@ -26,7 +29,7 @@ public class ScheduleReqDto {
     private ScheduleVisible visible;
 
     @Schema(description = "프로젝트 ID", example = "1")
-    private Long projectId;
+    private UUID projectId;
 
     @Schema(description = "초대할 사용자 ID 목록", example = "[1, 2, 3]")
     private List<Long> inviteList;
