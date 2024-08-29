@@ -74,7 +74,7 @@ public class ScheduleService {
      */
     @Transactional
     public ScheduleResDto getSchedule(Long userId, Long scheduleId) {
-        UserSchedule findSchedule = userScheduleRepository.findUserScheduleByUser_IdAndSchedule_Id(userId, scheduleId)
+        UserSchedule findSchedule = userScheduleRepository.findByUser_IdAndSchedule_Id(userId, scheduleId)
                 .orElseThrow(()-> new ScheduleException(ScheduleErrorCode.NOT_FOUND)); // 404
         Schedule schedule = findSchedule.getSchedule();
         return new ScheduleResDto(schedule);
@@ -86,16 +86,14 @@ public class ScheduleService {
 
 
     @Transactional
-    public void updateSchedule(Long userId, Long scheduleId, ScheduleReqDto scheduleReqDto, Project project) {
-        UserSchedule findUserSchedule = userScheduleRepository.findUserScheduleByUser_IdAndSchedule_Id(userId, scheduleId)
-                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NO_INVITE_SCHEDULE)); // 403
-
+    public void updateSchedule(Long userId, Long scheduleId, ScheduleReqDto scheduleReqDto) {
+        UserSchedule findUserSchedule = userScheduleRepository.findByUser_IdAndSchedule_Id(userId, scheduleId)
+                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NOT_FOUND)); // 404
         if (haveChangeableRole(findUserSchedule)) {
             Schedule schedule = findUserSchedule.getSchedule();
             schedule.updateSchedule(scheduleReqDto, project);
             List<Long> newInviteUserIds = scheduleReqDto.getInviteList();
             updateInviteList(findUserSchedule, newInviteUserIds);
-
         } else {
             throw new ScheduleException(ScheduleErrorCode.NO_ACCESS_SCHEDULE); // 403
         }
@@ -138,16 +136,11 @@ public class ScheduleService {
 
     @Transactional
     public void deleteSchedule(Long userId, Long scheduleId, ScheduleUpdateType type) {
-        UserSchedule findUserSchedule = userScheduleRepository.findUserScheduleByUser_IdAndSchedule_Id(userId, scheduleId)
-                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NO_INVITE_SCHEDULE));
+        UserSchedule findUserSchedule = userScheduleRepository.findByUser_IdAndSchedule_Id(userId, scheduleId)
+                .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NOT_FOUND));
         if (haveChangeableRole(findUserSchedule)) {
             switch (type) {
                 case THIS:
-                    List<UserSchedule> userSchedules = findUserSchedule.getSchedule().getUserSchedules();
-                    for (UserSchedule userSchedule : userSchedules) {
-                        userSchedule.unUserSchedule();
-                    }
-                    userScheduleRepository.deleteAll(userSchedules);
                     scheduleRepository.delete(findUserSchedule.getSchedule());
             }
         } else {

@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import static knu.kproject.global.schedule.ScheduleRole.OWNER;
+
 @Entity
 @Getter
 @Setter
@@ -40,6 +42,7 @@ public class UserSchedule {
         this.inviteState = state;
         schedule.addUserSchedule(this);
         user.addUserSchedule(this);
+        this.role = OWNER;
     }
 
     public void unUserSchedule() {
