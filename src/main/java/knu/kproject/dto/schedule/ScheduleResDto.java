@@ -32,7 +32,9 @@ public class ScheduleResDto {
         this.startDate = schedule.getStartDate();
         this.endDate = schedule.getEndDate();
         this.visible = schedule.getVisible();
-        this.projectId = schedule.getProject().getId();
+        if (schedule.getProject() != null) {
+            this.projectId = schedule.getProject().getId();
+        }
         List<UserSchedule> userScheduleList = schedule.getUserSchedules();
         for (UserSchedule userSchedule : userScheduleList) {
             this.inviteList.add(new ScheduleInviteUserDto(userSchedule.getUser(), userSchedule.getInviteState()));
