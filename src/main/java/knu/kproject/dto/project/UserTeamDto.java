@@ -23,6 +23,7 @@ public class UserTeamDto {
     private String name;
     @Email
     private String email;
+    private String contact;
     private String location;
     private MBTI mbti;
     private String imageUrl;
@@ -37,6 +38,7 @@ public class UserTeamDto {
                 .id(projectUser.getUser().getId())
                 .name(projectUser.getUser().getName())
                 .email(projectUser.getUser().getEmail())
+                .contact(projectUser.getUser().getContact())
                 .location(projectUser.getUser().getLocation())
                 .mbti(projectUser.getUser().getMbti())
                 .imageUrl(projectUser.getUser().getImageUrl())

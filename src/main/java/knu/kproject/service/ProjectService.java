@@ -72,7 +72,7 @@ public class ProjectService {
         List<Project> projects = projectRepository.findByWorkspaceOwnerId(workspaceId);
         List<ProjectUser> subProjects = projectUserRepository.findByUserId(workspaceId);
         for (ProjectUser projectUser : subProjects) {
-            if (!projects.contains(projectUser.getProject())) {
+            if (!projects.contains(projectUser.getProject()) && projectUser.getChoice().equals(CHOICE.수락)) {
                 projects.add(projectUser.getProject());
             }
         }
@@ -85,7 +85,6 @@ public class ProjectService {
         User user = userRepository.findById(userToken).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectException(ProjectErrorCode.NOT_FOUND_PROJECT));
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
-        Access.accessPossible(projectUser, ROLE.GUEST);
         return convertToDto(project);
     }
 
@@ -144,10 +143,12 @@ public class ProjectService {
         if (userRepository.existsByEmail(inviteDto.getEmail())) {
             User user = userRepository.findByEmail(inviteDto.getEmail());
             if (!projectUserRepository.existsByProjectAndUser(project, user)) {
-                ProjectUser projectUser = new ProjectUser(user, project, ROLE.GUEST, CHOICE.전송);
+                ProjectUser projectUser = new ProjectUser(user, project, ROLE.WRITER, CHOICE.전송);
                 noticeService.addNotice(user, new NoticeDto(user1, user, project));
                 projectUserRepository.save(projectUser);
             }
+        } else {
+            throw new ProjectException(ProjectErrorCode.NOT_FOUND_USER);
         }
     }
 
@@ -180,21 +181,6 @@ public class ProjectService {
         ProjectUser projectUser1 = projectUserRepository.findByUserAndProject(self, project);
         Access.accessPossible(projectUser1, ROLE.OWNER);
 
-//        Iterator<ProjectUser> projectUserIterator = project.getProjectUsers().iterator();
-//
-//        while (projectUserIterator.hasNext()) {
-//            ProjectUser projectUser = projectUserIterator.next();
-//
-//            for (Long id : UserId) {
-//                User user = userRepository.findById(id).orElseThrow(() -> new UserExceptionHandler(UserErrorCode.NOT_FOUND_USER));
-//                if (user != null && user.equals(projectUser.getUser())) {
-//                    projectUserIterator.remove();
-//                    user.getProjectUsers().remove(projectUser);
-//
-//                    projectUserRepository.delete(projectUser);
-//                }
-//            }
-//        }
 
         List<ProjectUser> projectUserList = project.getProjectUsers();
         User user = userRepository.findByEmail(deleteDto.getEmail());
