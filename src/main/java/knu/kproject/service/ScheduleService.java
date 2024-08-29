@@ -1,6 +1,7 @@
 package knu.kproject.service;
 
 import knu.kproject.dto.schedule.*;
+import knu.kproject.entity.project.Project;
 import knu.kproject.entity.schedule.Schedule;
 import knu.kproject.entity.user.User;
 import knu.kproject.entity.user.UserSchedule;
@@ -35,8 +36,8 @@ public class ScheduleService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ScheduleResDto createSchedule(Long userId, ScheduleReqDto scheduleReqDto) {
-        Schedule newSchedule = new Schedule(scheduleReqDto);
+    public ScheduleResDto createSchedule(Long userId, ScheduleReqDto scheduleReqDto, Project project) {
+        Schedule newSchedule = new Schedule(scheduleReqDto, project);
         if (scheduleReqDto.getProjectId() == null) {
             inviteUser(newSchedule, userId, ACCEPT);
         } else {
@@ -90,7 +91,7 @@ public class ScheduleService {
                 .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.NOT_FOUND)); // 404
         if (haveChangeableRole(findUserSchedule)) {
             Schedule schedule = findUserSchedule.getSchedule();
-            schedule.updateSchedule(scheduleReqDto);
+            schedule.updateSchedule(scheduleReqDto, project);
             List<Long> newInviteUserIds = scheduleReqDto.getInviteList();
             updateInviteList(findUserSchedule, newInviteUserIds);
         } else {
@@ -140,7 +141,6 @@ public class ScheduleService {
         if (haveChangeableRole(findUserSchedule)) {
             switch (type) {
                 case THIS:
-                    System.out.println("THIS!!!!!!!!!!");
                     scheduleRepository.delete(findUserSchedule.getSchedule());
             }
         } else {

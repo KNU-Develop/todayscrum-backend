@@ -1,5 +1,6 @@
 package knu.kproject.dto.board;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import knu.kproject.dto.comment.CommentDto;
 import knu.kproject.entity.board.Board;
 import knu.kproject.global.CATEGORY;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 @Data
 @Builder
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BoardDto {
     private UUID id;
     private String userName;
@@ -27,7 +29,7 @@ public class BoardDto {
     public static BoardDto fromEntity(Board board) {
         BoardDto dto = BoardDto.builder()
                 .id(board.getId())
-                .userName(board.getUserName())
+                .userName(board.getUser().getName())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .category(board.getCategory())

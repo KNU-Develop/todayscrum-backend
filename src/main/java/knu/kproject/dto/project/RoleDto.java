@@ -8,6 +8,5 @@ import java.util.UUID;
 
 @Data
 public class RoleDto {
-    private UUID projectId;
-    private Map<String, ROLE> roles;
+    private Map<Long, ROLE> roles;
 }

@@ -16,15 +16,19 @@ public class ApiResponseUtil {
                 .build();
         return ResponseEntity.status(code).body(response);
     }
+
     public static <T> ResponseEntity<Api_Response<T>> createSuccessResponse(String message, T result) {
         return createResponse(HttpStatus.OK.value(), message, result);
     }
+
     public static <T> ResponseEntity<Api_Response<T>> createSuccessResponse(String message) {
         return createResponse(HttpStatus.OK.value(), message, null);
     }
+
     public static <T> ResponseEntity<Api_Response<T>> createErrorResponse(ErrorCode errorCode) {
         return createResponse(errorCode.getHttpStatus().value(), errorCode.getMessage(), null);
     }
+
     public static <T> ResponseEntity<Api_Response<T>> createErrorResponse(String message, int code) {
         return createResponse(code, message, null);
     }

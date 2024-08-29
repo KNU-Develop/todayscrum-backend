@@ -1,7 +1,10 @@
 package knu.kproject.entity.project;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import knu.kproject.entity.project.Project;
 import knu.kproject.entity.user.User;
+import knu.kproject.global.CHOICE;
 import knu.kproject.global.ROLE;
 import lombok.*;
 
@@ -19,15 +22,29 @@ public class ProjectUser {
 
     @ManyToOne
     @JoinColumn
+    @JsonBackReference
     private Project project;
 
     @ManyToOne
     @JoinColumn
+    @JsonBackReference
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ROLE role;
 
     @Column()
     private String color;
+
+    @Column
+    private CHOICE choice;
+
+    public ProjectUser(User user, Project project, ROLE role, CHOICE choice) {
+        this.user = user;
+        this.project = project;
+        this.role = role;
+        this.color = project.getColor();
+        this.choice = choice;
+    }
 }

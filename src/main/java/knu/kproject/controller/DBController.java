@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/db")
 @RequiredArgsConstructor
 public class DBController {
-    private final ProjectRepositroy projectRepositroy;
+    private final ProjectRepository projectRepository;
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
     private final WorkspaceRepository workspaceRepository;
@@ -24,7 +24,7 @@ public class DBController {
     public ResponseEntity<Api_Response<Object>> resetDataBase() {
         try {
             scheduleRepository.deleteAll();
-            projectRepositroy.deleteAll();
+            projectRepository.deleteAll();
             workspaceRepository.deleteAll();
             userRepository.deleteAll();
 

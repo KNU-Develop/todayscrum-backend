@@ -1,6 +1,6 @@
 package knu.kproject.exception;
 
-import knu.kproject.global.code.ErrorCode;
+import knu.kproject.exception.code.ErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,7 +14,7 @@ public class UserExceptionHandler extends RuntimeException {
         this.errorCode = errorCode;
     }
     @Builder
-    public UserExceptionHandler(String message, ErrorCode errorCode) {
+    public UserExceptionHandler(ErrorCode errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
     }
