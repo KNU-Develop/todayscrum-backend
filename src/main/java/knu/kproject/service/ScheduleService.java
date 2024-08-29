@@ -140,11 +140,7 @@ public class ScheduleService {
         if (haveChangeableRole(findUserSchedule)) {
             switch (type) {
                 case THIS:
-                    List<UserSchedule> userSchedules = findUserSchedule.getSchedule().getUserSchedules();
-                    for (UserSchedule userSchedule : userSchedules) {
-                        userSchedule.unUserSchedule();
-                    }
-                    userScheduleRepository.deleteAll(userSchedules);
+                    System.out.println("THIS!!!!!!!!!!");
                     scheduleRepository.delete(findUserSchedule.getSchedule());
             }
         } else {
