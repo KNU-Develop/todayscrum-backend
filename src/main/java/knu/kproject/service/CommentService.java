@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.awt.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,6 +49,7 @@ public class CommentService {
         Access.accessPossible(self, ROLE.GUEST);
 
         List<CommentDto> commentDtos = board.getComments().stream()
+                .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .map(CommentDto::fromEntity)
                 .toList();
         return commentDtos;
@@ -155,7 +157,5 @@ public class CommentService {
         Access.accessComment(self, comment);
 
         commentRepository.delete(comment);
-
-        commentRepository.save(comment);
     }
 }
