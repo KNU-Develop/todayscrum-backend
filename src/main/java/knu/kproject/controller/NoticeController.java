@@ -31,7 +31,7 @@ public class NoticeController {
             @ApiResponse(responseCode = "401", description = "Authorizeation 오류"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<Api_Response<Object>> getNotice(@AuthenticationPrincipal Long token) {
         List<OutNoticeDto> noticeDtoList = noticeService.getNotice(token);
 

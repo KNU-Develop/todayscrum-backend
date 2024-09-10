@@ -26,7 +26,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Comment API", description = "보드 내 댓글 api 입니다.")
-@RequestMapping("project/{projectId}/board/{boardId}/comment/")
+@RequestMapping("project/{projectId}/board/{boardId}/comment")
 public class CommentController {
     private final CommentService commentService;
 

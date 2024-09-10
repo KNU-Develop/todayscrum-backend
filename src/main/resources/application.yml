@@ -4,8 +4,6 @@ spring:
   application:
     name: KProject-BE
   jpa:
-    hibernate:
-      ddl-auto: create
     show_sql: true
     properties:
       hibernate:
