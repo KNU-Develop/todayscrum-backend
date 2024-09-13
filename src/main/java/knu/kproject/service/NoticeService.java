@@ -64,12 +64,10 @@ public class NoticeService {
             } else if (input.getChoice().equals(CHOICE.거절)) {
                 projectUser.setChoice(CHOICE.거절);
                 notice.setChoice(CHOICE.거절);
-            } else if (input.getChoice().equals(CHOICE.전송)) {
-                projectUser.setChoice(CHOICE.전송);
-                notice.setChoice(CHOICE.전송);
             }
+
+            noticeRepositroy.delete(notice);
             projectUserRepository.save(projectUser);
-            noticeRepositroy.save(notice);
         }
     }
 }
