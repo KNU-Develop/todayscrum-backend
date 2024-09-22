@@ -20,4 +20,5 @@ public class UpdateUserDto {
     private String imageUrl;
     private Map<ToolName, String> tools = new HashMap<>();
     private List<String> stacks = new ArrayList<>();
+    private String color;
 }

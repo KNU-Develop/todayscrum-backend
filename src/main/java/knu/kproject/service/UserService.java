@@ -46,7 +46,18 @@ public class UserService {
             throw new UserExceptionHandler(UserErrorCode.UPDATE_ERROR);
         }
     }
-
+    @Transactional
+    public void updateUserColor(Long userId, UpdateUserDto updateUserDto) {
+        User user = findById(userId);
+        try {
+            user.updateUserColor(updateUserDto);
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new UserExceptionHandler(UserErrorCode.INVALID_USER_DATA);
+        } catch (Exception e) {
+            throw new UserExceptionHandler(UserErrorCode.UPDATE_ERROR);
+        }
+    }
     @Transactional
     public void addUserInfo(Long userId, AdditionalUserInfo additionalUserInfo) {
         User user = findById(userId);
