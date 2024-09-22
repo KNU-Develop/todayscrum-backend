@@ -28,6 +28,7 @@ public class UserDto {
     private ROLE role;
     private List<ToolInfoDto> tools = new ArrayList<>();
     private List<String> stackNames;
+    private String color;
 
 
     public static UserDto fromEntity(User user) {
@@ -43,6 +44,7 @@ public class UserDto {
         dto.setMbti(user.getMbti());
         dto.setImageUrl(user.getImageUrl());
         dto.setRole(user.getRole());
+        dto.setColor(user.getColor());
 
         dto.setTools(user.getUserTools().stream()
                 .map(ToolInfoDto::fromEntity)

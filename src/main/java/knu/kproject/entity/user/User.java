@@ -89,11 +89,12 @@ public class User {
     @Column
     private String color;
 
-    public User(String name, String socialId, String email, UserStatus status) {
+    public User(String name, String socialId, String email, UserStatus status, String color) {
         this.name = name.trim();
         this.socialId = socialId.trim();
         this.email = email.trim();
         this.status = status;
+        this.color = color;
     }
 
     public void updateUserInfo(UpdateUserDto userInfo) {
@@ -144,5 +145,8 @@ public class User {
     public void removeUserSchedule(UserSchedule userSchedule) {
         this.userSchedules.remove(userSchedule);
         userSchedule.setUser(null);
+    }
+    public void updateUserColor(UpdateUserDto updateUserDto){
+        this.color = updateUserDto.getColor();
     }
 }

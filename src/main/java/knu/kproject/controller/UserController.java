@@ -88,6 +88,20 @@ public class UserController {
         userService.updateUserInfo(userId, updateUserDto);
         return ApiResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS.getMessage());
     }
+    @Operation(summary = "내 일정 색상 수정", description = "User 색상 수정 API 입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "색상 수정 성공", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "404", description = "색상 수정 실패", content = @Content(schema = @Schema(implementation = Api_Response.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(schema = @Schema(implementation = Api_Response.class)))
+    })
+    @PutMapping("/color")
+    public ResponseEntity<Api_Response<UserDto>> updateUserColor(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody UpdateUserDto updateUserDto) {
+        userService.updateUserColor(userId, updateUserDto);
+        return ApiResponseUtil.createSuccessResponse(SuccessCode.UPDATE_SUCCESS.getMessage());
+    }
 
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API 입니다.")
     @ApiResponses(value = {
