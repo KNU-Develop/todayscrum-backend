@@ -94,7 +94,6 @@ public class User {
         this.socialId = socialId.trim();
         this.email = email.trim();
         this.status = status;
-        this.color = color;
     }
 
     public void updateUserInfo(UpdateUserDto userInfo) {
