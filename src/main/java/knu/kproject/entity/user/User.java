@@ -89,12 +89,11 @@ public class User {
     @Column
     private String color;
 
-    public User(String name, String socialId, String email, UserStatus status, String color) {
+    public User(String name, String socialId, String email, UserStatus status) {
         this.name = name.trim();
         this.socialId = socialId.trim();
         this.email = email.trim();
         this.status = status;
-        this.color = color;
     }
 
     public void updateUserInfo(UpdateUserDto userInfo) {
