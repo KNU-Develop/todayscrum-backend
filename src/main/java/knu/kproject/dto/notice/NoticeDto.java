@@ -24,7 +24,7 @@ public class NoticeDto {
     private boolean isread;
     private String title;
     private NOTICETYPE type;
-    private String originTable;
+    private UUID originTable;
     private UUID originId;
     private User user;
     private CHOICE choice;
@@ -37,7 +37,7 @@ public class NoticeDto {
         noticeDto.setTitle(notice.getTitle());
         noticeDto.setType(notice.getType());
         noticeDto.setOriginId(notice.getOriginId());
-        noticeDto.setOriginTable(notice.getOriginTable());
+        noticeDto.setOriginTable(null);
         noticeDto.setUser(notice.getUser());
         noticeDto.setChoice(notice.getChoice());
         noticeDto.setCreatedAt(notice.getCreateAt());
@@ -50,7 +50,7 @@ public class NoticeDto {
         this.title = inviter.getName() + "님이 " + project.getTitle() + "에 초대했습니다.";
         this.type = NOTICETYPE.초대;
         this.originId = project.getId();
-        this.originTable = "project";
+        this.originTable = null;
         this.user = invited;
         this.choice = CHOICE.전송;
         this.createdAt = new Timestamp(System.currentTimeMillis());
@@ -65,7 +65,7 @@ public class NoticeDto {
         }
         this.type = type;
         this.originId = board.getId();
-        this.originTable = "board";
+        this.originTable = board.getProject().getId();
         this.user = invited;
         this.createdAt = new Timestamp(System.currentTimeMillis());
     }
@@ -75,7 +75,7 @@ public class NoticeDto {
         this.title = inviter.getName() + "님이 @" + invited.getName() + "을 호출했습니다.";
         this.type = NOTICETYPE.멘션;
         this.originId = comment.getId();
-        this.originTable = "comment";
+        this.originTable = comment.getBoard().getProject().getId();
         this.user = invited;
         this.createdAt = new Timestamp(System.currentTimeMillis());
     }
