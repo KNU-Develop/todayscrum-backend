@@ -18,7 +18,7 @@ public class OutNoticeDto {
     private boolean isRead;
     private String title;
     private NOTICETYPE type;
-    private String originTable;
+    private UUID originTable;
     private UUID originId;
     private CHOICE choice;
 

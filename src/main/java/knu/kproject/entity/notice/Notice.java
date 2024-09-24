@@ -38,7 +38,7 @@ public class Notice {
     private NOTICETYPE type;
 
     @Column(nullable = false)
-    private String originTable;
+    private UUID originTable;
 
     @Column(nullable = false)
     private UUID originId;
