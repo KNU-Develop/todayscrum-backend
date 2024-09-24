@@ -41,7 +41,7 @@ public class JwtTokenUtil {
 
     private String createToken(String userId, long expiryTime) {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expiration = now.plusMinutes(expiryTime);
+        LocalDateTime expiration = now.plusSeconds(expiryTime);
         return Jwts.builder()
                 .setSubject(userId)
                 .setIssuedAt(DateUtil.toDate(now))
