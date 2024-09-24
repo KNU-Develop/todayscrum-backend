@@ -101,7 +101,6 @@ public class BoardService {
         ProjectUser my = projectUserRepository.findByUserAndProject(self, board.getProject());
 
         Access.accessPossible(my, ROLE.WRITER);
-        Access.accessBoard(my, board);
         if (input.getMastersId() != null) {
             List<Master> masterList = board.getMaster();
             masterRepository.deleteAll(masterList);
@@ -115,12 +114,10 @@ public class BoardService {
                         .filter(user -> projectUsers.contains(user))
                         .ifPresent(user -> {
                             ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, board.getProject());
-                            if (Access.accessMaster(projectUser)) {
-                                Master master = new Master(user, board);
-                                masterList.add(master);
-                                if (!my.getUser().equals(user)) {
-                                    noticeService.addNotice(user, new NoticeDto(self, user, board, NOTICETYPE.멘션));
-                                }
+                            Master master = new Master(user, board);
+                            masterList.add(master);
+                            if (!my.getUser().equals(user)) {
+                                noticeService.addNotice(user, new NoticeDto(self, user, board, NOTICETYPE.멘션));
                             }
                         });
             }

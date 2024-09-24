@@ -61,7 +61,7 @@ public class NoticeDto {
         if (type.equals(NOTICETYPE.댓글)) {
             this.title = inviter.getName() + "님이 " + board.getTitle() + "에 댓글을 달았습니다..";
         } else if (type.equals(NOTICETYPE.멘션)) {
-            this.title = inviter.getName() + "님이 " + invited.getName() + "을 호출했습니다.";
+            this.title = inviter.getName() + "님이 @" + invited.getName() + "을 호출했습니다.";
         }
         this.type = type;
         this.originId = board.getId();
@@ -72,7 +72,7 @@ public class NoticeDto {
 
     public NoticeDto(User inviter, User invited, Comment comment) {
         this.isread = false;
-        this.title = inviter.getName() + "님이 " + invited.getName() + "을 호출했습니다.";
+        this.title = inviter.getName() + "님이 @" + invited.getName() + "을 호출했습니다.";
         this.type = NOTICETYPE.멘션;
         this.originId = comment.getId();
         this.originTable = "comment";

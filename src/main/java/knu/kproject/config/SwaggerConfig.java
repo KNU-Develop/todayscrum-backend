@@ -1,5 +1,7 @@
 package knu.kproject.config;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 
+@OpenAPIDefinition(servers = {@Server(url = "https://rogi-rogi.store/", description = "TodayScrum 도메인")})
 @Configuration
 public class SwaggerConfig {
     @Bean
