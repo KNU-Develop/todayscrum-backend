@@ -55,7 +55,7 @@ public class MeetingSchedulerService {
                 .anyMatch(slot -> slot.getAttendeeCount() >= 2);
 
         if (!hasAvailableSlotForTwoOrMore) {
-            throw new UserExceptionHandler(MeetingErrorCode.NO_AVAILABLE_MEETING_TIME);
+            return Collections.emptyList();
         }
         return recommendOptimalTimeSlots(availableTimeSlots);
     }
