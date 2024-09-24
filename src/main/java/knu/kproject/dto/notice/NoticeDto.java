@@ -37,7 +37,7 @@ public class NoticeDto {
         noticeDto.setTitle(notice.getTitle());
         noticeDto.setType(notice.getType());
         noticeDto.setOriginId(notice.getOriginId());
-        noticeDto.setOriginTable(null);
+        noticeDto.setOriginTable(notice.getOriginTable());
         noticeDto.setUser(notice.getUser());
         noticeDto.setChoice(notice.getChoice());
         noticeDto.setCreatedAt(notice.getCreateAt());

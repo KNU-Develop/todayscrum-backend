@@ -37,10 +37,10 @@ public class Notice {
     @Column(nullable = false)
     private NOTICETYPE type;
 
-    @Column(nullable = false)
+    @Column
     private UUID originTable;
 
-    @Column(nullable = false)
+    @Column
     private UUID originId;
 
     @Column(nullable = false, updatable = false)
