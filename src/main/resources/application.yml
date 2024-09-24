@@ -4,6 +4,8 @@ spring:
   application:
     name: KProject-BE
   jpa:
+    hibernate:
+      ddl-auto: update
     show_sql: true
     properties:
       hibernate:
