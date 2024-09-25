@@ -39,11 +39,14 @@ public class MeetingSchedulerService {
         ProjectUser projectUser = projectUserRepository.findByUserAndProject(user, project);
         Access.accessPossible(projectUser, ROLE.GUEST);
 
+        List<UserSchedule> userSchedules = userScheduleRepository.findByUser_IdAndSchedule_StartDateBetween(userId, startDate, endDate);
         List<UserSchedule> allSchedules = userScheduleRepository.findByProjectIdAndDateRange(projectId, startDate, endDate);
+
 
         if (allSchedules == null) {
             allSchedules = new ArrayList<>();
         }
+        allSchedules.addAll(userSchedules);
 
         List<ProjectUser> projectUsers = projectUserRepository.findByProjectId(projectId);
 
@@ -125,6 +128,7 @@ public class MeetingSchedulerService {
         }
         return availableSlots;
     }
+
 
 
     private List<TimeSlot> recommendOptimalTimeSlots(List<TimeSlot> availableTimeSlots) {
