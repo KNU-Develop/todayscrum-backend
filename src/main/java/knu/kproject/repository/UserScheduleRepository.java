@@ -25,4 +25,5 @@ public interface UserScheduleRepository extends JpaRepository<UserSchedule, Long
     List<UserSchedule> findByProjectIdAndDateRange(@Param("projectId") UUID projectId,
                                                    @Param("startDate") LocalDateTime startDate,
                                                    @Param("endDate") LocalDateTime endDate);
+    List<UserSchedule> findByUser_IdAndSchedule_StartDateBetween(Long userId, LocalDateTime startDate, LocalDateTime endDate);
 }
