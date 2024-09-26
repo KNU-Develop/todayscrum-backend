@@ -87,20 +87,23 @@ public class MeetingSchedulerService {
 
         List<TimeSlot> availableSlots = new ArrayList<>();
 
+        LocalDateTime startOfDay = startDate.withHour(7).withMinute(0);
+        LocalDateTime endOfDay = endDate.withHour(23).withMinute(0);
+
         if (schedules.isEmpty()) {
-            LocalDateTime startOfDay = startDate.withHour(7).withMinute(0);
-            LocalDateTime endOfDay = startDate.withHour(23).withMinute(0);
             availableSlots.add(new TimeSlot(startOfDay, endOfDay));
         } else {
-            if (schedules.get(0).getStartDate().isAfter(startDate)) {
-                availableSlots.add(new TimeSlot(startDate, schedules.get(0).getStartDate()));
+            if (schedules.get(0).getStartDate().isAfter(startOfDay)) {
+                LocalDateTime endFirstSchedule = schedules.get(0).getStartDate();
+                availableSlots.add(new TimeSlot(startOfDay, endFirstSchedule));
             }
             for (int i = 0; i < schedules.size() - 1; i++) {
                 LocalDateTime endCurrent = schedules.get(i).getEndDate();
                 LocalDateTime startNext = schedules.get(i + 1).getStartDate();
 
                 if (endCurrent.isBefore(startNext)) {
-                    availableSlots.add(new TimeSlot(endCurrent, startNext));
+                    LocalDateTime validEnd = startNext.isBefore(endOfDay) ? startNext : endOfDay;
+                    availableSlots.add(new TimeSlot(endCurrent.isAfter(startOfDay) ? endCurrent : startOfDay, validEnd));
                 }
             }
             if (schedules.get(schedules.size() - 1).getEndDate().isBefore(endDate)) {
