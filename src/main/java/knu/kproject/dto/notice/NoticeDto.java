@@ -74,7 +74,7 @@ public class NoticeDto {
         this.isread = false;
         this.title = inviter.getName() + "님이 @" + invited.getName() + "을 호출했습니다.";
         this.type = NOTICETYPE.멘션;
-        this.originId = comment.getId();
+        this.originId = comment.getBoard().getId();
         this.originTable = comment.getBoard().getProject().getId();
         this.user = invited;
         this.createdAt = new Timestamp(System.currentTimeMillis());

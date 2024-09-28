@@ -1,6 +1,5 @@
 package knu.kproject.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import knu.kproject.dto.comment.CommentDto;
 import knu.kproject.dto.comment.InputCommentDto;
@@ -8,14 +7,12 @@ import knu.kproject.dto.notice.NoticeDto;
 import knu.kproject.entity.board.Board;
 import knu.kproject.entity.board.Master;
 import knu.kproject.entity.comment.Comment;
-import knu.kproject.entity.project.Project;
 import knu.kproject.entity.project.ProjectUser;
 import knu.kproject.entity.user.User;
 import knu.kproject.exception.ProjectException;
 import knu.kproject.exception.UserExceptionHandler;
 import knu.kproject.exception.code.ProjectErrorCode;
 import knu.kproject.exception.code.UserErrorCode;
-import knu.kproject.global.CHOICE;
 import knu.kproject.global.NOTICETYPE;
 import knu.kproject.global.ROLE;
 import knu.kproject.global.functions.Access;
@@ -23,8 +20,6 @@ import knu.kproject.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.awt.*;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
